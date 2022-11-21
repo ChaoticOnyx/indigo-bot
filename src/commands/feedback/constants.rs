@@ -1,0 +1,9 @@
+﻿pub const COMMAND_NAME: &str = "feedback";
+pub const BUG_OPTION_NAME: &str = "bug";
+pub const FEATURE_OPTION_NAME: &str = "feature";
+pub const TITLE_OPTION_NAME: &str = "title";
+pub const DESCRIPTION_OPTION_NAME: &str = "description";
+pub const OS_OPTION_NAME: &str = "os";
+pub const GPU_OPTION_NAME: &str = "gpu";
+pub const LOGS_OPTION_NAME: &str = "logs";
+pub const SCREENSHOT_OPTION_NAME: &str = "screnshot";
