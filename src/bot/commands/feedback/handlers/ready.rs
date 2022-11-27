@@ -1,11 +1,12 @@
-﻿use crate::{commands::feedback::helpers::create_and_pin_message, prelude::*};
+﻿use crate::bot::commands::feedback::helpers::create_and_pin_message;
+use crate::prelude::*;
 use serenity::{model::prelude::Ready, prelude::Context};
 
 #[instrument(skip(ctx))]
 pub async fn ready(ctx: &Context, _ready: &Ready) {
     debug!("ready");
 
-    let mut settings = Settings::get_state().await;
+    let mut settings = Settings::clone_state().await;
     let mut cmd_settings = &mut settings.commands.feedback;
 
     let channel = &cmd_settings.channel_id;

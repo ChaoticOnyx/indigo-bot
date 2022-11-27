@@ -3,7 +3,7 @@ use serenity::{
     prelude::{Context, EventHandler},
 };
 
-use crate::commands::{self, feedback::COMMAND_NAME};
+use crate::bot::commands::{self, feedback::COMMAND_NAME};
 use crate::prelude::*;
 
 pub struct Handler;
@@ -11,11 +11,16 @@ pub struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
     #[instrument(skip(self, ctx))]
+    async fn message(&self, ctx: Context, new_message: Message) {
+        commands::tfa::handlers::message(&ctx, &new_message).await;
+    }
+
+    #[instrument(skip(self, ctx))]
     async fn reaction_add(&self, ctx: Context, reaction: Reaction) {
         debug!("reaction_remove");
 
         if reaction.guild_id.is_none()
-            || Settings::get_state().await.discord.guild_id != reaction.guild_id.unwrap()
+            || Settings::clone_state().await.discord.guild_id != reaction.guild_id.unwrap()
         {
             return;
         }
@@ -28,7 +33,7 @@ impl EventHandler for Handler {
         debug!("reaction_remove");
 
         if reaction.guild_id.is_none()
-            || Settings::get_state().await.discord.guild_id != reaction.guild_id.unwrap()
+            || Settings::clone_state().await.discord.guild_id != reaction.guild_id.unwrap()
         {
             return;
         }
@@ -46,7 +51,8 @@ impl EventHandler for Handler {
     ) {
         debug!("message_delete");
 
-        if guild_id.is_none() || Settings::get_state().await.discord.guild_id != guild_id.unwrap() {
+        if guild_id.is_none() || Settings::clone_state().await.discord.guild_id != guild_id.unwrap()
+        {
             return;
         }
 
@@ -63,11 +69,11 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         info!("ready");
 
-        Session::set_state(Session {
+        DiscordSession::set_state(DiscordSession {
             user: Some(ready.user.clone()),
         })
         .await;
-        let settings = Settings::get_state().await;
+        let settings = Settings::clone_state().await;
         let guild = settings.discord.guild_id;
 
         info!("registering application commands");
@@ -93,20 +99,18 @@ impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         debug!("interaction_create");
 
-        let Interaction::ApplicationCommand(cmd) = interaction else {
-            return;
-        };
+        if let Interaction::ApplicationCommand(cmd) = interaction {
+            if cmd.guild_id.is_none()
+                || Settings::clone_state().await.discord.guild_id != cmd.guild_id.unwrap()
+            {
+                return;
+            }
 
-        if cmd.guild_id.is_none()
-            || Settings::get_state().await.discord.guild_id != cmd.guild_id.unwrap()
-        {
-            return;
-        }
-
-        #[allow(clippy::single_match)]
-        match cmd.data.name.as_str() {
-            COMMAND_NAME => commands::feedback::run(&ctx, &cmd).await,
-            _ => (),
+            #[allow(clippy::single_match)]
+            match cmd.data.name.as_str() {
+                COMMAND_NAME => commands::feedback::run(&ctx, &cmd).await,
+                _ => (),
+            };
         };
     }
 }

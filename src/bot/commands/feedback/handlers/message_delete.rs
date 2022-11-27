@@ -3,7 +3,8 @@ use serenity::{
     prelude::Context,
 };
 
-use crate::{commands::feedback::forget_feature_message, prelude::*};
+use crate::bot::commands::feedback::forget_feature_message;
+use crate::prelude::*;
 
 #[instrument(skip(ctx))]
 pub async fn message_delete(

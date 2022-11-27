@@ -48,3 +48,10 @@ connect = "sqlite://database.sqlite?mode=rwc"
 enabled = false
 ## Место, куда отсылать логи при включённом локи.
 #url = "https://username:password@address"
+
+[server]
+## Адрес на котором будет работать сервер.
+## Для доступности сервера извне используйте `0.0.0.0:<port>`
+address = "127.0.0.1:8080"
+## Bearer токены для доступа к некоторым частям API.
+#tokens = ["root"]

@@ -4,10 +4,15 @@ version = "1.0.0"
 edition = "2021"
 
 [dependencies]
+actix-web = { version = "4.2.1", features = ["rustls"] }
+actix-web-httpauth = "0.8.0"
 chrono = { version = "0.4.23", features = ["serde"] }
+futures-util = "0.3.25"
 octocrab = { version = "0.17.0", features = ["rustls"] }
 once_cell = "1.16.0"
+rand = "0.8.5"
 serde = { version = "1.0.147", features = ["derive"] }
+serde_json = "1.0.89"
 serenity = { version = "0.11.5", default-features = false, features = [
 	"model",
 	"client",

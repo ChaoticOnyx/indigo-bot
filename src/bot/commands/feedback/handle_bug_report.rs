@@ -1,4 +1,7 @@
-use crate::{commands::feedback::helpers::get_attachment_url_from_option, prelude::*};
+use crate::prelude::*;
+use crate::{
+    api::models::BugReport, bot::commands::feedback::helpers::get_attachment_url_from_option,
+};
 use serenity::{
     model::prelude::{
         interaction::{
@@ -22,11 +25,8 @@ use super::{
 pub async fn handle_bug_report(ctx: &Context, cmd: &ApplicationCommandInteraction) {
     info!("handle_bug_report");
 
-    let settings = Settings::get_state().await;
-    let github = Github::get_state().await;
-    let db = Database::get_state().await;
-
     let option = cmd.data.options.first().unwrap();
+    let author_id = cmd.user.id;
     let mut bug_title = String::new();
     let mut bug_description = String::new();
     let mut bug_os: Option<String> = None;
@@ -70,23 +70,22 @@ pub async fn handle_bug_report(ctx: &Context, cmd: &ApplicationCommandInteractio
 
     let author = format!(
         "{}#{} ({})",
-        cmd.user.name, cmd.user.discriminator, cmd.user.id
+        cmd.user.name, cmd.user.discriminator, author_id
     );
 
     body += &format!(
         "_Этот иссуй был создан автоматически по сообщению из дискорда. Автор: {author}._"
     );
 
-    let issue_number = github
-        .create_issue(
-            settings.commands.feedback.bugs_repository,
-            bug_title,
-            body,
-            settings.commands.feedback.bug_issue_labels,
-        )
-        .await;
+    let issue_id = Api::lock(async_closure!(|api| {
+        let issue_id = api.create_bug_issue(bug_title, body).await;
 
-    db.add_bug_message(cmd.user.id, issue_number).await;
+        let bugreport = BugReport::new(author_id, issue_id);
+        api.add_bug_report(bugreport).await;
+
+        issue_id
+    }))
+    .await;
 
     debug!("responding to user");
     cmd.create_interaction_response(&ctx.http, |response| {
@@ -98,7 +97,7 @@ pub async fn handle_bug_report(ctx: &Context, cmd: &ApplicationCommandInteractio
                     .content(format!(
                         "{}, ваш багрепорт с номером **#{}** создан",
                         Mention::User(cmd.user.id),
-                        issue_number
+                        issue_id
                     ))
             })
     })
