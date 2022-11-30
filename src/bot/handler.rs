@@ -99,18 +99,20 @@ impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         debug!("interaction_create");
 
-        if let Interaction::ApplicationCommand(cmd) = interaction {
-            if cmd.guild_id.is_none()
-                || Settings::clone_state().await.discord.guild_id != cmd.guild_id.unwrap()
-            {
-                return;
-            }
+        let Interaction::ApplicationCommand(cmd) = interaction else {
+            return;
+        };
 
-            #[allow(clippy::single_match)]
-            match cmd.data.name.as_str() {
-                COMMAND_NAME => commands::feedback::run(&ctx, &cmd).await,
-                _ => (),
-            };
+        if cmd.guild_id.is_none()
+            || Settings::clone_state().await.discord.guild_id != cmd.guild_id.unwrap()
+        {
+            return;
+        }
+
+        #[allow(clippy::single_match)]
+        match cmd.data.name.as_str() {
+            COMMAND_NAME => commands::feedback::run(&ctx, &cmd).await,
+            _ => (),
         };
     }
 }
