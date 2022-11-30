@@ -131,7 +131,7 @@ impl Database {
         debug!("is_vote_ended");
 
         let FeatureVoteDescriptor(message_id, channel_id) = descriptor;
-        !sqlx::query("SELECT id FROM feature_message WHERE channel_id = ? AND message_id = ? AND is_vote_ended = 0")
+        sqlx::query("SELECT id FROM feature_message WHERE channel_id = ? AND message_id = ? AND is_vote_ended = 0")
             .bind(channel_id.0 as i64)
             .bind(message_id.0 as i64)
             .fetch_all(&self.pool)
