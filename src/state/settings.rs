@@ -1,11 +1,24 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, net::SocketAddr};
 
 use crate::prelude::*;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use serenity::{model::prelude::*, prelude::Mutex};
 
+use super::GlobalState;
+
 const SETTINGS_PATH: &str = "settings.toml";
+static SETTINGS: Lazy<Mutex<Option<Settings>>> = Lazy::new(|| Mutex::new(None));
+
+#[async_trait]
+impl GlobalState for Settings {
+    async fn get_static() -> &'static Lazy<Mutex<Option<Self>>> {
+        &SETTINGS
+    }
+}
+
+impl GlobalStateSet for Settings {}
+impl GlobalStateClone for Settings {}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Settings {
@@ -14,6 +27,7 @@ pub struct Settings {
     pub commands: CommandsSection,
     pub database: DatabaseSection,
     pub loki: LokiSection,
+    pub server: ServerSection,
 }
 
 impl Settings {
@@ -34,10 +48,14 @@ impl Settings {
     }
 }
 
+// [github]
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GithubSection {
     pub token: String,
 }
+
+// [discord]
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DiscordSection {
@@ -45,10 +63,14 @@ pub struct DiscordSection {
     pub token: String,
 }
 
+// [commands]
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CommandsSection {
     pub feedback: FeedbackSection,
 }
+
+// [commands.feedback]
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FeedbackSection {
@@ -64,10 +86,14 @@ pub struct FeedbackSection {
     pub bug_issue_labels: HashSet<String>,
 }
 
+// [database]
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DatabaseSection {
     pub connect: String,
 }
+
+// [loki]
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LokiSection {
@@ -75,20 +101,10 @@ pub struct LokiSection {
     pub url: Option<String>,
 }
 
-static SETTINGS: Lazy<Mutex<Option<Settings>>> = Lazy::new(|| Mutex::new(None));
+// [server]
 
-#[async_trait]
-impl GlobalState for Settings {
-    #[instrument]
-    async fn get_state() -> Settings {
-        let lock = SETTINGS.lock().await;
-
-        lock.clone().unwrap()
-    }
-
-    #[instrument]
-    async fn set_state(settings: Settings) {
-        let mut lock = SETTINGS.lock().await;
-        *lock = Some(settings);
-    }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ServerSection {
+    pub address: SocketAddr,
+    pub tokens: Vec<String>,
 }

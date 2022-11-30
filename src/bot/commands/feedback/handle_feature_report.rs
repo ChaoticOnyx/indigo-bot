@@ -1,6 +1,7 @@
 ﻿use std::str::FromStr;
 
-use crate::{commands::feedback::helpers::get_value_as_string, prelude::*};
+use crate::bot::commands::feedback::helpers::get_value_as_string;
+use crate::prelude::*;
 use serenity::model::prelude::Mention;
 use serenity::model::prelude::{
     interaction::application_command::ApplicationCommandInteraction,
@@ -14,7 +15,7 @@ use super::helpers::create_feature_embed;
 #[instrument(skip(ctx))]
 pub async fn handle_feature_report(ctx: &Context, cmd: &ApplicationCommandInteraction) {
     info!("handle_feature_report");
-    let settings = Settings::get_state().await;
+    let settings = Settings::clone_state().await;
 
     // Shortcuts
     let channel_id = &settings.commands.feedback.channel_id;
@@ -75,13 +76,8 @@ pub async fn handle_feature_report(ctx: &Context, cmd: &ApplicationCommandIntera
     .await
     .unwrap();
 
-    Database::get_state()
-        .await
-        .add_feature_message(
-            feature_message.channel_id,
-            feature_message.id,
-            user.id,
-            *feature_message.timestamp,
-        )
-        .await;
+    Api::lock(async_closure!(|api| {
+        api.new_feature_vote(feature_message.into()).await
+    }))
+    .await;
 }

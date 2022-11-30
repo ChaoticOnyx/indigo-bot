@@ -1,33 +1,29 @@
 use std::{collections::HashMap, env};
 
-use crate::database::Database;
 use crate::prelude::*;
-use handler::Handler;
-use serenity::prelude::GatewayIntents;
-use settings::Settings;
+use bot::BotClient;
+use server::Server;
 use tracing_loki::url::Url;
 use tracing_subscriber::{prelude::*, Layer};
 
-mod commands;
-mod database;
-mod github;
-mod global_state;
-mod handler;
+mod api;
+mod bot;
+mod macros;
 mod prelude;
-mod session;
-mod settings;
+mod server;
+mod state;
 
 async fn setup_logging() {
     use tracing_subscriber::filter::LevelFilter;
 
     let mut args = env::args();
-    let mut level = LevelFilter::INFO;
+    let mut filter = LevelFilter::INFO;
 
     if args.any(|a| a == "--debug") {
-        level = LevelFilter::DEBUG;
+        filter = LevelFilter::DEBUG;
     }
 
-    let settings = Settings::get_state().await;
+    let settings = Settings::clone_state().await;
 
     if settings.loki.enabled {
         let mut labels = HashMap::new();
@@ -42,14 +38,22 @@ async fn setup_logging() {
         .unwrap();
 
         tracing_subscriber::registry()
-            .with(layer)
-            .with(tracing_subscriber::fmt::layer().pretty().with_filter(level))
+            .with(layer.with_filter(filter))
+            .with(
+                tracing_subscriber::fmt::layer()
+                    .pretty()
+                    .with_filter(filter),
+            )
             .init();
 
         tokio::spawn(task);
     } else {
         tracing_subscriber::registry()
-            .with(tracing_subscriber::fmt::layer().pretty().with_filter(level))
+            .with(
+                tracing_subscriber::fmt::layer()
+                    .pretty()
+                    .with_filter(filter),
+            )
             .init();
     }
 }
@@ -64,28 +68,17 @@ async fn main() {
     setup_logging().await;
 
     // Session
-    Session::set_state(Session { user: None }).await;
+    DiscordSession::set_state(DiscordSession { user: None }).await;
 
-    // Database
-    let db = Database::connect(&settings.database.connect).await;
-    db.migrate().await;
-    Database::set_state(db).await;
-
-    // GitHub
-    let github = Github::new(settings.github.token);
-    Github::set_state(github).await;
+    // Api
+    let api = Api::new(&settings).await;
+    Api::set_state(api).await;
 
     // Discord
-    let mut client = serenity::Client::builder(
-        settings.discord.token,
-        GatewayIntents::non_privileged()
-            | GatewayIntents::GUILD_MESSAGES
-            | GatewayIntents::MESSAGE_CONTENT
-            | GatewayIntents::GUILD_MESSAGE_REACTIONS,
-    )
-    .event_handler(Handler)
-    .await
-    .unwrap();
+    let discord_handle = tokio::spawn(async {
+        BotClient::run(settings.discord.token).await;
+    });
 
-    client.start().await.unwrap();
+    Server::run(settings.server.address).await;
+    discord_handle.await.unwrap();
 }

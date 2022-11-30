@@ -3,13 +3,15 @@ use serenity::{
     prelude::Context,
 };
 
-use crate::prelude::*;
+use crate::{api::models::FeatureVoteDescriptor, prelude::*};
 
 #[instrument(skip(_ctx))]
 pub async fn forget_feature_message(_ctx: &Context, channel_id: ChannelId, message_id: MessageId) {
     debug!("forget_message_delete");
 
-    let db = Database::get_state().await;
-
-    db.end_vote_feature_message(channel_id, message_id).await;
+    Api::lock(async_closure!(|api| {
+        api.end_feature_vote(FeatureVoteDescriptor(message_id, channel_id))
+            .await
+    }))
+    .await;
 }

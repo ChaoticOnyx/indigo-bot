@@ -65,14 +65,8 @@ pub fn get_attachment_url_from_option(option: &CommandDataOption) -> String {
     }
 }
 
-pub async fn is_users_id_mine(user_id: UserId, session: Option<Session>) -> bool {
-    let session = if session.is_none() {
-        Some(Session::get_state().await)
-    } else {
-        session
-    };
-
-    let session = session.unwrap();
+pub async fn is_user_id_mine(user_id: UserId) -> bool {
+    let session = DiscordSession::clone_state().await;
 
     if let Some(user) = session.user {
         if user_id == user.id {

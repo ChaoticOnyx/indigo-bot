@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{api::models::FeatureVoteDescriptor, prelude::*};
 use serenity::{
     model::prelude::{Embed, Reaction},
     prelude::Context,
@@ -11,19 +11,21 @@ use super::send_feature_to_github;
 pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
     debug!("updating reactions");
 
-    let settings = Settings::get_state().await;
+    let settings = Settings::clone_state().await;
 
     if reaction.channel_id != settings.commands.feedback.channel_id {
         debug!("reaction from another channel");
         return;
     }
 
-    let db = Database::get_state().await;
-    if !db
-        .has_not_vote_ended_feature_message(reaction.channel_id, reaction.message_id)
-        .await
-    {
-        debug!("feature message not found");
+    let descriptor = FeatureVoteDescriptor(reaction.message_id, reaction.channel_id);
+    let is_vote_ended = Api::lock(async_closure!(|api| {
+        api.is_vote_ended(descriptor).await
+    }))
+    .await;
+
+    if is_vote_ended {
+        debug!("message not found");
         return;
     }
 
@@ -70,19 +72,30 @@ pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
         .unwrap();
 
     if votes_up.saturating_sub(votes_down) >= settings.commands.feedback.min_feature_up_votes {
-        let db = Database::get_state().await;
-        let user_id = db
-            .get_feature_message_author(message.channel_id, message.id)
-            .await;
-        let author = user_id.to_user(&ctx.http).await.ok();
+        Api::lock(async_closure! {
+            |api| {
+                api.end_feature_vote(descriptor).await;
+            }
+        })
+        .await;
+
+        let feature_vote = Api::lock(async_closure!(|api| {
+            api.get_feature_vote(descriptor).await
+        }))
+        .await
+        .unwrap();
+
+        let author = feature_vote.author_id.to_user(&ctx.http).await.ok();
 
         if let Some(author) = author {
             send_feature_to_github(&message, &author).await;
         } else {
-            warn!("user not found {}", user_id);
+            warn!("user not found {}", feature_vote.author_id);
         }
 
-        db.end_vote_feature_message(message.channel_id, message.id)
-            .await;
+        Api::lock(async_closure!(|api| {
+            api.end_feature_vote(descriptor).await;
+        }))
+        .await;
     }
 }
