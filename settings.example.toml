@@ -42,7 +42,8 @@ feature_issue_labels = [":robot:создано роботом", "предлож�
 bug_issue_labels = [":robot:создано роботом", "🐞 баг"]
 
 [database]
-connect = "sqlite://database.sqlite?mode=rwc"
+## Не забудьте создать таблицу.
+connect = "postgres://postgres:root@localhost/indigobot"
 
 [loki]
 enabled = false

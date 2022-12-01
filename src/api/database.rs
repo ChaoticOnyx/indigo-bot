@@ -2,8 +2,8 @@ use std::str::FromStr;
 
 use chrono::DateTime;
 use serenity::model::prelude::{ChannelId, MessageId, UserId};
-use sqlx::sqlite::SqlitePoolOptions;
-use sqlx::{Pool, Row, Sqlite};
+use sqlx::{postgres::PgPoolOptions, Postgres};
+use sqlx::{Pool, Row};
 
 use crate::{
     api::models::{BugReport, BugReportDescriptor, FeatureVote, FeatureVoteDescriptor},
@@ -12,7 +12,7 @@ use crate::{
 
 #[derive(Debug)]
 pub struct Database {
-    pool: Pool<Sqlite>,
+    pool: Pool<Postgres>,
 }
 
 impl Database {
@@ -20,7 +20,7 @@ impl Database {
     pub async fn connect(conn: &str) -> Self {
         info!("setting up database");
 
-        let pool = SqlitePoolOptions::new().connect(conn).await.unwrap();
+        let pool = PgPoolOptions::new().connect(conn).await.unwrap();
 
         Self { pool }
     }
@@ -36,24 +36,24 @@ impl Database {
     }
 
     #[instrument(skip(pool))]
-    async fn migration_init(pool: &Pool<Sqlite>) {
+    async fn migration_init(pool: &Pool<Postgres>) {
         info!("migration: migration_init");
 
         // TABLE feature_message
         sqlx::query(
             "
-            CREATE TABLE IF NOT EXISTS feature_message
-            (
-                id INTEGER NOT null
-                   CONSTRAINT id
-                   PRIMARY KEY AUTOINCREMENT,
-                channel_id INTEGER NOT null,
-                message_id INTEGER NOT null,
-                user_id INTEGER NOT null,
-				is_vote_ended INTEGER NOT null,
-				created_at TEXT NOT null
-            );
-        ",
+create table if not exists feature_message
+(
+    id            bigserial not null
+        constraint feature_message_pk
+            primary key,
+    channel_id    bigint not null,
+    message_id    bigint not null,
+    user_id       bigint not null,
+    is_vote_ended boolean not null,
+    created_at    text    not null
+);
+",
         )
         .execute(pool)
         .await
@@ -62,15 +62,15 @@ impl Database {
         // TABLE bug_message
         sqlx::query(
             "
-			CREATE TABLE IF NOT EXISTS bug_message
-			(
-				id INTEGER NOT null
-					CONSTRAINT id
-					PRIMARY KEY AUTOINCREMENT,
-				user_id INTEGER NOT null,
-				issue_number INTEGER NOT null
-			);
-		",
+create table if not exists bug_message
+(
+    id           bigserial not null
+        constraint bug_message_pk
+            primary key,
+    user_id      bigint not null,
+    issue_number bigint not null
+);
+",
         )
         .execute(pool)
         .await
@@ -89,9 +89,9 @@ impl Database {
 
         sqlx::query(
             "
-			INSERT INTO bug_message (user_id, issue_number)
-			VALUES (?, ?);
-			",
+INSERT INTO bug_message (id, user_id, issue_number)
+VALUES (DEFAULT, $1, $2);
+",
         )
         .bind(author_id.0 as i64)
         .bind(issue_id.0 as i64)
@@ -113,8 +113,8 @@ impl Database {
 
         sqlx::query(
             "
-            INSERT INTO feature_message (channel_id, message_id, user_id, is_vote_ended, created_at)
-            VALUES (?, ?, ?, 0, ?);
+INSERT INTO feature_message (id, channel_id, message_id, user_id, is_vote_ended, created_at)
+VALUES (DEFAULT, $1, $2, $3, false, $4);
         ",
         )
         .bind(channel_id.0 as i64)
@@ -131,7 +131,7 @@ impl Database {
         debug!("is_vote_ended");
 
         let FeatureVoteDescriptor(message_id, channel_id) = descriptor;
-        sqlx::query("SELECT id FROM feature_message WHERE channel_id = ? AND message_id = ? AND is_vote_ended = 0")
+        sqlx::query("SELECT id FROM feature_message WHERE channel_id = $1 AND message_id = $2 AND is_vote_ended = false")
             .bind(channel_id.0 as i64)
             .bind(message_id.0 as i64)
             .fetch_all(&self.pool)
@@ -145,7 +145,7 @@ impl Database {
         debug!("get_feature_vote");
 
         let FeatureVoteDescriptor(message_id, channel_id) = descriptor;
-        sqlx::query("SELECT * FROM feature_message WHERE channel_id = ? AND message_id = ?")
+        sqlx::query("SELECT * FROM feature_message WHERE channel_id = $1 AND message_id = $2")
             .bind(channel_id.0 as i64)
             .bind(message_id.0 as i64)
             .map(|row| FeatureVote {
@@ -166,7 +166,7 @@ impl Database {
         debug!("end_feature_vote");
 
         let FeatureVoteDescriptor(message_id, channel_id) = descriptor;
-        sqlx::query("UPDATE feature_message SET (is_vote_ended) = (1) WHERE channel_id = ? AND message_id = ?")
+        sqlx::query("UPDATE feature_message SET is_vote_ended = true WHERE channel_id = $1 AND message_id = $2")
             .bind(channel_id.0 as i64)
             .bind(message_id.0 as i64)
             .execute(&self.pool)
