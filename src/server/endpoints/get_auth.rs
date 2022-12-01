@@ -3,20 +3,20 @@ use actix_web_httpauth::extractors::bearer::BearerAuth;
 use serde::Deserialize;
 use serde_json::json;
 
+use crate::server::utils::is_token_valid;
 use crate::{api::models::TokenSecret, prelude::*};
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct Secret {
+pub struct Query {
     pub secret: TokenSecret,
 }
 
 #[instrument]
 #[get("/api/auth")]
-pub async fn get_auth(query: web::Query<Secret>, bearer: BearerAuth) -> impl Responder {
+pub async fn get_auth(query: web::Query<Query>, bearer: BearerAuth) -> impl Responder {
     info!("get_auth");
-    let settings = Settings::clone_state().await;
 
-    if !settings.server.tokens.contains(&bearer.token().to_string()) {
+    if !is_token_valid(bearer.token()).await {
         return HttpResponseBuilder::new(StatusCode::UNAUTHORIZED)
             .body(json!({"message": "Invalid token"}).to_string());
     }

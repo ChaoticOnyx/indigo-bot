@@ -1,9 +1,9 @@
 use std::fmt::Display;
 
+use crate::prelude::*;
 use chrono::{DateTime, Duration, Utc};
 use rand::{rngs::ThreadRng, Rng};
 use serde::{Deserialize, Serialize};
-use serenity::model::user::User;
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct TokenSecret(pub String);
@@ -40,7 +40,7 @@ impl Display for TokenSecret {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TFAToken {
-    pub user: User,
+    pub user: discord::user::User,
     pub secret: TokenSecret,
     pub expiration: DateTime<Utc>,
 }
@@ -50,7 +50,7 @@ fn random_digit(rng: &mut ThreadRng) -> u8 {
 }
 
 impl TFAToken {
-    pub fn new(secret: TokenSecret, user: User, duration: Duration) -> Self {
+    pub fn new(secret: TokenSecret, user: discord::user::User, duration: Duration) -> Self {
         Self {
             user,
             secret,

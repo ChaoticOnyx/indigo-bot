@@ -12,6 +12,7 @@ impl Server {
             App::new()
                 .service(endpoints::get::auth)
                 .service(endpoints::get::identity)
+                .service(endpoints::get::connect_byond)
         })
         .bind(addrs)
         .unwrap()

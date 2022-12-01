@@ -1,10 +1,12 @@
+use actix_http::header::q;
 use std::str::FromStr;
 
-use chrono::DateTime;
-use serenity::model::prelude::{ChannelId, MessageId, UserId};
+use chrono::{DateTime, Utc};
+use serenity::model::prelude::{ChannelId, MessageId};
 use sqlx::{postgres::PgPoolOptions, Postgres};
 use sqlx::{Pool, Row};
 
+use crate::api::models::{Account, AnyUserId, NewAccount};
 use crate::{
     api::models::{BugReport, BugReportDescriptor, FeatureVote, FeatureVoteDescriptor},
     prelude::*,
@@ -75,6 +77,125 @@ create table if not exists bug_message
         .execute(pool)
         .await
         .unwrap();
+
+        // TABLE account
+        sqlx::query(
+            "
+create table if not exists account
+(
+    id         bigserial not null
+        constraint user_pk
+            primary key,
+    discord_id bigint not null,
+    byond_ckey text,
+    ss14_guid  text,
+    created_at text not null
+);
+",
+        )
+        .execute(pool)
+        .await
+        .unwrap();
+    }
+
+    #[instrument(skip(self))]
+    pub async fn find_account(&self, user_id: AnyUserId) -> Option<Account> {
+        debug!("find_account");
+
+        let query = match user_id {
+            AnyUserId::DiscordId(user_id) => {
+                sqlx::query("SELECT * FROM account WHERE discord_id = $1").bind(user_id.0 as i64)
+            }
+            AnyUserId::ByondCkey(ckey) => {
+                sqlx::query("SELECT * FROM account WHERE byond_ckey = $1").bind(ckey.0)
+            }
+            AnyUserId::SS14Guid(guid) => {
+                sqlx::query("SELECT * FROM account WHERE ss14_guid = $1").bind(guid.0)
+            }
+            AnyUserId::InternalId(id) => {
+                sqlx::query("SELECT * FROM account WHERE id = $1").bind(id as i64)
+            }
+        };
+
+        query
+            .map(|row| Account {
+                id: row.get::<i64, _>("id") as u64,
+                discord_id: discord::id::UserId(row.get::<i64, _>("discord_id") as u64),
+                byond_ckey: row
+                    .get::<Option<String>, _>("byond_ckey")
+                    .map(|ckey| byond::UserId(ckey)),
+                ss14_guid: row
+                    .get::<Option<String>, _>("ss14_guid")
+                    .map(|guid| ss14::UserId(guid)),
+                created_at: DateTime::from_str(&row.get::<String, _>("created_at")).unwrap(),
+            })
+            .fetch_optional(&self.pool)
+            .await
+            .unwrap()
+    }
+
+    #[instrument(skip(self))]
+    pub async fn add_account(&self, new_user: NewAccount) {
+        info!("add_account");
+
+        let NewAccount {
+            discord_id,
+            created_at,
+        } = new_user;
+
+        sqlx::query(
+            "
+INSERT INTO account (id, discord_id, byond_ckey, ss14_guid, created_at)
+VALUES (DEFAULT, $1, null, null, $2)
+",
+        )
+        .bind(discord_id.0 as i64)
+        .bind(created_at.to_string())
+        .execute(&self.pool)
+        .await
+        .unwrap();
+    }
+
+    #[instrument(skip(self))]
+    pub async fn connect_account(&self, user_id: AnyUserId, new_user_id: AnyUserId) {
+        info!("connect_account");
+
+        let set_part = match new_user_id {
+            AnyUserId::DiscordId(_) => "discord_id = $1",
+            AnyUserId::ByondCkey(_) => "byond_ckey = $1",
+            AnyUserId::SS14Guid(_) => "ss14_guid = $1",
+            AnyUserId::InternalId(_) => {
+                panic!("can't change internal id")
+            }
+        };
+
+        let where_part = match user_id {
+            AnyUserId::DiscordId(_) => "discord_id = $2",
+            AnyUserId::ByondCkey(_) => "byond_ckey = $2",
+            AnyUserId::SS14Guid(_) => "ss14_guid = $2",
+            AnyUserId::InternalId(_) => "id = $2",
+        };
+
+        let query_string = format!("UPDATE account SET {set_part} WHERE {where_part};");
+        let query = sqlx::query(&query_string);
+
+        // Bind $1
+        let query = match new_user_id {
+            AnyUserId::DiscordId(discord_id) => query.bind(discord_id.0 as i64),
+            AnyUserId::ByondCkey(ckey) => query.bind(ckey.0),
+            AnyUserId::SS14Guid(guid) => query.bind(guid.0),
+            AnyUserId::InternalId(_) => unreachable!(),
+        };
+
+        // Bind $2
+        let query = match user_id {
+            AnyUserId::DiscordId(discord_id) => query.bind(discord_id.0 as i64),
+            AnyUserId::ByondCkey(ckey) => query.bind(ckey.0),
+            AnyUserId::SS14Guid(guid) => query.bind(guid.0),
+            AnyUserId::InternalId(id) => query.bind(id as i64),
+        };
+
+        query.execute(&self.pool).await.unwrap();
     }
 
     #[instrument(skip(self))]
@@ -149,16 +270,16 @@ VALUES (DEFAULT, $1, $2, $3, false, $4);
             .bind(channel_id.0 as i64)
             .bind(message_id.0 as i64)
             .map(|row| FeatureVote {
-                author_id: UserId(row.get::<i64, &str>("user_id") as u64),
+                author_id: discord::id::UserId(row.get::<i64, _>("user_id") as u64),
                 created_at: DateTime::from_str(row.get("created_at")).unwrap(),
                 descriptor: FeatureVoteDescriptor(
-                    MessageId(row.get::<i64, &str>("message_id") as u64),
-                    ChannelId(row.get::<i64, &str>("channel_id") as u64),
+                    MessageId(row.get::<i64, _>("message_id") as u64),
+                    ChannelId(row.get::<i64, _>("channel_id") as u64),
                 ),
             })
-            .fetch_one(&self.pool)
+            .fetch_optional(&self.pool)
             .await
-            .ok()
+            .unwrap()
     }
 
     #[instrument(skip(self))]

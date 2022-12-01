@@ -1,6 +1,6 @@
-use chrono::Duration;
+use crate::api::models::{Account, AnyUserId, NewAccount};
+use chrono::{Duration, Utc};
 use octocrab::models::IssueId;
-use serenity::model::user::User;
 
 use super::{
     github::Github,
@@ -106,8 +106,23 @@ impl Api {
             .await
     }
 
-    pub async fn get_or_create_tfa_token(&mut self, user: User) -> TFAToken {
+    #[instrument]
+    pub async fn get_or_create_tfa_token(&mut self, user: discord::user::User) -> TFAToken {
         debug!("get_or_create_tfa_token");
+
+        if self
+            .database
+            .find_account(AnyUserId::DiscordId(user.id))
+            .await
+            .is_none()
+        {
+            self.database
+                .add_account(NewAccount {
+                    created_at: Utc::now(),
+                    discord_id: user.id,
+                })
+                .await;
+        }
 
         self.tokens_storage.remove_expired_tokens();
 
@@ -124,7 +139,52 @@ impl Api {
         }
     }
 
+    #[instrument]
     pub async fn find_token_by_secret(&self, secret: TokenSecret) -> Option<TFAToken> {
+        debug!("find_token_by_secret");
+
         self.tokens_storage.find_by_secret(secret).cloned()
+    }
+
+    #[instrument]
+    pub async fn find_account_by_token_secret(&self, secret: TokenSecret) -> Option<Account> {
+        debug!("find_account_by_token_secret");
+
+        let token = self.tokens_storage.find_by_secret(secret);
+
+        let Some(token) = token else {
+            return None;
+        };
+
+        self.find_account_by_id(AnyUserId::DiscordId(token.user.id))
+            .await
+    }
+
+    #[instrument]
+    pub async fn find_account_by_id(&self, user_id: AnyUserId) -> Option<Account> {
+        debug!("find_account_by_id");
+
+        self.database.find_account(user_id).await
+    }
+
+    #[instrument]
+    pub async fn connect_byond_account(&self, user_id: AnyUserId, byond_user_id: byond::UserId) {
+        info!("connect_byond_account");
+
+        let account = self.find_account_by_id(user_id.clone()).await;
+
+        let Some(account) = account else {
+            warn!("account not found");
+            return;
+        };
+
+        if account.byond_ckey.is_some() {
+            warn!("byond account is already connected");
+            return;
+        }
+
+        self.database
+            .connect_account(user_id, AnyUserId::ByondCkey(byond_user_id))
+            .await;
     }
 }
