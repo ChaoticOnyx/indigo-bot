@@ -8,6 +8,7 @@ use serenity::model::prelude::{
     interaction::InteractionResponseType::ChannelMessageWithSource, ReactionType,
 };
 use serenity::prelude::Context;
+use crate::api::models::FeatureVote;
 
 use super::constants::{DESCRIPTION_OPTION_NAME, TITLE_OPTION_NAME};
 use super::helpers::create_feature_embed;
@@ -76,8 +77,13 @@ pub async fn handle_feature_report(ctx: &Context, cmd: &ApplicationCommandIntera
     .await
     .unwrap();
 
+    let feature_vote = FeatureVote {
+        author_id: cmd.user.id,
+        ..feature_message.into()
+    };
+    
     Api::lock(async_closure!(|api| {
-        api.new_feature_vote(feature_message.into()).await
+        api.new_feature_vote(feature_vote).await
     }))
     .await;
 }
