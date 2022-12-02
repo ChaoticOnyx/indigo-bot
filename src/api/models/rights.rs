@@ -17,6 +17,12 @@ impl Rights {
             token: TokenRights::full(),
         }
     }
+
+    pub fn is_equal_or_less(&self, another: &Rights) -> bool {
+        (self.token.flags | another.token.flags) == self.token.flags
+            && (self.user.flags | another.user.flags) == self.user.flags
+            && (self.server.flags | another.server.flags) == self.server.flags
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

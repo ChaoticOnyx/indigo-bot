@@ -1,24 +1,24 @@
 ﻿use crate::api::models::{ByondCkey, TokenSecret};
 use actix_http::StatusCode;
-use actix_web::{get, web, HttpResponseBuilder, Responder};
+use actix_web::{post, web, HttpResponseBuilder, Responder};
 use serde::Deserialize;
 
 use crate::prelude::*;
 use crate::server::response::Response;
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct Query {
+pub struct Body {
     pub secret: TokenSecret,
     pub tfa_secret: TokenSecret,
     pub ckey: ByondCkey,
 }
 
 #[instrument]
-#[get("/api/connect/byond")]
-pub async fn get_connect_byond(query: web::Query<Query>) -> impl Responder {
+#[post("/api/connect/byond")]
+pub async fn post_connect_byond(query: web::Json<Body>) -> impl Responder {
     info!("get_connect_byond");
 
-    let Query {
+    let Body {
         secret,
         ckey,
         tfa_secret,

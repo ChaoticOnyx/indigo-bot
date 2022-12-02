@@ -20,7 +20,7 @@ pub use feature_vote::{FeatureVote, FeatureVoteDescriptor};
 pub use game_server::{AnyGameServer, ByondServer, GameServerId, SS14Server};
 pub use new_account::NewAccount;
 pub use rights::{
-    Rights, GameServerRights, GameServerRightsFlags, TokenRights, TokenRightsFlags, UserRights,
+    GameServerRights, GameServerRightsFlags, Rights, TokenRights, TokenRightsFlags, UserRights,
     UserRightsFlags,
 };
 pub use ss14_guid::SS14Guid;

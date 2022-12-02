@@ -1,11 +1,11 @@
 ﻿use rand::distributions::Alphanumeric;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
-use std::fmt::Display;
+use std::fmt::{Debug, Display, Formatter};
 
 const CHARSET: &[u8] = b"ABCDEFGHKLMNOPQRSTUVWXYZ0123456789";
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct TokenSecret(pub String);
 
 impl TokenSecret {
@@ -22,7 +22,7 @@ impl TokenSecret {
     pub fn new_random_tfa_secret() -> Self {
         let mut rng = rand::thread_rng();
 
-        let secret: String = (0..=6)
+        let secret: String = (0..4)
             .map(|_| {
                 let idx = rng.gen_range(0..CHARSET.len());
                 CHARSET[idx] as char
@@ -40,7 +40,13 @@ impl From<String> for TokenSecret {
 }
 
 impl Display for TokenSecret {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("***")
+    }
+}
+
+impl Debug for TokenSecret {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("***")
     }
 }

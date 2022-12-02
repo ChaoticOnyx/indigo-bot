@@ -11,8 +11,11 @@ impl Server {
         HttpServer::new(move || {
             App::new()
                 .service(endpoints::get::identity)
-                .service(endpoints::get::connect_byond)
+                .service(endpoints::post::connect_byond)
                 .service(endpoints::post::create_api_token)
+                .service(endpoints::delete::delete_api_token)
+                // BYOND-friendly API
+                .service(endpoints::byond::get::connect_byond)
         })
         .bind(addrs)
         .unwrap()

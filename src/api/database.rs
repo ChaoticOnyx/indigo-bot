@@ -127,7 +127,9 @@ create table if not exists token
             .is_some();
 
         if has_token {
-            sqlx::query("UPDATE token SET secret = $1, expiration = $2, rights = $3")
+            debug!("updating root token");
+
+            sqlx::query("UPDATE token SET secret = $1, expiration = $2, rights = $3 WHERE id = 1")
                 .bind(token.secret.0)
                 .bind(token.expiration.map(|date| date.to_string()))
                 .bind(serde_json::to_value(&token.rights).unwrap())
@@ -135,6 +137,8 @@ create table if not exists token
                 .await
                 .unwrap();
         } else {
+            debug!("creating new root token");
+
             sqlx::query(
                 "INSERT INTO token (id, secret, expiration, rights, created_at) VALUES (DEFAULT, $1, $2, $3, $4)",
             )
@@ -162,6 +166,17 @@ create table if not exists token
         .execute(&self.pool)
         .await
         .unwrap();
+    }
+
+    #[instrument(skip(self))]
+    pub async fn delete_api_token(&self, token: ApiToken) {
+        info!("remove_api_token");
+
+        sqlx::query("DELETE FROM token WHERE secret = $1")
+            .bind(token.secret.0)
+            .execute(&self.pool)
+            .await
+            .unwrap();
     }
 
     #[instrument(skip(self))]

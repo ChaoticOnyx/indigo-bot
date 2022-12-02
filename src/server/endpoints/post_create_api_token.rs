@@ -1,5 +1,6 @@
 ﻿use crate::api::models::{Rights, TokenSecret};
 use crate::prelude::*;
+use crate::server::response::Response;
 use actix_http::StatusCode;
 use actix_web::{post, web, HttpResponseBuilder, Responder};
 use chrono::{DateTime, Utc};
@@ -34,7 +35,7 @@ pub async fn post_create_api_token(body: web::Json<Body>) -> impl Responder {
     .await;
 
     match result {
-        Ok(token) => HttpResponseBuilder::new(StatusCode::OK).json(token),
-        Err(err) => HttpResponseBuilder::new(err.clone().into()).json(err),
+        Ok(token) => HttpResponseBuilder::new(StatusCode::OK).json(Response::new(token)),
+        Err(err) => HttpResponseBuilder::new(err.clone().into()).json(Response::new(err)),
     }
 }

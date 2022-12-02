@@ -270,7 +270,7 @@ impl Api {
         let token = self.database.find_api_token_by_secret(api_secret).await;
 
         let Some(token) = token else {
-            return Err(ApiError::Unauthorized("invalid secret".to_string()))
+            return Err(ApiError::Unauthorized("invalid api secret".to_string()))
         };
 
         if token.is_expired() {
@@ -305,19 +305,45 @@ impl Api {
             return Err(ApiError::Forbidden("insufficient access".to_string()));
         }
 
-        let our_rights = &token.rights;
-        let new_rights = &new_token.rights;
-        let has_equal_rights_or_lesser = (our_rights.token.flags | new_rights.token.flags)
-            == our_rights.token.flags
-            && (our_rights.user.flags | new_rights.user.flags) == our_rights.user.flags
-            && (our_rights.server.flags | new_rights.server.flags) == our_rights.server.flags;
-
-        if !has_equal_rights_or_lesser {
+        if !token.rights.is_equal_or_less(&new_token.rights) {
             return Err(ApiError::Forbidden("insufficient access".to_string()));
         }
 
         self.database.add_api_token(new_token.clone()).await;
 
         Ok(new_token)
+    }
+
+    #[instrument]
+    pub async fn delete_api_token(
+        &self,
+        api_secret: TokenSecret,
+        target: TokenSecret,
+    ) -> Result<(), ApiError> {
+        info!("delete_api_token");
+
+        let token = self.database.find_api_token_by_secret(api_secret).await;
+
+        let Some(token) = token else {
+            return Err(ApiError::Unauthorized("invalid api secret".to_string()))
+        };
+
+        if token.is_expired() {
+            return Err(ApiError::Unauthorized("invalid api secret".to_string()));
+        }
+
+        let target_token = self.database.find_api_token_by_secret(target).await;
+
+        let Some(target_token) = target_token else {
+            return Err(ApiError::Other("target token does not exist".to_string()))
+        };
+
+        if !token.rights.is_equal_or_less(&target_token.rights) {
+            return Err(ApiError::Forbidden("insufficient access".to_string()));
+        };
+
+        self.database.delete_api_token(target_token).await;
+
+        Ok(())
     }
 }
