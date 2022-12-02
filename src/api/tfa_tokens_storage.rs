@@ -17,7 +17,7 @@ impl TFATokensStorage {
         let mut secret;
 
         loop {
-            secret = TokenSecret::new_random();
+            secret = TokenSecret::new_random_tfa_secret();
 
             if self.tokens.iter().any(|t| t.secret == secret) {
                 continue;

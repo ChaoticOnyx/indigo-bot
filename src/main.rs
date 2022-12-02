@@ -1,5 +1,5 @@
+use std::collections::HashMap;
 use std::str::FromStr;
-use std::{collections::HashMap, env};
 
 use crate::prelude::*;
 use bot::BotClient;

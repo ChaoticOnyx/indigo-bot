@@ -1,6 +1,5 @@
 mod endpoints;
-#[allow(clippy::module_inception)]
+mod response;
 mod server;
-mod utils;
 
 pub use server::Server;

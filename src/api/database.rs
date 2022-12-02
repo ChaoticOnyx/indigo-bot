@@ -1,12 +1,11 @@
-use actix_http::header::q;
 use std::str::FromStr;
 
-use chrono::{DateTime, Utc};
+use chrono::DateTime;
 use serenity::model::prelude::{ChannelId, MessageId};
 use sqlx::{postgres::PgPoolOptions, Postgres};
 use sqlx::{Pool, Row};
 
-use crate::api::models::{Account, AnyUserId, NewAccount};
+use crate::api::models::{Account, AnyUserId, ApiToken, NewAccount, TokenSecret};
 use crate::{
     api::models::{BugReport, BugReportDescriptor, FeatureVote, FeatureVoteDescriptor},
     prelude::*,
@@ -96,6 +95,94 @@ create table if not exists account
         .execute(pool)
         .await
         .unwrap();
+
+        // TABLE token
+        sqlx::query(
+            "
+create table if not exists token
+(
+    id         bigserial not null
+        constraint token_pk
+            primary key,
+    secret     text      not null,
+    expiration text      null,
+    rights     jsonb     not null,
+    created_at text      not null
+);
+            ",
+        )
+        .execute(pool)
+        .await
+        .unwrap();
+    }
+
+    #[instrument(skip(self))]
+    pub async fn update_root_token(&self, token: ApiToken) {
+        debug!("update_root_token");
+
+        let has_token = sqlx::query("SELECT * FROM token WHERE id = 1")
+            .fetch_optional(&self.pool)
+            .await
+            .unwrap()
+            .is_some();
+
+        if has_token {
+            sqlx::query("UPDATE token SET secret = $1, expiration = $2, rights = $3")
+                .bind(token.secret.0)
+                .bind(token.expiration.map(|date| date.to_string()))
+                .bind(serde_json::to_value(&token.rights).unwrap())
+                .execute(&self.pool)
+                .await
+                .unwrap();
+        } else {
+            sqlx::query(
+                "INSERT INTO token (id, secret, expiration, rights, created_at) VALUES (DEFAULT, $1, $2, $3, $4)",
+            )
+            .bind(token.secret.0)
+            .bind(token.expiration.map(|date| date.to_string()))
+            .bind(serde_json::to_value(&token.rights).unwrap())
+            .bind(token.created_at.to_string())
+            .execute(&self.pool)
+            .await
+            .unwrap();
+        }
+    }
+
+    #[instrument(skip(self))]
+    pub async fn add_api_token(&self, token: ApiToken) {
+        info!("add_api_token");
+
+        sqlx::query(
+            "INSERT INTO token (id, secret, expiration, rights, created_at) VALUES (DEFAULT, $1, $2, $3, $4)",
+        )
+        .bind(token.secret.0)
+        .bind(token.expiration.map(|date| date.to_string()))
+        .bind(serde_json::to_value(&token.rights).unwrap())
+        .bind(token.created_at.to_string())
+        .execute(&self.pool)
+        .await
+        .unwrap();
+    }
+
+    #[instrument(skip(self))]
+    pub async fn find_api_token_by_secret(&self, api_secret: TokenSecret) -> Option<ApiToken> {
+        debug!("find_api_token_by_secret");
+
+        let token = sqlx::query("SELECT * FROM token WHERE secret = $1")
+            .bind(api_secret.0)
+            .map(|row| ApiToken {
+                secret: TokenSecret(row.get::<String, _>("secret")),
+                expiration: row
+                    .get::<Option<String>, _>("expiration")
+                    .map(|date| DateTime::from_str(&date).unwrap()),
+                rights: serde_json::from_value(row.get::<serde_json::Value, _>("rights")).unwrap(),
+                created_at: DateTime::from_str(&row.get::<String, _>("created_at")).unwrap(),
+            })
+            .fetch_optional(&self.pool)
+            .await
+            .unwrap();
+
+        token
     }
 
     #[instrument(skip(self))]

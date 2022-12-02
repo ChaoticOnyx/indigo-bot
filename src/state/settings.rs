@@ -1,5 +1,6 @@
 use std::{collections::HashSet, net::SocketAddr};
 
+use crate::api::models::TokenSecret;
 use crate::prelude::*;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -28,6 +29,7 @@ pub struct Settings {
     pub database: DatabaseSection,
     pub logging: LoggingSection,
     pub server: ServerSection,
+    pub api: ApiSection,
 }
 
 impl Settings {
@@ -107,5 +109,10 @@ pub struct LokiSection {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ServerSection {
     pub address: SocketAddr,
-    pub tokens: Vec<String>,
+}
+
+/// `[api]`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ApiSection {
+    pub root_secret: TokenSecret,
 }
