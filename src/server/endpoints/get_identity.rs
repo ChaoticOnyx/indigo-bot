@@ -1,7 +1,9 @@
-use actix_web::{get, Responder};
+use actix_http::StatusCode;
+use actix_web::{get, HttpResponseBuilder, Responder};
 use serde_json::json;
 
 use crate::prelude::*;
+use crate::server::response::Response;
 
 #[instrument]
 #[get("/api/identity")]
@@ -10,16 +12,14 @@ pub async fn get_identity() -> impl Responder {
 
     let session = DiscordSession::clone_state().await;
 
-    if session.user.is_none() {
-        return String::new();
-    }
+    let Some(user) = session.user else {
+        return HttpResponseBuilder::new(StatusCode::INTERNAL_SERVER_ERROR)
+            .json(Response::new("discord session not found"));
+    };
 
-    let user = session.user.unwrap();
-
-    json!({
+    HttpResponseBuilder::new(StatusCode::OK).json(Response::new(json!({
         "id": user.id,
         "discriminator": user.discriminator,
         "name": user.name
-    })
-    .to_string()
+    })))
 }

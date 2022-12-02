@@ -1,4 +1,5 @@
-use std::{collections::HashMap, env};
+use std::collections::HashMap;
+use std::str::FromStr;
 
 use crate::prelude::*;
 use bot::BotClient;
@@ -16,29 +17,25 @@ mod state;
 async fn setup_logging() {
     use tracing_subscriber::filter::LevelFilter;
 
-    let mut args = env::args();
-    let mut filter = LevelFilter::INFO;
-
-    if args.any(|a| a == "--debug") {
-        filter = LevelFilter::DEBUG;
-    }
-
     let settings = Settings::clone_state().await;
+    let filter = LevelFilter::from_str(&settings.logging.log_level).unwrap();
 
-    if settings.loki.enabled {
+    if settings.logging.loki.enabled {
         let mut labels = HashMap::new();
 
         labels.insert("App".to_string(), "IndigoBot".to_string());
 
         let (layer, task) = tracing_loki::layer(
-            Url::parse(&settings.loki.url.unwrap()).unwrap(),
+            Url::parse(&settings.logging.loki.url.unwrap()).unwrap(),
             labels,
             HashMap::new(),
         )
         .unwrap();
 
         tracing_subscriber::registry()
-            .with(layer.with_filter(filter))
+            .with(
+                layer.with_filter(LevelFilter::from_str(&settings.logging.loki.log_level).unwrap()),
+            )
             .with(
                 tracing_subscriber::fmt::layer()
                     .pretty()

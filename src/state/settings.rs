@@ -1,5 +1,6 @@
 use std::{collections::HashSet, net::SocketAddr};
 
+use crate::api::models::TokenSecret;
 use crate::prelude::*;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -26,8 +27,9 @@ pub struct Settings {
     pub github: GithubSection,
     pub commands: CommandsSection,
     pub database: DatabaseSection,
-    pub loki: LokiSection,
+    pub logging: LoggingSection,
     pub server: ServerSection,
+    pub api: ApiSection,
 }
 
 impl Settings {
@@ -48,30 +50,26 @@ impl Settings {
     }
 }
 
-// [github]
-
+/// `[github]`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GithubSection {
     pub token: String,
 }
 
-// [discord]
-
+/// `[discord]`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DiscordSection {
     pub guild_id: GuildId,
     pub token: String,
 }
 
-// [commands]
-
+/// `[commands]`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CommandsSection {
     pub feedback: FeedbackSection,
 }
 
-// [commands.feedback]
-
+/// `[commands.feedback]`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FeedbackSection {
     pub template: String,
@@ -86,25 +84,35 @@ pub struct FeedbackSection {
     pub bug_issue_labels: HashSet<String>,
 }
 
-// [database]
-
+/// `[database]`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DatabaseSection {
     pub connect: String,
 }
 
-// [loki]
+/// `[logging]`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LoggingSection {
+    pub loki: LokiSection,
+    pub log_level: String,
+}
 
+/// `[logging.loki]`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LokiSection {
     pub enabled: bool,
+    pub log_level: String,
     pub url: Option<String>,
 }
 
-// [server]
-
+/// `[server]`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ServerSection {
     pub address: SocketAddr,
-    pub tokens: Vec<String>,
+}
+
+/// `[api]`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ApiSection {
+    pub root_secret: TokenSecret,
 }

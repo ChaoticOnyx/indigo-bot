@@ -12,33 +12,14 @@ pub struct Handler;
 impl EventHandler for Handler {
     #[instrument(skip(self, ctx))]
     async fn message(&self, ctx: Context, new_message: Message) {
+        let guild_id = new_message.guild_id;
+
+        if guild_id.is_some() && Settings::clone_state().await.discord.guild_id != guild_id.unwrap()
+        {
+            return;
+        }
+
         commands::tfa::handlers::message(&ctx, &new_message).await;
-    }
-
-    #[instrument(skip(self, ctx))]
-    async fn reaction_add(&self, ctx: Context, reaction: Reaction) {
-        debug!("reaction_remove");
-
-        if reaction.guild_id.is_none()
-            || Settings::clone_state().await.discord.guild_id != reaction.guild_id.unwrap()
-        {
-            return;
-        }
-
-        commands::feedback::handlers::reaction_add(&ctx, &reaction).await;
-    }
-
-    #[instrument(skip(self, ctx))]
-    async fn reaction_remove(&self, ctx: Context, reaction: Reaction) {
-        debug!("reaction_remove");
-
-        if reaction.guild_id.is_none()
-            || Settings::clone_state().await.discord.guild_id != reaction.guild_id.unwrap()
-        {
-            return;
-        }
-
-        commands::feedback::handlers::reaction_remove(&ctx, &reaction).await;
     }
 
     #[instrument(skip(self, ctx))]
@@ -51,7 +32,7 @@ impl EventHandler for Handler {
     ) {
         debug!("message_delete");
 
-        if guild_id.is_none() || Settings::clone_state().await.discord.guild_id != guild_id.unwrap()
+        if guild_id.is_some() && Settings::clone_state().await.discord.guild_id != guild_id.unwrap()
         {
             return;
         }
@@ -63,6 +44,32 @@ impl EventHandler for Handler {
             guild_id,
         )
         .await;
+    }
+
+    #[instrument(skip(self, ctx))]
+    async fn reaction_add(&self, ctx: Context, reaction: Reaction) {
+        debug!("reaction_remove");
+
+        if reaction.guild_id.is_some()
+            && Settings::clone_state().await.discord.guild_id != reaction.guild_id.unwrap()
+        {
+            return;
+        }
+
+        commands::feedback::handlers::reaction_add(&ctx, &reaction).await;
+    }
+
+    #[instrument(skip(self, ctx))]
+    async fn reaction_remove(&self, ctx: Context, reaction: Reaction) {
+        debug!("reaction_remove");
+
+        if reaction.guild_id.is_some()
+            && Settings::clone_state().await.discord.guild_id != reaction.guild_id.unwrap()
+        {
+            return;
+        }
+
+        commands::feedback::handlers::reaction_remove(&ctx, &reaction).await;
     }
 
     #[instrument(skip(self, ctx))]
@@ -103,8 +110,8 @@ impl EventHandler for Handler {
             return;
         };
 
-        if cmd.guild_id.is_none()
-            || Settings::clone_state().await.discord.guild_id != cmd.guild_id.unwrap()
+        if cmd.guild_id.is_some()
+            && Settings::clone_state().await.discord.guild_id != cmd.guild_id.unwrap()
         {
             return;
         }

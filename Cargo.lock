@@ -1066,6 +1066,7 @@ dependencies = [
  "actix-http",
  "actix-web",
  "actix-web-httpauth",
+ "bitflags",
  "chrono",
  "futures-util",
  "octocrab",

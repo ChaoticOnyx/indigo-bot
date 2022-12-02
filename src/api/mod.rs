@@ -5,5 +5,5 @@ mod github;
 pub mod models;
 mod tfa_tokens_storage;
 
-pub use api::Api;
+pub use api::{Api, ApiError};
 use database::Database;

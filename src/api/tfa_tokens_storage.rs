@@ -1,7 +1,7 @@
 use chrono::Duration;
-use serenity::model::{prelude::UserId, user::User};
 
 use super::models::{TFAToken, TokenSecret};
+use crate::prelude::*;
 
 #[derive(Debug, Clone, Default)]
 pub struct TFATokensStorage {
@@ -13,11 +13,11 @@ impl TFATokensStorage {
         self.tokens.retain(|t| !t.is_expired());
     }
 
-    pub fn new_token(&mut self, user: User, duration: Duration) -> TFAToken {
+    pub fn new_token(&mut self, user: discord::user::User, duration: Duration) -> TFAToken {
         let mut secret;
 
         loop {
-            secret = TokenSecret::new_random();
+            secret = TokenSecret::new_random_tfa_secret();
 
             if self.tokens.iter().any(|t| t.secret == secret) {
                 continue;
@@ -38,7 +38,7 @@ impl TFATokensStorage {
             .find(|t| t.secret == secret && !t.is_expired())
     }
 
-    pub fn find_by_user_id(&self, user_id: UserId) -> Option<&TFAToken> {
+    pub fn find_by_user_id(&self, user_id: discord::id::UserId) -> Option<&TFAToken> {
         self.tokens
             .iter()
             .find(|token| token.user.id == user_id && !token.is_expired())

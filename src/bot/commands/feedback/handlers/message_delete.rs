@@ -15,5 +15,9 @@ pub async fn message_delete(
 ) {
     debug!("message_delete");
 
+    if channel_id != Settings::clone_state().await.commands.feedback.channel_id {
+        return;
+    }
+
     forget_feature_message(ctx, channel_id, deleted_message_id).await;
 }

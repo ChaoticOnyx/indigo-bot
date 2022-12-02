@@ -1,5 +1,6 @@
+use crate::prelude::*;
 use chrono::{DateTime, Utc};
-use serenity::model::prelude::{ChannelId, Message, MessageId, UserId};
+use serenity::model::prelude::{ChannelId, Message, MessageId};
 
 #[derive(Debug, Clone, Copy)]
 pub struct FeatureVoteDescriptor(pub MessageId, pub ChannelId);
@@ -13,7 +14,7 @@ impl From<Message> for FeatureVoteDescriptor {
 #[derive(Debug, Clone, Copy)]
 pub struct FeatureVote {
     pub descriptor: FeatureVoteDescriptor,
-    pub author_id: UserId,
+    pub author_id: discord::id::UserId,
     pub created_at: DateTime<Utc>,
 }
 

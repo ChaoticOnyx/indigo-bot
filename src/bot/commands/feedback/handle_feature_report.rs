@@ -1,5 +1,6 @@
-﻿use std::str::FromStr;
+use std::str::FromStr;
 
+use crate::api::models::FeatureVote;
 use crate::bot::commands::feedback::helpers::get_value_as_string;
 use crate::prelude::*;
 use serenity::model::prelude::Mention;
@@ -8,7 +9,6 @@ use serenity::model::prelude::{
     interaction::InteractionResponseType::ChannelMessageWithSource, ReactionType,
 };
 use serenity::prelude::Context;
-use crate::api::models::FeatureVote;
 
 use super::constants::{DESCRIPTION_OPTION_NAME, TITLE_OPTION_NAME};
 use super::helpers::create_feature_embed;
@@ -81,7 +81,7 @@ pub async fn handle_feature_report(ctx: &Context, cmd: &ApplicationCommandIntera
         author_id: cmd.user.id,
         ..feature_message.into()
     };
-    
+
     Api::lock(async_closure!(|api| {
         api.new_feature_vote(feature_vote).await
     }))
