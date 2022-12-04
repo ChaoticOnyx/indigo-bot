@@ -1,6 +1,6 @@
 use chrono::Duration;
 
-use super::models::{TFAToken, TokenSecret};
+use super::models::{Secret, TFAToken};
 use crate::prelude::*;
 
 #[derive(Debug, Clone, Default)]
@@ -17,7 +17,7 @@ impl TFATokensStorage {
         let mut secret;
 
         loop {
-            secret = TokenSecret::new_random_tfa_secret();
+            secret = Secret::new_random_tfa_secret();
 
             if self.tokens.iter().any(|t| t.secret == secret) {
                 continue;
@@ -32,7 +32,7 @@ impl TFATokensStorage {
         token
     }
 
-    pub fn find_by_secret(&self, secret: TokenSecret) -> Option<&TFAToken> {
+    pub fn find_by_secret(&self, secret: Secret) -> Option<&TFAToken> {
         self.tokens
             .iter()
             .find(|t| t.secret == secret && !t.is_expired())

@@ -5,7 +5,7 @@ use serenity::model::prelude::{ChannelId, MessageId};
 use sqlx::{postgres::PgPoolOptions, Postgres};
 use sqlx::{Pool, Row};
 
-use crate::api::models::{Account, AnyUserId, ApiToken, NewAccount, TokenSecret};
+use crate::api::models::{Account, AnyUserId, ApiToken, NewAccount, Secret, ServiceId, Webhook};
 use crate::{
     api::models::{BugReport, BugReportDescriptor, FeatureVote, FeatureVoteDescriptor},
     prelude::*,
@@ -83,7 +83,7 @@ create table if not exists bug_message
 create table if not exists account
 (
     id         bigserial not null
-        constraint user_pk
+        constraint account_pk
             primary key,
     discord_id bigint not null,
     byond_ckey text,
@@ -114,6 +114,66 @@ create table if not exists token
         .execute(pool)
         .await
         .unwrap();
+
+        // TABLE webhook
+        sqlx::query(
+            "
+create table if not exists webhook
+(
+    id         bigserial not null
+        constraint webhook_pk
+            primary key,
+    secret     text      not null,
+    service_id text      not null,
+    created_at text      not null
+);
+            ",
+        )
+        .execute(pool)
+        .await
+        .unwrap();
+    }
+
+    #[instrument(skip(self))]
+    pub async fn add_webhook(&self, webhook: Webhook) {
+        info!("add_webhook");
+
+        sqlx::query(
+            "INSERT INTO webhook (id, secret, service_id, created_at) VALUES (DEFAULT, $1, $2, $3)",
+        )
+        .bind(webhook.secret.0)
+        .bind(webhook.service_id.0)
+        .bind(webhook.created_at.to_string())
+        .execute(&self.pool)
+        .await
+        .unwrap();
+    }
+
+    #[instrument(skip(self))]
+    pub async fn find_webhook_by_secret(&self, secret: Secret) -> Option<Webhook> {
+        debug!("find_webhook_by_secret");
+
+        sqlx::query("SELECT * FROM webhook WHERE secret = $1")
+            .bind(secret.0)
+            .map(|row| Webhook {
+                secret: Secret(row.get::<String, _>("secret")),
+                service_id: ServiceId(row.get::<String, _>("service_id")),
+                created_at: DateTime::from_str(&row.get::<String, _>("created_at")).unwrap(),
+            })
+            .fetch_optional(&self.pool)
+            .await
+            .unwrap()
+    }
+
+    #[instrument(skip(self))]
+    pub async fn delete_webhook_by_secret(&self, secret: Secret) {
+        info!("delete_webhook_by_secret");
+
+        sqlx::query("DELETE FROM webhook WHERE secret = $1")
+            .bind(secret.0)
+            .execute(&self.pool)
+            .await
+            .unwrap();
     }
 
     #[instrument(skip(self))]
@@ -169,24 +229,24 @@ create table if not exists token
     }
 
     #[instrument(skip(self))]
-    pub async fn delete_api_token(&self, token: ApiToken) {
+    pub async fn delete_api_token_by_secret(&self, secret: Secret) {
         info!("remove_api_token");
 
         sqlx::query("DELETE FROM token WHERE secret = $1")
-            .bind(token.secret.0)
+            .bind(secret.0)
             .execute(&self.pool)
             .await
             .unwrap();
     }
 
     #[instrument(skip(self))]
-    pub async fn find_api_token_by_secret(&self, api_secret: TokenSecret) -> Option<ApiToken> {
+    pub async fn find_api_token_by_secret(&self, api_secret: Secret) -> Option<ApiToken> {
         debug!("find_api_token_by_secret");
 
         let token = sqlx::query("SELECT * FROM token WHERE secret = $1")
             .bind(api_secret.0)
             .map(|row| ApiToken {
-                secret: TokenSecret(row.get::<String, _>("secret")),
+                secret: Secret(row.get::<String, _>("secret")),
                 expiration: row
                     .get::<Option<String>, _>("expiration")
                     .map(|date| DateTime::from_str(&date).unwrap()),

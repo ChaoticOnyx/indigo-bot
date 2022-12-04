@@ -1,4 +1,4 @@
-﻿use crate::api::models::{ByondCkey, TokenSecret};
+﻿use crate::api::models::{ByondCkey, Secret};
 use actix_http::StatusCode;
 use actix_web::{get, web, HttpResponseBuilder, Responder};
 use serde::Deserialize;
@@ -8,8 +8,8 @@ use crate::server::response::Response;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Query {
-    pub secret: TokenSecret,
-    pub tfa_secret: TokenSecret,
+    pub secret: Secret,
+    pub tfa_secret: Secret,
     pub ckey: ByondCkey,
 }
 

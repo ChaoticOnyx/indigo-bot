@@ -1,13 +1,15 @@
 use crate::api::models::{
-    Account, AnyUserId, ApiToken, NewAccount, Rights, TokenRightsFlags, UserRightsFlags,
+    Account, AnyUserId, ApiToken, NewAccount, Rights, ServiceError, ServiceId, TokenRightsFlags,
+    UserRightsFlags, Webhook, WebhookPayload, WebhookResponse,
 };
+use crate::api::ServicesStorage;
 use chrono::{Duration, Utc};
 use octocrab::models::IssueId;
 use serde::Serialize;
 
 use super::{
     github::Github,
-    models::{BugReport, FeatureVote, FeatureVoteDescriptor, TFAToken, TokenSecret},
+    models::{BugReport, FeatureVote, FeatureVoteDescriptor, Secret, TFAToken},
     tfa_tokens_storage::TFATokensStorage,
     Database,
 };
@@ -26,6 +28,7 @@ pub struct Api {
     database: Database,
     github: Github,
     tokens_storage: TFATokensStorage,
+    services_storage: ServicesStorage,
 }
 
 impl Api {
@@ -50,10 +53,14 @@ impl Api {
         );
         database.update_root_token(root_token).await;
 
+        let mut services_storage = ServicesStorage::new();
+        services_storage.register();
+
         Self {
             database,
             github,
             tokens_storage,
+            services_storage,
         }
     }
 
@@ -158,14 +165,14 @@ impl Api {
     }
 
     #[instrument]
-    pub async fn find_tfa_token_by_secret(&self, secret: TokenSecret) -> Option<TFAToken> {
+    pub async fn find_tfa_token_by_secret(&self, secret: Secret) -> Option<TFAToken> {
         debug!("find_tfa_token_by_secret");
 
         self.tokens_storage.find_by_secret(secret).cloned()
     }
 
     #[instrument]
-    pub async fn find_account_by_tfa_token_secret(&self, secret: TokenSecret) -> Option<Account> {
+    pub async fn find_account_by_tfa_token_secret(&self, secret: Secret) -> Option<Account> {
         debug!("find_account_by_tfa_token_secret");
 
         let token = self.tokens_storage.find_by_secret(secret);
@@ -188,8 +195,8 @@ impl Api {
     #[instrument]
     pub async fn connect_byond_account_by_2fa(
         &self,
-        api_secret: TokenSecret,
-        tfa_secret: TokenSecret,
+        api_secret: Secret,
+        tfa_secret: Secret,
         ckey: byond::UserId,
     ) -> Result<(), ApiError> {
         info!("connect_byond_account_by_2fa");
@@ -209,7 +216,7 @@ impl Api {
     #[instrument]
     pub async fn connect_byond_account(
         &self,
-        api_secret: TokenSecret,
+        api_secret: Secret,
         user_id: AnyUserId,
         ckey: byond::UserId,
     ) -> Result<(), ApiError> {
@@ -261,7 +268,7 @@ impl Api {
     #[instrument]
     pub async fn create_api_token(
         &self,
-        api_secret: TokenSecret,
+        api_secret: Secret,
         rights: Rights,
         duration: Option<Duration>,
     ) -> Result<ApiToken, ApiError> {
@@ -278,7 +285,7 @@ impl Api {
         }
 
         let new_secret = loop {
-            let secret = TokenSecret::new_random_api_secret();
+            let secret = Secret::new_random_api_secret();
 
             if self
                 .database
@@ -317,8 +324,8 @@ impl Api {
     #[instrument]
     pub async fn delete_api_token(
         &self,
-        api_secret: TokenSecret,
-        target: TokenSecret,
+        api_secret: Secret,
+        target: Secret,
     ) -> Result<(), ApiError> {
         info!("delete_api_token");
 
@@ -342,8 +349,105 @@ impl Api {
             return Err(ApiError::Forbidden("insufficient access".to_string()));
         };
 
-        self.database.delete_api_token(target_token).await;
+        self.database
+            .delete_api_token_by_secret(target_token.secret)
+            .await;
 
         Ok(())
+    }
+
+    #[instrument]
+    pub async fn create_webhook(
+        &self,
+        api_secret: Secret,
+        target: ServiceId,
+    ) -> Result<Webhook, ApiError> {
+        info!("create_webhook");
+
+        let token = self.database.find_api_token_by_secret(api_secret).await;
+
+        let Some(token) = token else {
+            return Err(ApiError::Unauthorized("invalid api secret".to_string()))
+        };
+
+        if token.is_expired() {
+            return Err(ApiError::Unauthorized("invalid api secret".to_string()));
+        };
+
+        if !token.rights.service.can_create_tokens_for_service(&target) {
+            return Err(ApiError::Forbidden("insufficient access".to_string()));
+        }
+
+        if !self.services_storage.is_service_exists(&&target) {
+            return Err(ApiError::Other("invalid service".to_string()));
+        }
+
+        let secret = Secret::new_random_webhook_secret();
+        let webhook = Webhook {
+            secret,
+            service_id: target,
+            created_at: Utc::now(),
+        };
+
+        self.database.add_webhook(webhook.clone()).await;
+
+        Ok(webhook)
+    }
+
+    #[instrument]
+    pub async fn delete_webhook(
+        &self,
+        api_secret: Secret,
+        webhook_secret: Secret,
+    ) -> Result<(), ApiError> {
+        info!("delete_webhook");
+
+        let token = self.database.find_api_token_by_secret(api_secret).await;
+
+        let Some(token) = token else {
+            return Err(ApiError::Unauthorized("invalid api secret".to_string()))
+        };
+
+        if token.is_expired() {
+            return Err(ApiError::Unauthorized("invalid api secret".to_string()));
+        };
+
+        let webhook = self.database.find_webhook_by_secret(webhook_secret).await;
+
+        let Some(webhook) = webhook else {
+            return Err(ApiError::Other("invalid webhook secret".to_string()))
+        };
+
+        if !token
+            .rights
+            .service
+            .can_delete_tokens_for_service(&webhook.service_id)
+        {
+            return Err(ApiError::Forbidden("insufficient access".to_string()));
+        }
+
+        self.database.delete_webhook_by_secret(webhook.secret).await;
+
+        Ok(())
+    }
+
+    #[instrument]
+    pub async fn handle_webhook(
+        &self,
+        webhook_secret: Secret,
+        payload: WebhookPayload,
+    ) -> Result<WebhookResponse, ServiceError> {
+        let webhook = self
+            .database
+            .find_webhook_by_secret(webhook_secret.clone())
+            .await;
+
+        let Some(webhook) = webhook else {
+            return Err(ServiceError::Any("invalid webhook".to_string()))
+        };
+
+        self.services_storage
+            .handle(&self, &webhook.service_id, payload)
+            .await
     }
 }

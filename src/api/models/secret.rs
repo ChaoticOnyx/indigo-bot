@@ -6,9 +6,19 @@ use std::fmt::{Debug, Display, Formatter};
 const CHARSET: &[u8] = b"ABCDEFGHKLMNOPQRSTUVWXYZ0123456789";
 
 #[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-pub struct TokenSecret(pub String);
+pub struct Secret(pub String);
 
-impl TokenSecret {
+impl Secret {
+    pub fn new_random_webhook_secret() -> Self {
+        let secret: String = rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(80)
+            .map(char::from)
+            .collect();
+
+        Self(secret)
+    }
+
     pub fn new_random_api_secret() -> Self {
         let secret: String = rand::thread_rng()
             .sample_iter(&Alphanumeric)
@@ -33,19 +43,19 @@ impl TokenSecret {
     }
 }
 
-impl From<String> for TokenSecret {
+impl From<String> for Secret {
     fn from(str: String) -> Self {
         Self(str)
     }
 }
 
-impl Display for TokenSecret {
+impl Display for Secret {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("***")
     }
 }
 
-impl Debug for TokenSecret {
+impl Debug for Secret {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("***")
     }

@@ -1,6 +1,6 @@
 use std::{collections::HashSet, net::SocketAddr};
 
-use crate::api::models::TokenSecret;
+use crate::api::models::Secret;
 use crate::prelude::*;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -114,5 +114,5 @@ pub struct ServerSection {
 /// `[api]`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ApiSection {
-    pub root_secret: TokenSecret,
+    pub root_secret: Secret,
 }

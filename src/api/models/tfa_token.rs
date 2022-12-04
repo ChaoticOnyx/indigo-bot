@@ -1,4 +1,4 @@
-use crate::api::models::TokenSecret;
+use crate::api::models::Secret;
 use crate::prelude::*;
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
@@ -6,12 +6,12 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TFAToken {
     pub user: discord::user::User,
-    pub secret: TokenSecret,
+    pub secret: Secret,
     pub expiration: DateTime<Utc>,
 }
 
 impl TFAToken {
-    pub fn new(secret: TokenSecret, user: discord::user::User, duration: Duration) -> Self {
+    pub fn new(secret: Secret, user: discord::user::User, duration: Duration) -> Self {
         Self {
             user,
             secret,

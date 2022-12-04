@@ -1,27 +1,28 @@
-﻿use crate::api::models::GameServerId;
+﻿use crate::api::models::ServiceId;
 use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
+use std::hash::Hash;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Rights {
-    pub server: GameServerRights,
     pub user: UserRights,
     pub token: TokenRights,
+    pub service: ServiceRights,
 }
 
 impl Rights {
     pub fn full() -> Self {
         Self {
-            server: GameServerRights::full(),
             user: UserRights::full(),
             token: TokenRights::full(),
+            service: ServiceRights::full(),
         }
     }
 
     pub fn is_equal_or_less(&self, another: &Rights) -> bool {
         (self.token.flags | another.token.flags) == self.token.flags
             && (self.user.flags | another.user.flags) == self.user.flags
-            && (self.server.flags | another.server.flags) == self.server.flags
     }
 }
 
@@ -72,24 +73,67 @@ bitflags! {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GameServerRights {
-    pub flags: GameServerRightsFlags,
-    pub server_ids: Option<Vec<GameServerId>>,
+pub struct ServiceRights {
+    pub scope: RightsScope<ServiceId, ServiceRightsFlags>,
 }
 
-impl GameServerRights {
+impl ServiceRights {
     pub fn full() -> Self {
         Self {
-            flags: GameServerRightsFlags::all(),
-            server_ids: None,
+            scope: RightsScope::Everything(ServiceRightsFlags::all()),
         }
+    }
+
+    pub fn can_create_tokens_for_service(&self, service_id: &ServiceId) -> bool {
+        match &self.scope {
+            RightsScope::Everything(rights) => rights.contains(ServiceRightsFlags::WEBHOOK_WRITE),
+            RightsScope::Some(services) => match services.get(service_id) {
+                None => false,
+                Some(rights) => rights.contains(ServiceRightsFlags::WEBHOOK_WRITE),
+            },
+            RightsScope::None => false,
+        }
+    }
+
+    pub fn can_delete_tokens_for_service(&self, service_id: &ServiceId) -> bool {
+        match &self.scope {
+            RightsScope::Everything(rights) => rights.contains(ServiceRightsFlags::WEBHOOK_DELETE),
+            RightsScope::Some(services) => match services.get(service_id) {
+                None => false,
+                Some(rights) => rights.contains(ServiceRightsFlags::WEBHOOK_DELETE),
+            },
+            RightsScope::None => false,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum RightsScope<T, B>
+where
+    T: Sized + Ord,
+    B: Sized + Ord,
+{
+    Everything(B),
+    Some(BTreeMap<T, B>),
+    None,
+}
+
+impl<T, B> Default for RightsScope<T, B>
+where
+    T: Sized + Ord,
+    B: Sized + Ord,
+{
+    fn default() -> Self {
+        RightsScope::None
     }
 }
 
 bitflags! {
     #[derive(Serialize, Deserialize)]
-    pub struct GameServerRightsFlags: u64 {
-        const SERVICES_READ = (1 << 0);
-        const SERVICES_WRITE = (1 << 1);
+    pub struct ServiceRightsFlags: u64 {
+        /// Can create a webhook.
+        const WEBHOOK_WRITE = (1 << 0);
+        /// Can delete a webhook.
+        const WEBHOOK_DELETE = (1 << 1);
     }
 }
