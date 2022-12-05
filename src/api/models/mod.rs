@@ -29,4 +29,4 @@ pub use secret::Secret;
 pub use service::{ServiceError, ServiceId};
 pub use ss14_guid::SS14Guid;
 pub use tfa_token::TFAToken;
-pub use webhook::{Webhook, WebhookPayload, WebhookResponse};
+pub use webhook::{Webhook, WebhookConfiguration, WebhookPayload, WebhookResponse};

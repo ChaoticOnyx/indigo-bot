@@ -5,7 +5,9 @@ use serenity::model::prelude::{ChannelId, MessageId};
 use sqlx::{postgres::PgPoolOptions, Postgres};
 use sqlx::{Pool, Row};
 
-use crate::api::models::{Account, AnyUserId, ApiToken, NewAccount, Secret, ServiceId, Webhook};
+use crate::api::models::{
+    Account, AnyUserId, ApiToken, NewAccount, Secret, ServiceId, Webhook, WebhookConfiguration,
+};
 use crate::{
     api::models::{BugReport, BugReportDescriptor, FeatureVote, FeatureVoteDescriptor},
     prelude::*,
@@ -120,12 +122,13 @@ create table if not exists token
             "
 create table if not exists webhook
 (
-    id         bigserial not null
+    id            bigserial not null
         constraint webhook_pk
             primary key,
-    secret     text      not null,
-    service_id text      not null,
-    created_at text      not null
+    secret        text      not null,
+    service_id    text      not null,
+    created_at    text      not null,
+    configuration jsonb
 );
             ",
         )
@@ -139,11 +142,12 @@ create table if not exists webhook
         info!("add_webhook");
 
         sqlx::query(
-            "INSERT INTO webhook (id, secret, service_id, created_at) VALUES (DEFAULT, $1, $2, $3)",
+            "INSERT INTO webhook (id, secret, service_id, created_at, configuration) VALUES (DEFAULT, $1, $2, $3, $4)",
         )
         .bind(webhook.secret.0)
         .bind(webhook.service_id.0)
         .bind(webhook.created_at.to_string())
+        .bind(webhook.configuration.0)
         .execute(&self.pool)
         .await
         .unwrap();
@@ -159,6 +163,9 @@ create table if not exists webhook
                 secret: Secret(row.get::<String, _>("secret")),
                 service_id: ServiceId(row.get::<String, _>("service_id")),
                 created_at: DateTime::from_str(&row.get::<String, _>("created_at")).unwrap(),
+                configuration: WebhookConfiguration(
+                    row.get::<serde_json::Value, _>("configuration"),
+                ),
             })
             .fetch_optional(&self.pool)
             .await

@@ -1,11 +1,12 @@
 use crate::api::models::{
     Account, AnyUserId, ApiToken, NewAccount, Rights, ServiceError, ServiceId, TokenRightsFlags,
-    UserRightsFlags, Webhook, WebhookPayload, WebhookResponse,
+    UserRightsFlags, Webhook, WebhookConfiguration, WebhookPayload, WebhookResponse,
 };
 use crate::api::ServicesStorage;
 use chrono::{Duration, Utc};
 use octocrab::models::IssueId;
 use serde::Serialize;
+use std::fmt::{Display, Formatter, Write};
 
 use super::{
     github::Github,
@@ -21,6 +22,16 @@ pub enum ApiError {
     Unauthorized(String),
     Forbidden(String),
     Other(String),
+}
+
+impl Display for ApiError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ApiError::Unauthorized(msg) => f.write_str(msg),
+            ApiError::Forbidden(msg) => f.write_str(msg),
+            ApiError::Other(msg) => f.write_str(msg),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -361,6 +372,7 @@ impl Api {
         &self,
         api_secret: Secret,
         target: ServiceId,
+        configuration: WebhookConfiguration,
     ) -> Result<Webhook, ApiError> {
         info!("create_webhook");
 
@@ -378,8 +390,17 @@ impl Api {
             return Err(ApiError::Forbidden("insufficient access".to_string()));
         }
 
-        if !self.services_storage.is_service_exists(&&target) {
+        if !self.services_storage.is_service_exists(&target) {
             return Err(ApiError::Other("invalid service".to_string()));
+        }
+
+        match self
+            .services_storage
+            .configure_webhook(&self, &target, &configuration)
+            .await
+        {
+            Ok(_) => (),
+            Err(err) => return Err(ApiError::Other(format!("invalid configuration: {err}"))),
         }
 
         let secret = Secret::new_random_webhook_secret();
@@ -387,6 +408,7 @@ impl Api {
             secret,
             service_id: target,
             created_at: Utc::now(),
+            configuration,
         };
 
         self.database.add_webhook(webhook.clone()).await;
@@ -447,7 +469,7 @@ impl Api {
         };
 
         self.services_storage
-            .handle(&self, &webhook.service_id, payload)
+            .handle(&self, &webhook.service_id, &webhook.configuration, &payload)
             .await
     }
 }

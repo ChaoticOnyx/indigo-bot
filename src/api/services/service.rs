@@ -1,4 +1,4 @@
-﻿use crate::api::models::{ServiceError, WebhookPayload, WebhookResponse};
+﻿use crate::api::models::{ServiceError, WebhookConfiguration, WebhookPayload, WebhookResponse};
 use crate::prelude::*;
 use std::fmt::Debug;
 
@@ -6,7 +6,14 @@ use std::fmt::Debug;
 pub trait Service: Debug + Send + Sync {
     async fn handle(
         &self,
-        payload: WebhookPayload,
+        configuration: &WebhookConfiguration,
+        payload: &WebhookPayload,
         api: &Api,
     ) -> Result<WebhookResponse, ServiceError>;
+
+    async fn configure(
+        &self,
+        configuration: &WebhookConfiguration,
+        api: &Api,
+    ) -> Result<(), ServiceError>;
 }

@@ -11,10 +11,7 @@ pub async fn post_webhook(
     payload: Option<Json<WebhookPayload>>,
 ) -> impl Responder {
     let webhook_secret = webhook_secret.into_inner();
-    let payload = match payload {
-        None => WebhookPayload(None),
-        Some(payload) => payload.into_inner(),
-    };
+    let payload = payload.map(|json| json.into_inner()).unwrap_or_default();
 
     let result = Api::lock(async_closure!(|api| {
         api.handle_webhook(webhook_secret, payload).await

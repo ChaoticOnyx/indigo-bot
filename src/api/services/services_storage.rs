@@ -1,4 +1,6 @@
-﻿use crate::api::models::{ServiceError, ServiceId, WebhookPayload, WebhookResponse};
+﻿use crate::api::models::{
+    ServiceError, ServiceId, WebhookConfiguration, WebhookPayload, WebhookResponse,
+};
 use crate::api::services::echo_service::EchoService;
 use crate::api::Service;
 use std::collections::BTreeMap;
@@ -32,14 +34,29 @@ impl ServicesStorage {
     }
 
     #[instrument(skip(self))]
+    pub async fn configure_webhook(
+        &self,
+        api: &Api,
+        service_id: &ServiceId,
+        configuration: &WebhookConfiguration,
+    ) -> Result<(), ServiceError> {
+        debug!("configure_webhook");
+
+        let service = self.services.get(service_id).unwrap();
+        service.configure(configuration, api).await
+    }
+
+    #[instrument(skip(self))]
     pub async fn handle(
         &self,
         api: &Api,
         service_id: &ServiceId,
-        payload: WebhookPayload,
+        configuration: &WebhookConfiguration,
+        payload: &WebhookPayload,
     ) -> Result<WebhookResponse, ServiceError> {
-        let service = self.services.get(service_id).unwrap();
+        debug!("handle");
 
-        service.handle(payload, api).await
+        let service = self.services.get(service_id).unwrap();
+        service.handle(configuration, payload, api).await
     }
 }
