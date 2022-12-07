@@ -51,7 +51,7 @@ impl From<String> for Secret {
 
 impl Display for Secret {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("***")
+        f.write_str(&self.0)
     }
 }
 

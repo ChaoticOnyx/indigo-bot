@@ -10,11 +10,16 @@ pub struct TFATokensStorage {
 }
 
 impl TFATokensStorage {
+    #[instrument(skip(self))]
     pub fn remove_expired_tokens(&mut self) {
+        debug!("remove_expired_tokens");
         self.tokens.retain(|t| !t.is_expired());
     }
 
+    #[instrument(skip(self))]
     pub fn new_token(&mut self, user: DiscordUser, duration: Duration) -> TFAToken {
+        debug!("new_token");
+
         let mut secret;
 
         loop {
@@ -33,13 +38,19 @@ impl TFATokensStorage {
         token
     }
 
+    #[instrument(skip(self))]
     pub fn find_by_secret(&self, secret: Secret) -> Option<&TFAToken> {
+        debug!("find_by_secret");
+
         self.tokens
             .iter()
             .find(|t| t.secret == secret && !t.is_expired())
     }
 
+    #[instrument(skip(self))]
     pub fn find_by_user_id(&self, user_id: DiscordUserId) -> Option<&TFAToken> {
+        debug!("find_by_user_id");
+
         self.tokens
             .iter()
             .find(|token| token.user.id == user_id && !token.is_expired())
