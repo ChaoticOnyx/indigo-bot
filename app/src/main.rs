@@ -1,18 +1,17 @@
 use std::collections::HashMap;
 use std::str::FromStr;
 
-use crate::prelude::*;
-use bot::BotClient;
-use server::Server;
+use app_api::Api;
+use app_discord_bot::BotClient;
+use app_http_server::Server;
 use tracing_loki::url::Url;
 use tracing_subscriber::{prelude::*, Layer};
 
-mod api;
-mod bot;
-mod macros;
-mod prelude;
-mod server;
-mod state;
+use app_shared::{
+    prelude::*,
+    state::{DiscordSession, Settings},
+    tokio,
+};
 
 async fn setup_logging() {
     use tracing_subscriber::filter::LevelFilter;

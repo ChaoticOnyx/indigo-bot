@@ -1,2 +1,9 @@
 [workspace]
-members = ["app", "app-macros"]
+members = [
+	"app",
+	"app-shared",
+	"app-http-server",
+	"app-api",
+	"app-discord-bot",
+	"app-macros",
+]

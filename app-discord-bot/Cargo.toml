@@ -1,0 +1,10 @@
+[package]
+name = "app-discord-bot"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+app-shared = { path = "../app-shared" }
+app-api = { path = "../app-api" }
+
+tracing = "0.1.37"

@@ -1,0 +1,17 @@
+[package]
+name = "app-http-server"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+app-api = { path = "../app-api" }
+app-shared = { path = "../app-shared" }
+
+tracing = "0.1.37"
+serde = { version = "1.0.147", features = ["derive"] }
+actix-http = { version = "3.2.2", features = [
+	"http2",
+	"rustls",
+], default-features = false }
+actix-web = { version = "4.2.1", features = ["rustls"] }
+actix-web-httpauth = "0.8.0"

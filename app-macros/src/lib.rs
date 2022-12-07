@@ -43,7 +43,7 @@ pub fn rights_flags_derive(item: TokenStream) -> TokenStream {
     let name = input.ident;
 
     let expanded = quote! {
-        impl crate::api::models::rights::RightsFlags for #name {}
+        impl crate::models::rights::RightsFlags for #name {}
     };
 
     TokenStream::from(expanded)
