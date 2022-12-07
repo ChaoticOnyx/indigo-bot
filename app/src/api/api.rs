@@ -310,7 +310,10 @@ impl Api {
             return Err(ApiError::Forbidden("insufficient access".to_string()));
         }
 
-        if !token.rights.is_equal_or_less(&new_token.rights) {
+        if !token
+            .rights
+            .has_more_or_equal_rights_than(&new_token.rights)
+        {
             return Err(ApiError::Forbidden("insufficient access".to_string()));
         }
 
@@ -334,7 +337,10 @@ impl Api {
             return Err(ApiError::Other("target token does not exist".to_string()))
         };
 
-        if !token.rights.is_equal_or_less(&target_token.rights) {
+        if !token
+            .rights
+            .has_more_or_equal_rights_than(&target_token.rights)
+        {
             return Err(ApiError::Forbidden("insufficient access".to_string()));
         };
 

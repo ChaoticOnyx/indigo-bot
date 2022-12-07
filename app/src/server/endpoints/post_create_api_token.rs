@@ -22,10 +22,7 @@ pub async fn post_create_api_token(body: web::Json<Body>, secret: BearerAuth) ->
     let secret = Secret(secret.token().to_string());
 
     let result = Api::lock(async_closure!(|api| {
-        let duration = match expiration {
-            None => None,
-            Some(expiration) => Some(expiration - Utc::now()),
-        };
+        let duration = expiration.map(|expiration| expiration - Utc::now());
 
         api.create_api_token(secret, rights, duration).await
     }))

@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse::Parse, Ident};
+use syn::{parse::Parse, parse_macro_input, DeriveInput, Ident};
 
 struct ValidateApiSecret {
     pub varname: Ident,
@@ -32,6 +32,18 @@ pub fn validate_api_secret(item: TokenStream) -> TokenStream {
 
             token
         }
+    };
+
+    TokenStream::from(expanded)
+}
+
+#[proc_macro_derive(RightsFlags)]
+pub fn rights_flags_derive(item: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(item as DeriveInput);
+    let name = input.ident;
+
+    let expanded = quote! {
+        impl crate::api::models::rights::RightsFlags for #name {}
     };
 
     TokenStream::from(expanded)
