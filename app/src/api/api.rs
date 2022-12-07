@@ -6,7 +6,7 @@ use crate::api::ServicesStorage;
 use chrono::{Duration, Utc};
 use octocrab::models::IssueId;
 use serde::Serialize;
-use std::fmt::{Display, Formatter, Write};
+use std::fmt::{Display, Formatter};
 
 use super::{
     github::Github,
@@ -14,7 +14,9 @@ use super::{
     tfa_tokens_storage::TFATokensStorage,
     Database,
 };
+
 use crate::prelude::*;
+use app_macros::validate_api_secret;
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
@@ -233,14 +235,7 @@ impl Api {
     ) -> Result<(), ApiError> {
         info!("connect_byond_account");
 
-        let token = self.database.find_api_token_by_secret(api_secret).await;
-        let Some(token) = token else {
-            return Err(ApiError::Unauthorized("invalid api secret".to_string()));
-        };
-
-        if token.is_expired() {
-            return Err(ApiError::Unauthorized("invalid api secret".to_string()));
-        }
+        let token = validate_api_secret!(api_secret);
 
         if !token
             .rights
@@ -285,15 +280,7 @@ impl Api {
     ) -> Result<ApiToken, ApiError> {
         info!("create_api_token");
 
-        let token = self.database.find_api_token_by_secret(api_secret).await;
-
-        let Some(token) = token else {
-            return Err(ApiError::Unauthorized("invalid api secret".to_string()))
-        };
-
-        if token.is_expired() {
-            return Err(ApiError::Unauthorized("invalid api secret".to_string()));
-        }
+        let token = validate_api_secret!(api_secret);
 
         let new_secret = loop {
             let secret = Secret::new_random_api_secret();
@@ -340,16 +327,7 @@ impl Api {
     ) -> Result<(), ApiError> {
         info!("delete_api_token");
 
-        let token = self.database.find_api_token_by_secret(api_secret).await;
-
-        let Some(token) = token else {
-            return Err(ApiError::Unauthorized("invalid api secret".to_string()))
-        };
-
-        if token.is_expired() {
-            return Err(ApiError::Unauthorized("invalid api secret".to_string()));
-        }
-
+        let token = validate_api_secret!(api_secret);
         let target_token = self.database.find_api_token_by_secret(target).await;
 
         let Some(target_token) = target_token else {
@@ -376,15 +354,7 @@ impl Api {
     ) -> Result<Webhook, ApiError> {
         info!("create_webhook");
 
-        let token = self.database.find_api_token_by_secret(api_secret).await;
-
-        let Some(token) = token else {
-            return Err(ApiError::Unauthorized("invalid api secret".to_string()))
-        };
-
-        if token.is_expired() {
-            return Err(ApiError::Unauthorized("invalid api secret".to_string()));
-        };
+        let token = validate_api_secret!(api_secret);
 
         if !token.rights.service.can_create_tokens_for_service(&target) {
             return Err(ApiError::Forbidden("insufficient access".to_string()));
@@ -396,7 +366,7 @@ impl Api {
 
         match self
             .services_storage
-            .configure_webhook(&self, &target, &configuration)
+            .configure_webhook(self, &target, &configuration)
             .await
         {
             Ok(_) => (),
@@ -424,16 +394,7 @@ impl Api {
     ) -> Result<(), ApiError> {
         info!("delete_webhook");
 
-        let token = self.database.find_api_token_by_secret(api_secret).await;
-
-        let Some(token) = token else {
-            return Err(ApiError::Unauthorized("invalid api secret".to_string()))
-        };
-
-        if token.is_expired() {
-            return Err(ApiError::Unauthorized("invalid api secret".to_string()));
-        };
-
+        let token = validate_api_secret!(api_secret);
         let webhook = self.database.find_webhook_by_secret(webhook_secret).await;
 
         let Some(webhook) = webhook else {

@@ -1,5 +1,4 @@
-﻿use crate::api::models::ServiceError;
-use crate::api::ApiError;
+﻿use crate::api::ApiError;
 use actix_http::StatusCode;
 use serde::Serialize;
 

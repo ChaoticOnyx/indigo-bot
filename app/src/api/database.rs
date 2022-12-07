@@ -2,7 +2,10 @@ use std::str::FromStr;
 
 use chrono::DateTime;
 use serenity::model::prelude::{ChannelId, MessageId};
-use sqlx::{postgres::PgPoolOptions, Postgres};
+use sqlx::{
+    postgres::{PgPoolOptions, PgRow},
+    Postgres,
+};
 use sqlx::{Pool, Row};
 
 use crate::api::models::{
@@ -159,7 +162,7 @@ create table if not exists webhook
 
         sqlx::query("SELECT * FROM webhook WHERE secret = $1")
             .bind(secret.0)
-            .map(|row| Webhook {
+            .map(|row: PgRow| Webhook {
                 secret: Secret(row.get::<String, _>("secret")),
                 service_id: ServiceId(row.get::<String, _>("service_id")),
                 created_at: DateTime::from_str(&row.get::<String, _>("created_at")).unwrap(),
@@ -250,9 +253,9 @@ create table if not exists webhook
     pub async fn find_api_token_by_secret(&self, api_secret: Secret) -> Option<ApiToken> {
         debug!("find_api_token_by_secret");
 
-        let token = sqlx::query("SELECT * FROM token WHERE secret = $1")
+        sqlx::query("SELECT * FROM token WHERE secret = $1")
             .bind(api_secret.0)
-            .map(|row| ApiToken {
+            .map(|row: PgRow| ApiToken {
                 secret: Secret(row.get::<String, _>("secret")),
                 expiration: row
                     .get::<Option<String>, _>("expiration")
@@ -262,9 +265,7 @@ create table if not exists webhook
             })
             .fetch_optional(&self.pool)
             .await
-            .unwrap();
-
-        token
+            .unwrap()
     }
 
     #[instrument(skip(self))]
@@ -287,15 +288,13 @@ create table if not exists webhook
         };
 
         query
-            .map(|row| Account {
+            .map(|row: PgRow| Account {
                 id: row.get::<i64, _>("id") as u64,
                 discord_id: discord::id::UserId(row.get::<i64, _>("discord_id") as u64),
                 byond_ckey: row
                     .get::<Option<String>, _>("byond_ckey")
-                    .map(|ckey| byond::UserId(ckey)),
-                ss14_guid: row
-                    .get::<Option<String>, _>("ss14_guid")
-                    .map(|guid| ss14::UserId(guid)),
+                    .map(byond::UserId),
+                ss14_guid: row.get::<Option<String>, _>("ss14_guid").map(ss14::UserId),
                 created_at: DateTime::from_str(&row.get::<String, _>("created_at")).unwrap(),
             })
             .fetch_optional(&self.pool)
@@ -438,7 +437,7 @@ VALUES (DEFAULT, $1, $2, $3, false, $4);
         sqlx::query("SELECT * FROM feature_message WHERE channel_id = $1 AND message_id = $2")
             .bind(channel_id.0 as i64)
             .bind(message_id.0 as i64)
-            .map(|row| FeatureVote {
+            .map(|row: PgRow| FeatureVote {
                 author_id: discord::id::UserId(row.get::<i64, _>("user_id") as u64),
                 created_at: DateTime::from_str(row.get("created_at")).unwrap(),
                 descriptor: FeatureVoteDescriptor(
