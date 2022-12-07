@@ -5,7 +5,6 @@ mod bug_report;
 mod byond_ckey;
 mod feature_vote;
 mod game_server;
-mod new_account;
 mod rights;
 mod secret;
 mod service;
@@ -20,7 +19,6 @@ pub use bug_report::{BugReport, BugReportDescriptor};
 pub use byond_ckey::ByondCkey;
 pub use feature_vote::{FeatureVote, FeatureVoteDescriptor};
 pub use game_server::{AnyGameServer, ByondServer, GameServerId, SS14Server};
-pub use new_account::NewAccount;
 pub use rights::{
     Rights, ServiceRights, ServiceRightsFlags, TokenRights, TokenRightsFlags, UserRights,
     UserRightsFlags,

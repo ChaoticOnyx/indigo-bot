@@ -4,9 +4,9 @@ use app_macros::validate_api_secret;
 use app_shared::{
     chrono::{Duration, Utc},
     models::{
-        Account, AnyUserId, ApiToken, BugReport, FeatureVote, FeatureVoteDescriptor, NewAccount,
-        Rights, Secret, ServiceError, ServiceId, TFAToken, TokenRightsFlags, UserRightsFlags,
-        Webhook, WebhookConfiguration, WebhookPayload, WebhookResponse,
+        Account, AnyUserId, ApiToken, BugReport, FeatureVote, FeatureVoteDescriptor, Rights,
+        Secret, ServiceError, ServiceId, TFAToken, TokenRightsFlags, UserRightsFlags, Webhook,
+        WebhookConfiguration, WebhookPayload, WebhookResponse,
     },
     octocrab::models::IssueId,
     prelude::*,
@@ -152,12 +152,7 @@ impl Api {
             .await
             .is_none()
         {
-            self.database
-                .add_account(NewAccount {
-                    created_at: Utc::now(),
-                    discord_id: user.id,
-                })
-                .await;
+            self.database.add_account(user.id, Utc::now()).await;
         }
 
         self.tokens_storage.remove_expired_tokens();

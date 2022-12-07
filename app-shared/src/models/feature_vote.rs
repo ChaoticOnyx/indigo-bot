@@ -16,6 +16,7 @@ pub struct FeatureVote {
     pub descriptor: FeatureVoteDescriptor,
     pub author_id: DiscordUserId,
     pub created_at: DateTime<Utc>,
+    pub is_vote_ended: bool,
 }
 
 impl From<Message> for FeatureVote {
@@ -24,6 +25,7 @@ impl From<Message> for FeatureVote {
             author_id: message.author.id,
             descriptor: message.clone().into(),
             created_at: *message.timestamp,
+            is_vote_ended: false,
         }
     }
 }
