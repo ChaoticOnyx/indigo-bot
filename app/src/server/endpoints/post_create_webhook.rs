@@ -11,6 +11,7 @@ use serde::Deserialize;
 #[derive(Debug, Clone, Deserialize)]
 pub struct Body {
     pub service_id: ServiceId,
+    pub name: String,
     pub configuration: Option<WebhookConfiguration>,
 }
 
@@ -21,13 +22,19 @@ pub async fn post_create_webhook(body: Json<Body>, api_secret: BearerAuth) -> im
 
     let Body {
         service_id,
+        name,
         configuration,
     } = body.0;
     let api_secret = Secret(api_secret.token().to_string());
 
     let result = Api::lock(async_closure!(|api| {
-        api.create_webhook(api_secret, service_id, configuration.unwrap_or_default())
-            .await
+        api.create_webhook(
+            api_secret,
+            service_id,
+            name,
+            configuration.unwrap_or_default(),
+        )
+        .await
     }))
     .await;
 

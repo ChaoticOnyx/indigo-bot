@@ -128,6 +128,7 @@ create table if not exists webhook
     id            bigserial not null
         constraint webhook_pk
             primary key,
+    name          text      not null,
     secret        text      not null,
     service_id    text      not null,
     created_at    text      not null,
@@ -145,8 +146,9 @@ create table if not exists webhook
         info!("add_webhook");
 
         sqlx::query(
-            "INSERT INTO webhook (id, secret, service_id, created_at, configuration) VALUES (DEFAULT, $1, $2, $3, $4)",
+            "INSERT INTO webhook (id, name, secret, service_id, created_at, configuration) VALUES (DEFAULT, $1, $2, $3, $4, $5)",
         )
+        .bind(webhook.name)
         .bind(webhook.secret.0)
         .bind(webhook.service_id.0)
         .bind(webhook.created_at.to_string())
@@ -163,6 +165,7 @@ create table if not exists webhook
         sqlx::query("SELECT * FROM webhook WHERE secret = $1")
             .bind(secret.0)
             .map(|row: PgRow| Webhook {
+                name: row.get::<String, _>("name"),
                 secret: Secret(row.get::<String, _>("secret")),
                 service_id: ServiceId(row.get::<String, _>("service_id")),
                 created_at: DateTime::from_str(&row.get::<String, _>("created_at")).unwrap(),

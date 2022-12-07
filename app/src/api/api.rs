@@ -356,6 +356,7 @@ impl Api {
         &self,
         api_secret: Secret,
         target: ServiceId,
+        name: String,
         configuration: WebhookConfiguration,
     ) -> Result<Webhook, ApiError> {
         info!("create_webhook");
@@ -370,6 +371,10 @@ impl Api {
             return Err(ApiError::Other("invalid service".to_string()));
         }
 
+        if name.trim().is_empty() {
+            return Err(ApiError::Other("webhook name is empty".to_string()));
+        }
+
         match self
             .services_storage
             .configure_webhook(self, &target, &configuration)
@@ -381,6 +386,7 @@ impl Api {
 
         let secret = Secret::new_random_webhook_secret();
         let webhook = Webhook {
+            name,
             secret,
             service_id: target,
             created_at: Utc::now(),

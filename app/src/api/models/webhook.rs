@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Webhook {
+    pub name: String,
     pub secret: Secret,
     pub service_id: ServiceId,
     pub created_at: DateTime<Utc>,
