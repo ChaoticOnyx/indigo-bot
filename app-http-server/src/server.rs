@@ -1,13 +1,17 @@
 use std::net::ToSocketAddrs;
 
 use actix_web::{App, HttpServer};
+use app_shared::prelude::*;
 
 use super::endpoints;
 
 pub struct Server;
 
 impl Server {
+    #[instrument(skip(addrs))]
     pub async fn run(addrs: impl ToSocketAddrs) {
+        info!("run");
+
         HttpServer::new(move || {
             App::new()
                 // GET

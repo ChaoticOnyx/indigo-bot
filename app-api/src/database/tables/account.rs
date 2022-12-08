@@ -10,7 +10,7 @@ pub struct AccountTable;
 impl AccountTable {
     #[instrument]
     pub async fn create(pool: &Pool<Postgres>) -> Result<PgQueryResult, Error> {
-        debug!("create");
+        trace!("create");
 
         sqlx::query(
             "
@@ -36,7 +36,7 @@ create table if not exists account
         discord_user_id: DiscordUserId,
         created_at: DateTime<Utc>,
     ) -> Result<PgQueryResult, Error> {
-        debug!("insert");
+        trace!("insert");
 
         sqlx::query(
             "
@@ -55,7 +55,7 @@ VALUES (DEFAULT, $1, null, null, $2)
         pool: &Pool<Postgres>,
         user_id: AnyUserId,
     ) -> Result<Option<Account>, Error> {
-        debug!("find_by_user_id");
+        trace!("find_by_user_id");
 
         let query = match user_id {
             AnyUserId::DiscordId(user_id) => {
@@ -81,7 +81,7 @@ VALUES (DEFAULT, $1, null, null, $2)
         user_id: AnyUserId,
         new_user_id: AnyUserId,
     ) -> Result<PgQueryResult, Error> {
-        debug!("connect_account");
+        trace!("connect_account");
 
         let set_part = match new_user_id {
             AnyUserId::DiscordId(_) => "discord_id = $1",

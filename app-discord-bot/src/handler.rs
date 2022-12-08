@@ -16,6 +16,8 @@ pub struct Handler;
 impl EventHandler for Handler {
     #[instrument(skip(self, ctx))]
     async fn message(&self, ctx: Context, new_message: Message) {
+        trace!("message");
+
         let guild_id = new_message.guild_id;
 
         if guild_id.is_some() && Settings::clone_state().await.discord.guild_id != guild_id.unwrap()
@@ -34,7 +36,7 @@ impl EventHandler for Handler {
         deleted_message_id: MessageId,
         guild_id: Option<GuildId>,
     ) {
-        debug!("message_delete");
+        trace!("message_delete");
 
         if guild_id.is_some() && Settings::clone_state().await.discord.guild_id != guild_id.unwrap()
         {
@@ -52,7 +54,7 @@ impl EventHandler for Handler {
 
     #[instrument(skip(self, ctx))]
     async fn reaction_add(&self, ctx: Context, reaction: Reaction) {
-        debug!("reaction_remove");
+        trace!("reaction_remove");
 
         if reaction.guild_id.is_some()
             && Settings::clone_state().await.discord.guild_id != reaction.guild_id.unwrap()
@@ -65,7 +67,7 @@ impl EventHandler for Handler {
 
     #[instrument(skip(self, ctx))]
     async fn reaction_remove(&self, ctx: Context, reaction: Reaction) {
-        debug!("reaction_remove");
+        trace!("reaction_remove");
 
         if reaction.guild_id.is_some()
             && Settings::clone_state().await.discord.guild_id != reaction.guild_id.unwrap()
@@ -108,7 +110,7 @@ impl EventHandler for Handler {
 
     #[instrument(skip(self, ctx))]
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        debug!("interaction_create");
+        trace!("interaction_create");
 
         let Interaction::ApplicationCommand(cmd) = interaction else {
             return;

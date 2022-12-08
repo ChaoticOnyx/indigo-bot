@@ -32,7 +32,7 @@ const DESCRIPTION_MAX: usize = 4000;
 impl ChatToDiscordService {
     #[instrument]
     fn format_message(config: &Config, message: &str) -> String {
-        debug!("format_message");
+        trace!("format_message");
 
         let timestamp = match &config.timestamp_postfix {
             None => String::new(),
@@ -64,7 +64,7 @@ impl ChatToDiscordService {
 
     #[instrument]
     fn update_last_id(&self, webhook: &str, response: serde_json::Value, message: String) {
-        debug!("update_last_id");
+        trace!("update_last_id");
 
         let id = response.get("id").unwrap().as_str().unwrap();
         let id = u64::from_str(id).unwrap();
@@ -86,7 +86,7 @@ impl ChatToDiscordService {
 
     #[instrument]
     fn get_message_info_for_webhook(&self, webhook: &str) -> Option<MessageInfo> {
-        debug!("get_message_info_for_webhook");
+        trace!("get_message_info_for_webhook");
 
         let _lock = self.last_message_per_webhook.lock().unwrap();
         let last_message_per_webhook = _lock.borrow();
@@ -116,7 +116,7 @@ impl Service for ChatToDiscordService {
         payload: &WebhookPayload,
         _api: &Api,
     ) -> Result<WebhookResponse, ServiceError> {
-        debug!("handle");
+        trace!("handle");
 
         let payload = match serde_json::from_value::<Payload>(payload.0.clone()) {
             Ok(payload) => payload,
@@ -185,7 +185,7 @@ impl Service for ChatToDiscordService {
         configuration: &WebhookConfiguration,
         _api: &Api,
     ) -> Result<(), ServiceError> {
-        debug!("configure");
+        trace!("configure");
 
         match serde_json::from_value::<Config>(configuration.0.clone()) {
             Ok(_) => Ok(()),

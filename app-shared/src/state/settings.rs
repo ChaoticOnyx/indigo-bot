@@ -33,7 +33,8 @@ pub struct Settings {
 impl Settings {
     #[instrument]
     pub fn load() -> Self {
-        info!("loading settings");
+        trace!("load");
+
         let config_content = std::fs::read(SETTINGS_PATH).unwrap();
 
         toml::from_slice(&config_content).unwrap()
@@ -41,7 +42,8 @@ impl Settings {
 
     #[instrument]
     pub fn save(&self) {
-        info!("saving settings");
+        trace!("save");
+
         let config_content = toml::to_string_pretty(&self).unwrap();
 
         std::fs::write(SETTINGS_PATH, &config_content).unwrap();

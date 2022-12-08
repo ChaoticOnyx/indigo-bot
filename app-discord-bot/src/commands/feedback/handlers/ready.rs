@@ -8,7 +8,7 @@ use crate::commands::feedback::helpers::create_and_pin_message;
 
 #[instrument(skip(ctx))]
 pub async fn ready(ctx: &Context, _ready: &Ready) {
-    debug!("ready");
+    trace!("ready");
 
     let mut settings = Settings::clone_state().await;
     let mut cmd_settings = &mut settings.commands.feedback;
@@ -34,21 +34,21 @@ pub async fn ready(ctx: &Context, _ready: &Ready) {
             .ok();
 
         if let Some(mut message) = message {
-            info!("refreshing template message");
+            debug!("refreshing template message");
 
             message
                 .edit(&ctx.http, |edit| edit.content(&template))
                 .await
                 .unwrap();
         } else {
-            info!("template message was deleted, creating a new one");
+            debug!("template message was deleted, creating a new one");
 
             let new_message = create_and_pin_message(ctx, channel, &template).await;
             cmd_settings.template_message_id = Some(new_message.id);
             settings.save();
         }
     } else {
-        info!("pinned message with report template not found, creating a new one");
+        debug!("pinned message with report template not found, creating a new one");
 
         let new_message = create_and_pin_message(ctx, channel, &template).await;
         cmd_settings.template_message_id = Some(new_message.id);

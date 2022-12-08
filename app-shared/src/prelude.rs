@@ -14,4 +14,4 @@ pub use crate::models::SS14Guid as SS14UserId;
 pub use futures_util::FutureExt;
 pub use serde_json::json;
 pub use serenity::async_trait;
-pub use tracing::{debug, error, info, instrument, warn};
+pub use tracing::{debug, error, info, instrument, trace, warn};

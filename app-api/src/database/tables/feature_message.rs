@@ -12,7 +12,7 @@ pub struct FeatureMessageTable;
 impl FeatureMessageTable {
     #[instrument]
     pub async fn create(pool: &Pool<Postgres>) -> Result<PgQueryResult, Error> {
-        debug!("create");
+        trace!("create");
 
         sqlx::query(
             "
@@ -38,7 +38,7 @@ create table if not exists feature_message
         pool: &Pool<Postgres>,
         feature: FeatureVote,
     ) -> Result<PgQueryResult, Error> {
-        debug!("insert");
+        trace!("insert");
 
         let FeatureVote {
             descriptor,
@@ -68,7 +68,7 @@ VALUES (DEFAULT, $1, $2, $3, $4, $5);
         pool: &Pool<Postgres>,
         descriptor: FeatureVoteDescriptor,
     ) -> Result<Option<FeatureVote>, Error> {
-        debug!("find_by_descriptor");
+        trace!("find_by_descriptor");
 
         let FeatureVoteDescriptor(message_id, channel_id) = descriptor;
         sqlx::query("SELECT id FROM feature_message WHERE channel_id = $1 AND message_id = $2")
@@ -84,6 +84,8 @@ VALUES (DEFAULT, $1, $2, $3, $4, $5);
         pool: &Pool<Postgres>,
         descriptor: FeatureVoteDescriptor,
     ) -> Result<PgQueryResult, Error> {
+        trace!("end_vote");
+
         let FeatureVoteDescriptor(message_id, channel_id) = descriptor;
 
         sqlx::query("UPDATE feature_message SET is_vote_ended = true WHERE channel_id = $1 AND message_id = $2")

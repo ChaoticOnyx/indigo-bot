@@ -12,8 +12,11 @@ pub struct Body {
     pub target_secret: Secret,
 }
 
+#[instrument]
 #[delete("/api/token")]
 pub async fn delete_api_token(body: web::Json<Body>, secret: BearerAuth) -> impl Responder {
+    trace!("delete_api_token");
+
     let Body { target_secret } = body.0;
     let secret = Secret(secret.token().to_string());
 

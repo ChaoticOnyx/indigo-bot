@@ -16,7 +16,7 @@ pub async fn message_delete(
     deleted_message_id: MessageId,
     _guild_id: Option<GuildId>,
 ) {
-    debug!("message_delete");
+    trace!("message_delete");
 
     if channel_id != Settings::clone_state().await.commands.feedback.channel_id {
         return;

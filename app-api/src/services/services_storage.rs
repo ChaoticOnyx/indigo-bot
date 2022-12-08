@@ -18,6 +18,8 @@ pub struct ServicesStorage {
 impl ServicesStorage {
     #[instrument]
     pub fn new() -> Self {
+        trace!("new");
+
         Self {
             services: BTreeMap::new(),
         }
@@ -25,6 +27,8 @@ impl ServicesStorage {
 
     #[instrument(skip(self))]
     pub fn register(&mut self) {
+        trace!("register");
+
         self.services.insert(
             ServiceId("echo".to_string()),
             Box::new(EchoService::default()),
@@ -43,6 +47,8 @@ impl ServicesStorage {
 
     #[instrument(skip(self))]
     pub fn is_service_exists(&self, service_id: &ServiceId) -> bool {
+        trace!("is_service_exists");
+
         self.services.contains_key(service_id)
     }
 
@@ -53,7 +59,7 @@ impl ServicesStorage {
         service_id: &ServiceId,
         configuration: &WebhookConfiguration,
     ) -> Result<(), ServiceError> {
-        debug!("configure_webhook");
+        trace!("configure_webhook");
 
         let service = self.services.get(service_id).unwrap();
         service.configure(configuration, api).await
@@ -67,12 +73,12 @@ impl ServicesStorage {
         configuration: &WebhookConfiguration,
         payload: &WebhookPayload,
     ) -> Result<WebhookResponse, ServiceError> {
-        debug!("handle");
+        trace!("handle");
 
         let service = self.services.get(service_id).unwrap();
         let result = service.handle(configuration, payload, api).await;
 
-        info!("{result:#?}");
+        debug!("{result:#?}");
 
         result
     }

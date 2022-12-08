@@ -18,7 +18,7 @@ pub async fn create_and_pin_message(
     channel_id: &ChannelId,
     message_content: &str,
 ) -> Message {
-    debug!("create_and_pin_message");
+    trace!("create_and_pin_message");
 
     let new_message = channel_id
         .send_message(&ctx.http, |msg| msg.content(message_content))

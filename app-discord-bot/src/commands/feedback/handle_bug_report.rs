@@ -18,7 +18,7 @@ use crate::commands::feedback::helpers::{get_attachment_url_from_option, get_val
 
 #[instrument(skip(ctx))]
 pub async fn handle_bug_report(ctx: &Context, cmd: &ApplicationCommandInteraction) {
-    info!("handle_bug_report");
+    trace!("handle_bug_report");
 
     let option = cmd.data.options.first().unwrap();
     let author_id = cmd.user.id;

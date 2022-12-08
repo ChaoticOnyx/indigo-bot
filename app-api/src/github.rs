@@ -22,7 +22,7 @@ impl Github {
         body: String,
         labels: HashSet<String>,
     ) -> i64 {
-        info!("create_issue");
+        trace!("create_issue");
 
         let (owner, repo) = repository.split_once('/').unwrap();
         let issue = self

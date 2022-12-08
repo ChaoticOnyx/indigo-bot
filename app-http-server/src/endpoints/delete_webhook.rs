@@ -16,6 +16,8 @@ pub struct Body {
 #[instrument]
 #[delete("/api/webhook")]
 pub async fn delete_webhook(body: Json<Body>, api_secret: BearerAuth) -> impl Responder {
+    trace!("delete_webhook");
+
     let Body { webhook_secret } = body.0;
     let api_secret = Secret(api_secret.token().to_string());
 

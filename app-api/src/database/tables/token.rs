@@ -14,7 +14,7 @@ pub struct TokenTable;
 impl TokenTable {
     #[instrument]
     pub async fn create(pool: &Pool<Postgres>) -> Result<PgQueryResult, Error> {
-        debug!("create");
+        trace!("create");
 
         sqlx::query(
             "
@@ -36,7 +36,7 @@ create table if not exists token
 
     #[instrument]
     pub async fn insert(pool: &Pool<Postgres>, token: ApiToken) -> Result<PgQueryResult, Error> {
-        debug!("insert");
+        trace!("insert");
 
         sqlx::query(
             "INSERT INTO token (id, secret, expiration, rights, created_at) VALUES (DEFAULT, $1, $2, $3, $4)",
@@ -54,7 +54,7 @@ create table if not exists token
         pool: &Pool<Postgres>,
         api_secret: Secret,
     ) -> Result<PgQueryResult, Error> {
-        debug!("delete_by_secret");
+        trace!("delete_by_secret");
 
         sqlx::query("DELETE FROM token WHERE secret = $1")
             .bind(api_secret.0)
@@ -69,7 +69,7 @@ create table if not exists token
         new_expiration: Option<DateTime<Utc>>,
         new_rights: Rights,
     ) -> Result<PgQueryResult, Error> {
-        debug!("update");
+        trace!("update");
 
         sqlx::query("UPDATE token SET secret = $1, expiration = $2, rights = $3 WHERE id = 1")
             .bind(new_secret.0)
@@ -81,7 +81,7 @@ create table if not exists token
 
     #[instrument]
     pub async fn find_by_id(pool: &Pool<Postgres>, id: i64) -> Result<Option<ApiToken>, Error> {
-        debug!("find_by_id");
+        trace!("find_by_id");
 
         sqlx::query("SELECT * FROM token WHERE id = $1")
             .bind(id)
@@ -95,7 +95,7 @@ create table if not exists token
         pool: &Pool<Postgres>,
         api_secret: Secret,
     ) -> Result<Option<ApiToken>, Error> {
-        debug!("find_by_secret");
+        trace!("find_by_secret");
 
         sqlx::query("SELECT * FROM token WHERE secret = $1")
             .bind(api_secret.0)

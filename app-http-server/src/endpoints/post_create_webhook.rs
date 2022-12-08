@@ -21,7 +21,7 @@ pub struct Body {
 #[instrument]
 #[post("/api/webhook")]
 pub async fn post_create_webhook(body: Json<Body>, api_secret: BearerAuth) -> impl Responder {
-    info!("post_create_api_token");
+    trace!("post_create_api_token");
 
     let Body {
         service_id,

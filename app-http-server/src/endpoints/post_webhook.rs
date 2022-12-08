@@ -8,11 +8,14 @@ use app_shared::{
     prelude::*,
 };
 
+#[instrument]
 #[post("/api/webhook/{webhook_secret}")]
 pub async fn post_webhook(
     webhook_secret: Path<Secret>,
     payload: Option<Json<WebhookPayload>>,
 ) -> impl Responder {
+    trace!("post_webhook");
+
     let webhook_secret = webhook_secret.into_inner();
     let payload = payload.map(|json| json.into_inner()).unwrap_or_default();
 

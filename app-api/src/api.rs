@@ -76,42 +76,42 @@ impl Api {
 
     #[instrument]
     pub async fn new_feature_vote(&self, vote: FeatureVote) {
-        debug!("new_feature_vote api");
+        trace!("new_feature_vote api");
 
         self.database.add_feature_vote(vote).await;
     }
 
     #[instrument]
     pub async fn end_feature_vote(&self, descriptor: FeatureVoteDescriptor) {
-        debug!("end_feature_vote api");
+        trace!("end_feature_vote api");
 
         self.database.end_feature_vote(descriptor).await;
     }
 
     #[instrument]
     pub async fn is_vote_ended(&self, descriptor: FeatureVoteDescriptor) -> bool {
-        debug!("is_vote_ended api");
+        trace!("is_vote_ended api");
 
         self.database.is_vote_ended(descriptor).await
     }
 
     #[instrument]
     pub async fn get_feature_vote(&self, descriptor: FeatureVoteDescriptor) -> Option<FeatureVote> {
-        debug!("get_feature_vote api");
+        trace!("get_feature_vote api");
 
         self.database.get_feature_vote(descriptor).await
     }
 
     #[instrument]
     pub async fn add_bug_report(&self, bug_report: BugReport) {
-        debug!("add_bug_report");
+        trace!("add_bug_report");
 
         self.database.add_bug_report(bug_report).await;
     }
 
     #[instrument]
     pub async fn create_feature_issue(&self, title: String, description: String) -> i64 {
-        info!("create_feature_issue");
+        trace!("create_feature_issue");
 
         let settings = Settings::clone_state().await;
 
@@ -127,7 +127,7 @@ impl Api {
 
     #[instrument]
     pub async fn create_bug_issue(&self, title: String, description: String) -> i64 {
-        info!("create_bug_issue");
+        trace!("create_bug_issue");
 
         let settings = Settings::clone_state().await;
 
@@ -143,7 +143,7 @@ impl Api {
 
     #[instrument]
     pub async fn get_or_create_tfa_token(&mut self, user: DiscordUser) -> TFAToken {
-        debug!("get_or_create_tfa_token");
+        trace!("get_or_create_tfa_token");
 
         if self
             .database
@@ -171,14 +171,14 @@ impl Api {
 
     #[instrument]
     pub async fn find_tfa_token_by_secret(&self, secret: Secret) -> Option<TFAToken> {
-        debug!("find_tfa_token_by_secret");
+        trace!("find_tfa_token_by_secret");
 
         self.tokens_storage.find_by_secret(secret).cloned()
     }
 
     #[instrument]
     pub async fn find_account_by_tfa_token_secret(&self, secret: Secret) -> Option<Account> {
-        debug!("find_account_by_tfa_token_secret");
+        trace!("find_account_by_tfa_token_secret");
 
         let token = self.tokens_storage.find_by_secret(secret);
 
@@ -192,7 +192,7 @@ impl Api {
 
     #[instrument]
     pub async fn find_account_by_id(&self, user_id: AnyUserId) -> Option<Account> {
-        debug!("find_account_by_id");
+        trace!("find_account_by_id");
 
         self.database.find_account(user_id).await
     }
@@ -204,7 +204,7 @@ impl Api {
         tfa_secret: Secret,
         ckey: ByondUserId,
     ) -> Result<(), ApiError> {
-        info!("connect_byond_account_by_2fa");
+        trace!("connect_byond_account_by_2fa");
 
         let account = self.find_account_by_tfa_token_secret(tfa_secret).await;
 
@@ -225,7 +225,7 @@ impl Api {
         user_id: AnyUserId,
         ckey: ByondUserId,
     ) -> Result<(), ApiError> {
-        info!("connect_byond_account");
+        trace!("connect_byond_account");
 
         let token = validate_api_secret!(api_secret);
 
@@ -270,7 +270,7 @@ impl Api {
         rights: Rights,
         duration: Option<Duration>,
     ) -> Result<ApiToken, ApiError> {
-        info!("create_api_token");
+        trace!("create_api_token");
 
         let token = validate_api_secret!(api_secret);
 
@@ -320,7 +320,7 @@ impl Api {
         api_secret: Secret,
         target: Secret,
     ) -> Result<(), ApiError> {
-        info!("delete_api_token");
+        trace!("delete_api_token");
 
         let token = validate_api_secret!(api_secret);
         let target_token = self.database.find_api_token_by_secret(target).await;
@@ -351,7 +351,7 @@ impl Api {
         name: String,
         configuration: WebhookConfiguration,
     ) -> Result<Webhook, ApiError> {
-        info!("create_webhook");
+        trace!("create_webhook");
 
         let token = validate_api_secret!(api_secret);
 
@@ -396,7 +396,7 @@ impl Api {
         api_secret: Secret,
         webhook_secret: Secret,
     ) -> Result<(), ApiError> {
-        info!("delete_webhook");
+        trace!("delete_webhook");
 
         let token = validate_api_secret!(api_secret);
         let webhook = self.database.find_webhook_by_secret(webhook_secret).await;
@@ -424,6 +424,8 @@ impl Api {
         webhook_secret: Secret,
         payload: WebhookPayload,
     ) -> Result<WebhookResponse, ServiceError> {
+        trace!("handle_webhook");
+
         let webhook = self
             .database
             .find_webhook_by_secret(webhook_secret.clone())

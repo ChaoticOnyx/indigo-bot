@@ -50,14 +50,14 @@ impl Database {
 
     #[instrument(skip(self))]
     pub async fn add_webhook(&self, webhook: Webhook) {
-        info!("add_webhook");
+        trace!("add_webhook");
 
         WebhookTable::insert(&self.pool, webhook).await.unwrap();
     }
 
     #[instrument(skip(self))]
     pub async fn find_webhook_by_secret(&self, secret: Secret) -> Option<Webhook> {
-        debug!("find_webhook_by_secret");
+        trace!("find_webhook_by_secret");
 
         WebhookTable::find_by_secret(&self.pool, secret)
             .await
@@ -66,7 +66,7 @@ impl Database {
 
     #[instrument(skip(self))]
     pub async fn delete_webhook_by_secret(&self, secret: Secret) {
-        info!("delete_webhook_by_secret");
+        trace!("delete_webhook_by_secret");
 
         WebhookTable::delete_by_secret(&self.pool, secret)
             .await
@@ -75,7 +75,7 @@ impl Database {
 
     #[instrument(skip(self))]
     pub async fn update_root_token(&self, token: ApiToken) {
-        debug!("update_root_token");
+        trace!("update_root_token");
 
         let has_token = TokenTable::find_by_id(&self.pool, 1)
             .await
@@ -97,14 +97,14 @@ impl Database {
 
     #[instrument(skip(self))]
     pub async fn add_api_token(&self, token: ApiToken) {
-        info!("add_api_token");
+        trace!("add_api_token");
 
         TokenTable::insert(&self.pool, token).await.unwrap();
     }
 
     #[instrument(skip(self))]
     pub async fn delete_api_token_by_secret(&self, secret: Secret) {
-        info!("remove_api_token");
+        trace!("remove_api_token");
 
         TokenTable::delete_by_secret(&self.pool, secret)
             .await
@@ -113,7 +113,7 @@ impl Database {
 
     #[instrument(skip(self))]
     pub async fn find_api_token_by_secret(&self, api_secret: Secret) -> Option<ApiToken> {
-        debug!("find_api_token_by_secret");
+        trace!("find_api_token_by_secret");
 
         TokenTable::find_by_secret(&self.pool, api_secret)
             .await
@@ -122,7 +122,7 @@ impl Database {
 
     #[instrument(skip(self))]
     pub async fn find_account(&self, user_id: AnyUserId) -> Option<Account> {
-        debug!("find_account");
+        trace!("find_account");
 
         AccountTable::find_by_user_id(&self.pool, user_id)
             .await
@@ -131,7 +131,7 @@ impl Database {
 
     #[instrument(skip(self))]
     pub async fn add_account(&self, discord_user_id: DiscordUserId, created_at: DateTime<Utc>) {
-        info!("add_account");
+        trace!("add_account");
 
         AccountTable::insert(&self.pool, discord_user_id, created_at)
             .await
@@ -140,7 +140,7 @@ impl Database {
 
     #[instrument(skip(self))]
     pub async fn connect_account(&self, user_id: AnyUserId, new_user_id: AnyUserId) {
-        info!("connect_account");
+        trace!("connect_account");
 
         AccountTable::update_user_id(&self.pool, user_id, new_user_id)
             .await
@@ -149,7 +149,7 @@ impl Database {
 
     #[instrument(skip(self))]
     pub async fn add_bug_report(&self, bug_report: BugReport) {
-        debug!("add_bug_report");
+        trace!("add_bug_report");
 
         BugMessageTable::insert(&self.pool, bug_report)
             .await
@@ -158,7 +158,7 @@ impl Database {
 
     #[instrument(skip(self))]
     pub async fn add_feature_vote(&self, feature: FeatureVote) {
-        debug!("add_feature_vote");
+        trace!("add_feature_vote");
 
         FeatureMessageTable::insert(&self.pool, feature)
             .await
@@ -167,7 +167,7 @@ impl Database {
 
     #[instrument(skip(self))]
     pub async fn is_vote_ended(&self, descriptor: FeatureVoteDescriptor) -> bool {
-        debug!("is_vote_ended");
+        trace!("is_vote_ended");
 
         match FeatureMessageTable::find_by_descriptor(&self.pool, descriptor)
             .await
@@ -180,7 +180,7 @@ impl Database {
 
     #[instrument(skip(self))]
     pub async fn get_feature_vote(&self, descriptor: FeatureVoteDescriptor) -> Option<FeatureVote> {
-        debug!("get_feature_vote");
+        trace!("get_feature_vote");
 
         FeatureMessageTable::find_by_descriptor(&self.pool, descriptor)
             .await
@@ -189,7 +189,7 @@ impl Database {
 
     #[instrument(skip(self))]
     pub async fn end_feature_vote(&self, descriptor: FeatureVoteDescriptor) {
-        debug!("end_feature_vote");
+        trace!("end_feature_vote");
 
         FeatureMessageTable::end_vote(&self.pool, descriptor)
             .await

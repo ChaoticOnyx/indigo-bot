@@ -21,7 +21,7 @@ use crate::commands::feedback::helpers::{create_feature_embed, get_value_as_stri
 
 #[instrument(skip(ctx))]
 pub async fn handle_feature_report(ctx: &Context, cmd: &ApplicationCommandInteraction) {
-    info!("handle_feature_report");
+    trace!("handle_feature_report");
     let settings = Settings::clone_state().await;
 
     // Shortcuts

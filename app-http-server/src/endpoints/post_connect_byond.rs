@@ -16,7 +16,7 @@ pub struct Body {
 #[instrument]
 #[post("/api/connect/byond")]
 pub async fn post_connect_byond(query: web::Json<Body>, secret: BearerAuth) -> impl Responder {
-    info!("get_connect_byond");
+    trace!("get_connect_byond");
 
     let Body { ckey, tfa_secret } = query.0;
     let secret = Secret(secret.token().to_string());

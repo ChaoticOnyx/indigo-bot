@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use octocrab::models::IssueId;
 
 #[derive(Debug, Clone, Copy)]
 pub struct BugReport {

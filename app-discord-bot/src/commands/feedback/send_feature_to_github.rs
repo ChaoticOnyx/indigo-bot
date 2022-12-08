@@ -3,7 +3,7 @@ use app_shared::{prelude::*, serenity::model::prelude::Message};
 
 #[instrument]
 pub async fn send_feature_to_github(message: &Message, author: &DiscordUser) {
-    info!("send_feature_to_github");
+    trace!("send_feature_to_github");
 
     let embed = message.embeds.first().unwrap().clone();
     let author = format!("{}#{} ({})", author.name, author.discriminator, author.id);

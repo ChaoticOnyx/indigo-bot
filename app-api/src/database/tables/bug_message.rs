@@ -6,7 +6,7 @@ pub struct BugMessageTable;
 impl BugMessageTable {
     #[instrument]
     pub async fn create(pool: &Pool<Postgres>) -> Result<PgQueryResult, Error> {
-        debug!("create");
+        trace!("create");
 
         sqlx::query(
             "
@@ -29,6 +29,8 @@ create table if not exists bug_message
         pool: &Pool<Postgres>,
         bug_report: BugReport,
     ) -> Result<PgQueryResult, Error> {
+        trace!("insert");
+
         let BugReport {
             issue_number,
             author_id,

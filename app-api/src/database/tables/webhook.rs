@@ -11,7 +11,7 @@ pub struct WebhookTable;
 impl WebhookTable {
     #[instrument]
     pub async fn create(pool: &Pool<Postgres>) -> Result<PgQueryResult, Error> {
-        debug!("create");
+        trace!("create");
 
         sqlx::query(
             "
@@ -34,7 +34,7 @@ create table if not exists webhook
 
     #[instrument]
     pub async fn insert(pool: &Pool<Postgres>, webhook: Webhook) -> Result<PgQueryResult, Error> {
-        debug!("insert");
+        trace!("insert");
 
         sqlx::query(
             "INSERT INTO webhook (id, name, secret, service_id, created_at, configuration) VALUES (DEFAULT, $1, $2, $3, $4, $5)",
@@ -53,7 +53,7 @@ create table if not exists webhook
         pool: &Pool<Postgres>,
         secret: Secret,
     ) -> Result<Option<Webhook>, Error> {
-        debug!("find_by_secret");
+        trace!("find_by_secret");
 
         sqlx::query("SELECT * FROM webhook WHERE secret = $1")
             .bind(secret.0)
@@ -67,7 +67,7 @@ create table if not exists webhook
         pool: &Pool<Postgres>,
         secret: Secret,
     ) -> Result<PgQueryResult, Error> {
-        debug!("delete_by_secret");
+        trace!("delete_by_secret");
 
         sqlx::query("DELETE FROM webhook WHERE secret = $1")
             .bind(secret.0)

@@ -8,7 +8,7 @@ use crate::commands::feedback::{helpers::is_user_id_mine, update_reactions};
 
 #[instrument(skip(ctx))]
 pub async fn reaction_add(ctx: &Context, reaction: &Reaction) {
-    debug!("reaction_remove");
+    trace!("reaction_add");
 
     let settings = Settings::clone_state().await.commands.feedback;
 

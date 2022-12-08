@@ -16,7 +16,7 @@ pub struct Query {
 #[instrument]
 #[get("/bapi/connect/byond")]
 pub async fn get_connect_byond(query: web::Query<Query>) -> impl Responder {
-    info!("get_connect_byond");
+    trace!("get_connect_byond");
 
     let Query {
         secret,

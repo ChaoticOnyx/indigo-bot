@@ -8,7 +8,7 @@ use crate::response::ResponseHelpers;
 #[instrument]
 #[get("/api/identity")]
 pub async fn get_identity() -> impl Responder {
-    debug!("get_identity");
+    trace!("get_identity");
 
     let session = DiscordSession::clone_state().await;
 

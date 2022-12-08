@@ -45,7 +45,7 @@ impl Service for RoundEndService {
         payload: &WebhookPayload,
         _api: &Api,
     ) -> Result<WebhookResponse, ServiceError> {
-        debug!("handle");
+        trace!("handle");
 
         let payload = match serde_json::from_value::<Payload>(payload.0.clone()) {
             Ok(payload) => payload,
@@ -85,7 +85,7 @@ impl Service for RoundEndService {
         configuration: &WebhookConfiguration,
         _api: &Api,
     ) -> Result<(), ServiceError> {
-        debug!("configure");
+        trace!("configure");
 
         match serde_json::from_value::<Config>(configuration.0.clone()) {
             Err(err) => Err(ServiceError::Any(err.to_string())),

@@ -19,7 +19,6 @@ pub trait GlobalStateClone: GlobalState
 where
     Self: Clone,
 {
-    #[instrument]
     async fn clone_state() -> Self {
         let var = Self::get_static().await;
         let lock = var.lock().await;
@@ -30,7 +29,6 @@ where
 
 #[async_trait]
 pub trait GlobalStateSet: GlobalState {
-    #[instrument]
     async fn set_state(value: Self) {
         let var = Self::get_static().await;
         let mut lock = var.lock().await;

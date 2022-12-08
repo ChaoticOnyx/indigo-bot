@@ -24,7 +24,7 @@ impl Service for EchoService {
         _payload: &WebhookPayload,
         _api: &Api,
     ) -> Result<WebhookResponse, ServiceError> {
-        debug!("handle");
+        trace!("handle");
 
         let config = serde_json::from_value::<Config>(configuration.0.clone()).unwrap();
         let response = WebhookResponse(serde_json::to_value(config.message).unwrap());
@@ -38,7 +38,7 @@ impl Service for EchoService {
         configuration: &WebhookConfiguration,
         _api: &Api,
     ) -> Result<(), ServiceError> {
-        debug!("configure");
+        trace!("configure");
 
         match serde_json::from_value::<Config>(configuration.0.clone()) {
             Err(err) => Err(ServiceError::Any(err.to_string())),

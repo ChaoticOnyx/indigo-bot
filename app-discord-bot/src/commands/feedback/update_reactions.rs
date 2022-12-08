@@ -13,7 +13,7 @@ use crate::commands::feedback::{helpers::create_feature_embed, send_feature_to_g
 
 #[instrument(skip(ctx))]
 pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
-    debug!("updating reactions");
+    trace!("updating reactions");
 
     let settings = Settings::clone_state().await;
 
