@@ -287,7 +287,9 @@ version = "1.0.0"
 dependencies = [
  "app-macros",
  "app-shared",
+ "reqwest",
  "serde",
+ "sqlx",
  "tracing",
 ]
 
@@ -335,7 +337,6 @@ dependencies = [
  "serde",
  "serde_json",
  "serenity",
- "sqlx",
  "tokio",
  "toml",
  "tracing",

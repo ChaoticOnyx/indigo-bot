@@ -8,32 +8,38 @@ use serde::{Deserialize, Serialize};
 use crate::{Api, Service};
 
 #[derive(Debug, Default)]
-pub struct EchoService {}
+pub struct EchoService;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Config {
+struct Config {
     pub message: String,
 }
 
 #[async_trait]
 impl Service for EchoService {
+    #[instrument]
     async fn handle(
         &self,
         configuration: &WebhookConfiguration,
         _payload: &WebhookPayload,
         _api: &Api,
     ) -> Result<WebhookResponse, ServiceError> {
+        debug!("handle");
+
         let config = serde_json::from_value::<Config>(configuration.0.clone()).unwrap();
         let response = WebhookResponse(serde_json::to_value(config.message).unwrap());
 
         Ok(response)
     }
 
+    #[instrument]
     async fn configure(
         &self,
         configuration: &WebhookConfiguration,
         _api: &Api,
     ) -> Result<(), ServiceError> {
+        debug!("configure");
+
         match serde_json::from_value::<Config>(configuration.0.clone()) {
             Err(err) => Err(ServiceError::Any(err.to_string())),
             Ok(_) => Ok(()),

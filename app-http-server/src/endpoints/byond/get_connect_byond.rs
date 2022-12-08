@@ -30,5 +30,5 @@ pub async fn get_connect_byond(query: web::Query<Query>) -> impl Responder {
     }))
     .await;
 
-    ResponseHelpers::from_api_result(result)
+    ResponseHelpers::from_api_result(result.map(|_| "ok"))
 }

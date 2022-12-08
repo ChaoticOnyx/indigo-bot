@@ -9,8 +9,8 @@ use app_shared::{
         Webhook,
     },
     prelude::*,
-    sqlx::{postgres::PgPoolOptions, Pool, Postgres},
 };
+use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 
 #[derive(Debug)]
 pub struct Database {

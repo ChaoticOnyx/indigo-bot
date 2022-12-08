@@ -22,6 +22,7 @@ impl Server {
                 .service(endpoints::delete::delete_webhook)
                 // BYOND-friendly (retarded) API
                 .service(endpoints::byond::get::connect_byond)
+                .service(endpoints::byond::get::webhook)
         })
         .bind(addrs)
         .unwrap()

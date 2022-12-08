@@ -1,9 +1,5 @@
-﻿pub use app_shared::sqlx::Pool;
-pub use app_shared::{
-    prelude::*,
-    sqlx::{
-        self,
-        postgres::{PgQueryResult, PgRow},
-        Error, Postgres, Row,
-    },
+﻿pub use app_shared::prelude::*;
+pub use sqlx::{
+    postgres::{PgQueryResult, PgRow},
+    Error, Pool, Postgres, Row,
 };

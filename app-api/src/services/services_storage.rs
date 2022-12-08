@@ -7,7 +7,7 @@ use app_shared::{
 
 use crate::Api;
 
-use super::{echo_service::EchoService, Service};
+use super::{ChatToDiscordService, EchoService, Service};
 
 #[derive(Debug)]
 pub struct ServicesStorage {
@@ -27,6 +27,11 @@ impl ServicesStorage {
         self.services.insert(
             ServiceId("echo".to_string()),
             Box::new(EchoService::default()),
+        );
+
+        self.services.insert(
+            ServiceId("chat_to_discord".to_string()),
+            Box::new(ChatToDiscordService::default()),
         );
     }
 
