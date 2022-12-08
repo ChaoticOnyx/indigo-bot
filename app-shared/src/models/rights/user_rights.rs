@@ -23,6 +23,7 @@ impl UserRights {
 
 bitflags! {
     #[derive(Serialize, Deserialize, RightsFlags)]
+    #[serde(transparent)]
     pub struct UserRightsFlags: u64 {
         /// Can get connected accounts.
         const CONNECT_READ = (1 << 0);

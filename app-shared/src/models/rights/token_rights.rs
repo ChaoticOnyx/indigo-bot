@@ -23,6 +23,7 @@ impl TokenRights {
 
 bitflags! {
     #[derive(Serialize, Deserialize, RightsFlags)]
+    #[serde(transparent)]
     pub struct TokenRightsFlags: u64 {
         /// Can create tokens with no more rights than he has himself.
         const TOKEN_CREATE = (1 << 0);

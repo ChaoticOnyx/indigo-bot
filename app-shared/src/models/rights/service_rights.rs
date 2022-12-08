@@ -66,6 +66,7 @@ impl ServiceRights {
 
 bitflags! {
     #[derive(Serialize, Deserialize, RightsFlags)]
+    #[serde(transparent)]
     pub struct ServiceRightsFlags: u64 {
         /// Can create a webhook.
         const WEBHOOK_WRITE = (1 << 0);
