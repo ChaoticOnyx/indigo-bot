@@ -5,6 +5,7 @@ use app_shared::{
     prelude::*,
 };
 
+use crate::services::RoundEndService;
 use crate::Api;
 
 use super::{ChatToDiscordService, EchoService, Service};
@@ -32,6 +33,11 @@ impl ServicesStorage {
         self.services.insert(
             ServiceId("chat_to_discord".to_string()),
             Box::new(ChatToDiscordService::default()),
+        );
+
+        self.services.insert(
+            ServiceId("round_end".to_string()),
+            Box::new(RoundEndService::default()),
         );
     }
 
@@ -64,6 +70,10 @@ impl ServicesStorage {
         debug!("handle");
 
         let service = self.services.get(service_id).unwrap();
-        service.handle(configuration, payload, api).await
+        let result = service.handle(configuration, payload, api).await;
+
+        info!("{result:#?}");
+
+        result
     }
 }

@@ -9,7 +9,6 @@ use app_api::Api;
 use app_shared::{
     models::{Secret, WebhookPayload},
     prelude::*,
-    serde::{Deserialize, Serialize},
     serde_json,
 };
 
