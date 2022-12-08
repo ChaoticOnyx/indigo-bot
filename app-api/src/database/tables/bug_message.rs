@@ -1,5 +1,5 @@
 ﻿use super::prelude::*;
-use app_shared::models::{BugReport, BugReportDescriptor};
+use app_shared::models::BugReport;
 
 pub struct BugMessageTable;
 
@@ -30,10 +30,9 @@ create table if not exists bug_message
         bug_report: BugReport,
     ) -> Result<PgQueryResult, Error> {
         let BugReport {
-            descriptor,
+            issue_number,
             author_id,
         } = bug_report;
-        let BugReportDescriptor(issue_id) = descriptor;
 
         sqlx::query(
             "
@@ -42,7 +41,7 @@ VALUES (DEFAULT, $1, $2);
 ",
         )
         .bind(author_id.0 as i64)
-        .bind(issue_id.0 as i64)
+        .bind(issue_number as i64)
         .execute(pool)
         .await
     }

@@ -1,9 +1,6 @@
 use std::collections::HashSet;
 
-use app_shared::{
-    octocrab::{models::IssueId, Octocrab},
-    prelude::*,
-};
+use app_shared::{octocrab::Octocrab, prelude::*};
 
 #[derive(Debug, Clone)]
 pub struct Github {
@@ -24,7 +21,7 @@ impl Github {
         title: String,
         body: String,
         labels: HashSet<String>,
-    ) -> IssueId {
+    ) -> i64 {
         info!("create_issue");
 
         let (owner, repo) = repository.split_once('/').unwrap();
@@ -38,6 +35,6 @@ impl Github {
             .await
             .unwrap();
 
-        issue.id
+        issue.number
     }
 }

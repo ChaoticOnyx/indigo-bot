@@ -15,7 +15,7 @@ mod webhook;
 pub use account::Account;
 pub use any_user_id::AnyUserId;
 pub use api_token::ApiToken;
-pub use bug_report::{BugReport, BugReportDescriptor};
+pub use bug_report::BugReport;
 pub use byond_ckey::ByondCkey;
 pub use feature_vote::{FeatureVote, FeatureVoteDescriptor};
 pub use game_server::{AnyGameServer, ByondServer, GameServerId, SS14Server};

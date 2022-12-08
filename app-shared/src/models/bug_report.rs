@@ -2,18 +2,15 @@ use crate::prelude::*;
 use octocrab::models::IssueId;
 
 #[derive(Debug, Clone, Copy)]
-pub struct BugReportDescriptor(pub IssueId);
-
-#[derive(Debug, Clone, Copy)]
 pub struct BugReport {
-    pub descriptor: BugReportDescriptor,
+    pub issue_number: i64,
     pub author_id: DiscordUserId,
 }
 
 impl BugReport {
-    pub fn new(author_id: DiscordUserId, issue_id: IssueId) -> Self {
+    pub fn new(author_id: DiscordUserId, issue_number: i64) -> Self {
         Self {
-            descriptor: BugReportDescriptor(issue_id),
+            issue_number,
             author_id,
         }
     }

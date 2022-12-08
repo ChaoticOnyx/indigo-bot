@@ -8,7 +8,6 @@ use app_shared::{
         Secret, ServiceError, ServiceId, TFAToken, TokenRightsFlags, UserRightsFlags, Webhook,
         WebhookConfiguration, WebhookPayload, WebhookResponse,
     },
-    octocrab::models::IssueId,
     prelude::*,
     serde::Serialize,
     state::Settings,
@@ -111,7 +110,7 @@ impl Api {
     }
 
     #[instrument]
-    pub async fn create_feature_issue(&self, title: String, description: String) -> IssueId {
+    pub async fn create_feature_issue(&self, title: String, description: String) -> i64 {
         info!("create_feature_issue");
 
         let settings = Settings::clone_state().await;
@@ -127,7 +126,7 @@ impl Api {
     }
 
     #[instrument]
-    pub async fn create_bug_issue(&self, title: String, description: String) -> IssueId {
+    pub async fn create_bug_issue(&self, title: String, description: String) -> i64 {
         info!("create_bug_issue");
 
         let settings = Settings::clone_state().await;
