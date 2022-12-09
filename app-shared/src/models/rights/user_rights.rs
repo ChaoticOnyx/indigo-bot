@@ -1,33 +1,17 @@
 ﻿use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 
-use super::RightsFlags;
-use app_macros::RightsFlags;
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UserRights {
-    pub flags: UserRightsFlags,
-}
-
-impl UserRights {
-    pub fn full() -> Self {
-        Self {
-            flags: UserRightsFlags::all(),
-        }
-    }
-
-    pub fn has_more_or_equal_rights_than(&self, another: &Self) -> bool {
-        self.flags.has_more_or_equal_rights_than(&another.flags)
-    }
-}
-
 bitflags! {
-    #[derive(Serialize, Deserialize, RightsFlags)]
+    #[derive(Serialize, Deserialize)]
     #[serde(transparent)]
-    pub struct UserRightsFlags: u64 {
+    pub struct UserRights: u64 {
         /// Can get connected accounts.
-        const CONNECT_READ = (1 << 0);
+        const GET_CONNECTED_ACCOUNTS = (1 << 0);
         /// Can connect account.
-        const CONNECT_WRITE = (1 << 1);
+        const ADD_CONNECTED_ACCOUNTS = (1 << 1);
+        /// Can add roles to users with lower rights.
+        const ADD_ROLES = (1 << 2);
+        /// Can remove roles from users with lower rights.
+        const REMOVE_ROLES = (1 << 2);
     }
 }

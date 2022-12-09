@@ -331,6 +331,7 @@ dependencies = [
  "bitflags",
  "chrono",
  "futures-util",
+ "hex_color",
  "octocrab",
  "once_cell",
  "rand",
@@ -347,6 +348,12 @@ name = "arc-swap"
 version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "983cd8b9d4b02a6dc6ffa557262eb5858a27a0038ffffe21a0f133eaa819a164"
+
+[[package]]
+name = "arrayvec"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6"
 
 [[package]]
 name = "async-trait"
@@ -956,6 +963,17 @@ name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+
+[[package]]
+name = "hex_color"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff917051cbc87800de93ddcf39b59c9f2a0a4d809411a341c0ac422771219808"
+dependencies = [
+ "arrayvec",
+ "rand",
+ "serde",
+]
 
 [[package]]
 name = "hkdf"

@@ -6,23 +6,22 @@ mod byond_ckey;
 mod feature_vote;
 mod game_server;
 mod rights;
+mod role;
 mod secret;
 mod service;
 mod ss14_guid;
 mod tfa_token;
 mod webhook;
 
-pub use account::Account;
+pub use account::{Account, AccountId};
 pub use any_user_id::AnyUserId;
 pub use api_token::ApiToken;
 pub use bug_report::BugReport;
 pub use byond_ckey::ByondCkey;
 pub use feature_vote::{FeatureVote, FeatureVoteDescriptor};
 pub use game_server::{AnyGameServer, ByondServer, GameServerId, SS14Server};
-pub use rights::{
-    Rights, ServiceRights, ServiceRightsFlags, TokenRights, TokenRightsFlags, UserRights,
-    UserRightsFlags,
-};
+pub use rights::{Rights, RightsScope, ScopedServiceRights, TokenRights, UserRights};
+pub use role::{Role, RoleId};
 pub use secret::Secret;
 pub use service::{ServiceError, ServiceId};
 pub use ss14_guid::SS14Guid;

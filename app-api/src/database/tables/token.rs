@@ -26,7 +26,8 @@ create table if not exists token
     secret     text      not null,
     expiration text      null,
     rights     jsonb     not null,
-    created_at text      not null
+    created_at text      not null,
+    is_service bool      not null
 );
             ",
         )
@@ -39,12 +40,13 @@ create table if not exists token
         trace!("insert");
 
         sqlx::query(
-            "INSERT INTO token (id, secret, expiration, rights, created_at) VALUES (DEFAULT, $1, $2, $3, $4)",
+            "INSERT INTO token (id, secret, expiration, rights, created_at, is_service) VALUES (DEFAULT, $1, $2, $3, $4, $5)",
         )
             .bind(token.secret.0)
             .bind(token.expiration.map(|date| date.to_string()))
             .bind(serde_json::to_value(&token.rights).unwrap())
             .bind(token.created_at.to_string())
+            .bind(token.is_service)
             .execute(pool)
             .await
     }
@@ -74,7 +76,7 @@ create table if not exists token
         sqlx::query("UPDATE token SET secret = $1, expiration = $2, rights = $3 WHERE id = 1")
             .bind(new_secret.0)
             .bind(new_expiration.map(|date| date.to_string()))
-            .bind(serde_json::to_value(&new_rights).unwrap())
+            .bind(serde_json::to_value(new_rights).unwrap())
             .execute(pool)
             .await
     }
@@ -113,6 +115,7 @@ create table if not exists token
                 .map(|date| DateTime::from_str(&date).unwrap()),
             rights: serde_json::from_value(row.get::<serde_json::Value, _>("rights")).unwrap(),
             created_at: DateTime::from_str(&row.get::<String, _>("created_at")).unwrap(),
+            is_service: row.get::<bool, _>("is_service"),
         }
     }
 }

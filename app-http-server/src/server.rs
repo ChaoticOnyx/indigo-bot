@@ -21,6 +21,7 @@ impl Server {
                 .service(endpoints::post::create_api_token)
                 .service(endpoints::post::webhook)
                 .service(endpoints::post::create_webhook)
+                .service(endpoints::post::add_account_role)
                 // DELETE
                 .service(endpoints::delete::delete_api_token)
                 .service(endpoints::delete::delete_webhook)

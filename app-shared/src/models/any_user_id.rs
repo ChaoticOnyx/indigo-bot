@@ -1,9 +1,10 @@
-﻿use crate::prelude::*;
+﻿use crate::{models::AccountId, prelude::*};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum AnyUserId {
     DiscordId(DiscordUserId),
     ByondCkey(ByondUserId),
     SS14Guid(SS14UserId),
-    InternalId(u64),
+    AccountId(AccountId),
 }

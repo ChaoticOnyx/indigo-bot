@@ -12,12 +12,15 @@ pub struct Webhook {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(transparent)]
 pub struct WebhookConfiguration(pub serde_json::Value);
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(transparent)]
 pub struct WebhookPayload(pub serde_json::Value);
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(transparent)]
 pub struct WebhookResponse(pub serde_json::Value);
 
 impl From<serde_json::Value> for WebhookPayload {

@@ -1,9 +1,11 @@
 use crate::database::tables::{
-    AccountTable, BugMessageTable, FeatureMessageTable, TokenTable, WebhookTable,
+    AccountTable, BugMessageTable, FeatureMessageTable, RoleTable, TokenTable, WebhookTable,
 };
-use app_shared::chrono::Utc;
+use app_shared::models::RoleId;
 use app_shared::{
     chrono::DateTime,
+    chrono::Utc,
+    models::Role,
     models::{
         Account, AnyUserId, ApiToken, BugReport, FeatureVote, FeatureVoteDescriptor, Secret,
         Webhook,
@@ -46,6 +48,7 @@ impl Database {
         AccountTable::create(pool).await.unwrap();
         TokenTable::create(pool).await.unwrap();
         WebhookTable::create(pool).await.unwrap();
+        RoleTable::create(pool).await.unwrap();
     }
 
     #[instrument(skip(self))]
@@ -130,10 +133,15 @@ impl Database {
     }
 
     #[instrument(skip(self))]
-    pub async fn add_account(&self, discord_user_id: DiscordUserId, created_at: DateTime<Utc>) {
+    pub async fn add_account(
+        &self,
+        discord_user_id: DiscordUserId,
+        created_at: DateTime<Utc>,
+        roles: &[Role],
+    ) {
         trace!("add_account");
 
-        AccountTable::insert(&self.pool, discord_user_id, created_at)
+        AccountTable::insert(&self.pool, discord_user_id, created_at, roles)
             .await
             .unwrap();
     }
@@ -194,5 +202,35 @@ impl Database {
         FeatureMessageTable::end_vote(&self.pool, descriptor)
             .await
             .unwrap();
+    }
+
+    #[instrument(skip(self))]
+    pub async fn add_account_role(&self, user_id: AnyUserId, role_id: RoleId) {
+        trace!("add_account_role");
+
+        AccountTable::add_role(&self.pool, user_id, role_id)
+            .await
+            .unwrap();
+    }
+
+    #[instrument(skip(self))]
+    pub async fn get_account_roles(&self, user_id: AnyUserId) -> Vec<Role> {
+        trace!("get_user_roles");
+
+        let user = AccountTable::find_by_user_id(&self.pool, user_id)
+            .await
+            .unwrap()
+            .unwrap();
+
+        RoleTable::find_by_ids(&self.pool, &user.roles)
+            .await
+            .unwrap()
+    }
+
+    #[instrument(skip(self))]
+    pub async fn find_role_by_id(&self, role_id: RoleId) -> Option<Role> {
+        trace!("find_role_by_id");
+
+        RoleTable::find_by_id(&self.pool, role_id).await.unwrap()
     }
 }

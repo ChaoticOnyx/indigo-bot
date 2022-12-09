@@ -8,15 +8,22 @@ pub struct ApiToken {
     pub expiration: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
     pub rights: Rights,
+    pub is_service: bool,
 }
 
 impl ApiToken {
-    pub fn new(secret: Secret, rights: Rights, duration: Option<Duration>) -> Self {
+    pub fn new(
+        secret: Secret,
+        rights: Rights,
+        duration: Option<Duration>,
+        is_service: bool,
+    ) -> Self {
         Self {
             secret,
             rights,
             expiration: duration.map(|duration| Utc::now() + duration),
             created_at: Utc::now(),
+            is_service,
         }
     }
 

@@ -2,6 +2,7 @@ pub mod byond;
 mod delete_api_token;
 mod delete_webhook;
 mod get_identity;
+mod post_add_role;
 mod post_connect_byond;
 mod post_create_api_token;
 mod post_create_webhook;
@@ -12,6 +13,7 @@ pub mod get {
 }
 
 pub mod post {
+    pub use super::post_add_role::post_add_account_role as add_account_role;
     pub use super::post_connect_byond::post_connect_byond as connect_byond;
     pub use super::post_create_api_token::post_create_api_token as create_api_token;
     pub use super::post_create_webhook::post_create_webhook as create_webhook;

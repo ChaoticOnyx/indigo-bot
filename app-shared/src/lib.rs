@@ -5,6 +5,7 @@ pub mod state;
 
 // Re-import external dependencies
 pub use chrono;
+pub use hex_color;
 pub use octocrab;
 pub use once_cell;
 pub use serde;

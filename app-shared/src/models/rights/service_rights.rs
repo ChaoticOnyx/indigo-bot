@@ -1,73 +1,46 @@
-﻿use super::{RightsFlags, RightsScope};
+﻿use super::RightsScope;
 use crate::models::ServiceId;
 use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 
-use app_macros::RightsFlags;
+pub type ScopedServiceRights = RightsScope<ServiceId, ServiceRights>;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ServiceRights {
-    pub scope: RightsScope<ServiceId, ServiceRightsFlags>,
-}
-
-impl ServiceRights {
-    pub fn full() -> Self {
-        Self {
-            scope: RightsScope::Everything(ServiceRightsFlags::all()),
-        }
-    }
-
+impl ScopedServiceRights {
     pub fn can_create_tokens_for_service(&self, service_id: &ServiceId) -> bool {
-        match &self.scope {
-            RightsScope::Everything(rights) => rights.contains(ServiceRightsFlags::WEBHOOK_WRITE),
+        match &self {
+            RightsScope::Everything(rights) => rights.contains(ServiceRights::WEBHOOK_WRITE),
             RightsScope::Some(services) => match services.get(service_id) {
                 None => false,
-                Some(rights) => rights.contains(ServiceRightsFlags::WEBHOOK_WRITE),
+                Some(rights) => rights.contains(ServiceRights::WEBHOOK_WRITE),
             },
             RightsScope::None => false,
         }
     }
 
     pub fn can_delete_tokens_for_service(&self, service_id: &ServiceId) -> bool {
-        match &self.scope {
-            RightsScope::Everything(rights) => rights.contains(ServiceRightsFlags::WEBHOOK_DELETE),
+        match &self {
+            RightsScope::Everything(rights) => rights.contains(ServiceRights::WEBHOOK_DELETE),
             RightsScope::Some(services) => match services.get(service_id) {
                 None => false,
-                Some(rights) => rights.contains(ServiceRightsFlags::WEBHOOK_DELETE),
+                Some(rights) => rights.contains(ServiceRights::WEBHOOK_DELETE),
             },
             RightsScope::None => false,
         }
     }
 
-    pub fn has_more_or_equal_rights_than(&self, another: &Self) -> bool {
-        match (&self.scope, &another.scope) {
-            (RightsScope::None, RightsScope::None) => true,
-            (RightsScope::Everything(_), RightsScope::None) => true,
-            (RightsScope::Everything(flags), RightsScope::Everything(another_flags)) => {
-                flags.has_more_or_equal_rights_than(another_flags)
-            }
-            (RightsScope::Some(_), RightsScope::None) => true,
-            (RightsScope::Some(scope), RightsScope::Some(another_scope)) => {
-                scope
-                    .keys()
-                    .all(|service_id| another_scope.contains_key(service_id))
-                    && another_scope
-                        .iter()
-                        .all(|(another_service_id, another_flags)| {
-                            let flags = scope.get(another_service_id).unwrap();
+    pub fn all() -> Self {
+        Self::Everything(ServiceRights::all())
+    }
 
-                            flags.has_more_or_equal_rights_than(another_flags)
-                        })
-            }
-            (_, _) => false,
-        }
+    pub fn empty() -> Self {
+        Self::None
     }
 }
 
 bitflags! {
-    #[derive(Serialize, Deserialize, RightsFlags)]
+    #[derive(Serialize, Deserialize)]
     #[serde(transparent)]
-    pub struct ServiceRightsFlags: u64 {
+    pub struct ServiceRights: u64 {
         /// Can create a webhook.
         const WEBHOOK_WRITE = (1 << 0);
         /// Can delete a webhook.
