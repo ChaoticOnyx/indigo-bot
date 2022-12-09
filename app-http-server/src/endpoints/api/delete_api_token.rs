@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 use app_shared::{models::Secret, prelude::*};
 
-use crate::response::ResponseHelpers;
+use crate::ResponseHelpers;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Body {
@@ -13,8 +13,8 @@ pub struct Body {
 }
 
 #[instrument]
-#[delete("/api/token")]
-pub async fn delete_api_token(body: web::Json<Body>, secret: BearerAuth) -> impl Responder {
+#[delete("/token")]
+pub async fn endpoint(body: web::Json<Body>, secret: BearerAuth) -> impl Responder {
     trace!("delete_api_token");
 
     let Body { target_secret } = body.0;

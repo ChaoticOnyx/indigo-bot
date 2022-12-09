@@ -50,4 +50,17 @@ pub trait GlobalStateLock: GlobalState {
 
         f(lock.as_mut().unwrap()).await
     }
+
+    fn lock_sync<F, O>(f: F) -> O
+    where
+        F: Send + FnOnce(&mut Self) -> BoxFuture<'_, O>,
+        Self: Sync + Send,
+    {
+        tokio::runtime::Handle::current().block_on(async {
+            let var = Self::get_static().await;
+            let mut lock = var.lock().await;
+
+            f(lock.as_mut().unwrap()).await
+        })
+    }
 }

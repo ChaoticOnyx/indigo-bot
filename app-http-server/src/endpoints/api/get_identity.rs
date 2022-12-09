@@ -3,11 +3,11 @@ use actix_web::{get, Responder};
 
 pub use app_shared::{prelude::*, state::discord_session::DiscordSession};
 
-use crate::response::ResponseHelpers;
+use crate::ResponseHelpers;
 
 #[instrument]
-#[get("/api/identity")]
-pub async fn get_identity() -> impl Responder {
+#[get("/identity")]
+pub async fn endpoint() -> impl Responder {
     trace!("get_identity");
 
     let session = DiscordSession::clone_state().await;

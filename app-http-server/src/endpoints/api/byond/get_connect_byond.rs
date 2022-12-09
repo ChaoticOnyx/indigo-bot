@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use app_shared::{models::Secret, prelude::*};
 
-use crate::response::ResponseHelpers;
+use crate::ResponseHelpers;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Query {
@@ -14,8 +14,8 @@ pub struct Query {
 }
 
 #[instrument]
-#[get("/bapi/connect/byond")]
-pub async fn get_connect_byond(query: web::Query<Query>) -> impl Responder {
+#[get("/byond/connect/byond")]
+pub async fn endpoint(query: web::Query<Query>) -> impl Responder {
     trace!("get_connect_byond");
 
     let Query {

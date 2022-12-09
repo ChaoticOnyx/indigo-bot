@@ -6,7 +6,7 @@ use serde::Deserialize;
 use app_api::Api;
 use app_shared::{models::Secret, prelude::*};
 
-use crate::response::ResponseHelpers;
+use crate::ResponseHelpers;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Body {
@@ -14,8 +14,8 @@ pub struct Body {
 }
 
 #[instrument]
-#[delete("/api/webhook")]
-pub async fn delete_webhook(body: Json<Body>, api_secret: BearerAuth) -> impl Responder {
+#[delete("/webhook")]
+pub async fn endpoint(body: Json<Body>, api_secret: BearerAuth) -> impl Responder {
     trace!("delete_webhook");
 
     let Body { webhook_secret } = body.0;

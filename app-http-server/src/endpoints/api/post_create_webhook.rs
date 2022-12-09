@@ -9,7 +9,7 @@ use app_shared::{
     prelude::*,
 };
 
-use crate::response::ResponseHelpers;
+use crate::ResponseHelpers;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Body {
@@ -19,8 +19,8 @@ pub struct Body {
 }
 
 #[instrument]
-#[post("/api/webhook")]
-pub async fn post_create_webhook(body: Json<Body>, api_secret: BearerAuth) -> impl Responder {
+#[post("/webhook")]
+pub async fn endpoint(body: Json<Body>, api_secret: BearerAuth) -> impl Responder {
     trace!("post_create_api_token");
 
     let Body {

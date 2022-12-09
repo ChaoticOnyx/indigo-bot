@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 use app_shared::{models::Secret, prelude::*};
 
-use crate::response::ResponseHelpers;
+use crate::ResponseHelpers;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Body {
@@ -14,8 +14,8 @@ pub struct Body {
 }
 
 #[instrument]
-#[post("/api/connect/byond")]
-pub async fn post_connect_byond(query: web::Json<Body>, secret: BearerAuth) -> impl Responder {
+#[post("/connect/byond")]
+pub async fn endpoint(query: web::Json<Body>, secret: BearerAuth) -> impl Responder {
     trace!("get_connect_byond");
 
     let Body { ckey, tfa_secret } = query.0;

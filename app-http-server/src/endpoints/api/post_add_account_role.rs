@@ -3,7 +3,7 @@ use actix_web_httpauth::extractors::bearer::BearerAuth;
 use app_api::Api;
 use serde::{Deserialize, Serialize};
 
-use crate::response::ResponseHelpers;
+use crate::ResponseHelpers;
 use app_shared::{
     models::{AccountId, AnyUserId, RoleId, Secret},
     prelude::*,
@@ -15,8 +15,8 @@ pub struct Body {
 }
 
 #[instrument]
-#[post("/api/account/{account_id}/roles")]
-pub async fn post_add_account_role(
+#[post("/account/{account_id}/roles")]
+pub async fn endpoint(
     account_id: web::Path<i64>,
     body: web::Json<Body>,
     secret: BearerAuth,
