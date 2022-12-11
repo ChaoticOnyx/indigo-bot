@@ -1,10 +1,10 @@
+use crate::commands::feedback::config::FeedbackConfig;
 use app_shared::{
     prelude::*,
     serenity::{
         model::prelude::{ChannelId, GuildId, MessageId},
         prelude::Context,
     },
-    state::Settings,
 };
 
 use crate::commands::feedback::forget_feature_message;
@@ -18,7 +18,9 @@ pub async fn message_delete(
 ) {
     trace!("message_delete");
 
-    if channel_id != Settings::clone_state().await.commands.feedback.channel_id {
+    let config = FeedbackConfig::get().await.unwrap();
+
+    if channel_id != config.channel_id {
         return;
     }
 

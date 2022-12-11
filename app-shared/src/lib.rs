@@ -1,14 +1,23 @@
-mod macros;
+pub mod config;
+mod config_loader;
+mod discord_session;
 pub mod models;
 pub mod prelude;
+pub mod settings;
 pub mod state;
+
+pub use config_loader::ConfigLoader;
+pub use discord_session::DiscordSession;
+pub use settings::Settings;
 
 // Re-import external dependencies
 pub use chrono;
+pub use futures_util;
 pub use hex_color;
 pub use octocrab;
 pub use once_cell;
 pub use serde;
 pub use serde_json;
+pub use serde_yaml;
 pub use serenity;
 pub use tokio;

@@ -1,5 +1,4 @@
-use std::net::ToSocketAddrs;
-
+use crate::http_config::HttpConfig;
 use actix_web::{App, HttpServer};
 use app_shared::prelude::*;
 use tera::Tera;
@@ -10,9 +9,11 @@ use crate::templates::Templates;
 pub struct Server;
 
 impl Server {
-    #[instrument(skip(addrs))]
-    pub async fn run(addrs: impl ToSocketAddrs) {
+    #[instrument]
+    pub async fn run() {
         info!("run");
+
+        let config = HttpConfig::get().await.unwrap();
 
         let templates = Tera::new("templates/**/*.html").unwrap();
         Templates::set_state(Templates(templates)).await;
@@ -23,7 +24,7 @@ impl Server {
                 .service(endpoints::hub())
                 .service(endpoints::api())
         })
-        .bind(addrs)
+        .bind(config.address)
         .unwrap()
         .run()
         .await

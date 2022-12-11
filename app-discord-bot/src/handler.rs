@@ -1,4 +1,5 @@
 use crate::commands::{self, feedback::COMMAND_NAME};
+use crate::discord_config::DiscordConfig;
 use app_shared::{
     prelude::*,
     serenity::{
@@ -7,7 +8,7 @@ use app_shared::{
         },
         prelude::*,
     },
-    state::{DiscordSession, Settings},
+    DiscordSession,
 };
 
 pub struct Handler;
@@ -19,9 +20,9 @@ impl EventHandler for Handler {
         trace!("message");
 
         let guild_id = new_message.guild_id;
+        let config = DiscordConfig::get().await.unwrap();
 
-        if guild_id.is_some() && Settings::clone_state().await.discord.guild_id != guild_id.unwrap()
-        {
+        if guild_id.is_some() && config.guild_id != guild_id.unwrap() {
             return;
         }
 
@@ -38,8 +39,9 @@ impl EventHandler for Handler {
     ) {
         trace!("message_delete");
 
-        if guild_id.is_some() && Settings::clone_state().await.discord.guild_id != guild_id.unwrap()
-        {
+        let config = DiscordConfig::get().await.unwrap();
+
+        if guild_id.is_some() && config.guild_id != guild_id.unwrap() {
             return;
         }
 
@@ -56,9 +58,9 @@ impl EventHandler for Handler {
     async fn reaction_add(&self, ctx: Context, reaction: Reaction) {
         trace!("reaction_remove");
 
-        if reaction.guild_id.is_some()
-            && Settings::clone_state().await.discord.guild_id != reaction.guild_id.unwrap()
-        {
+        let config = DiscordConfig::get().await.unwrap();
+
+        if reaction.guild_id.is_some() && config.guild_id != reaction.guild_id.unwrap() {
             return;
         }
 
@@ -69,9 +71,9 @@ impl EventHandler for Handler {
     async fn reaction_remove(&self, ctx: Context, reaction: Reaction) {
         trace!("reaction_remove");
 
-        if reaction.guild_id.is_some()
-            && Settings::clone_state().await.discord.guild_id != reaction.guild_id.unwrap()
-        {
+        let config = DiscordConfig::get().await.unwrap();
+
+        if reaction.guild_id.is_some() && config.guild_id != reaction.guild_id.unwrap() {
             return;
         }
 
@@ -86,8 +88,9 @@ impl EventHandler for Handler {
             user: Some(ready.user.clone()),
         })
         .await;
-        let settings = Settings::clone_state().await;
-        let guild = settings.discord.guild_id;
+
+        let config = DiscordConfig::get().await.unwrap();
+        let guild = config.guild_id;
 
         info!("registering application commands");
         let commands = guild
@@ -116,9 +119,9 @@ impl EventHandler for Handler {
             return;
         };
 
-        if cmd.guild_id.is_some()
-            && Settings::clone_state().await.discord.guild_id != cmd.guild_id.unwrap()
-        {
+        let config = DiscordConfig::get().await.unwrap();
+
+        if cmd.guild_id.is_some() && config.guild_id != cmd.guild_id.unwrap() {
             return;
         }
 

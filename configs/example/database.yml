@@ -1,0 +1,3 @@
+type: DbConfig
+## Не забудьте создать таблицу.
+connect: 'postgres://postgres:root@localhost/indigobot'

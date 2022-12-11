@@ -1,5 +1,6 @@
 #[allow(clippy::module_inception)]
 mod api;
+mod api_config;
 mod database;
 mod github;
 mod services;

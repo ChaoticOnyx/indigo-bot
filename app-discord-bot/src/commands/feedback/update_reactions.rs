@@ -6,18 +6,18 @@ use app_shared::{
         model::prelude::{Embed, Reaction},
         prelude::Context,
     },
-    state::Settings,
 };
 
+use crate::commands::feedback::config::FeedbackConfig;
 use crate::commands::feedback::{helpers::create_feature_embed, send_feature_to_github};
 
 #[instrument(skip(ctx))]
 pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
     trace!("updating reactions");
 
-    let settings = Settings::clone_state().await;
+    let config = FeedbackConfig::get().await.unwrap();
 
-    if reaction.channel_id != settings.commands.feedback.channel_id {
+    if reaction.channel_id != config.channel_id {
         debug!("reaction from another channel");
         return;
     }
@@ -36,19 +36,20 @@ pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
     let mut message = reaction.message(&ctx.http).await.unwrap();
     let mut votes_up = 0;
     let mut votes_down = 0;
-    let vote_up_emoji = settings.commands.feedback.vote_up_emoji.clone();
-    let vote_down_emoji = settings.commands.feedback.vote_down_emoji.clone();
+
+    let vote_up_emoji = config.vote_up_emoji.clone();
+    let vote_down_emoji = config.vote_down_emoji.clone();
 
     for reaction in &message.reactions {
         let emoji = reaction.reaction_type.to_string();
 
         debug!(emoji);
-        debug!(settings.commands.feedback.vote_up_emoji);
-        debug!("{}", emoji == settings.commands.feedback.vote_up_emoji);
+        debug!(config.vote_up_emoji);
+        debug!("{}", emoji == config.vote_up_emoji);
 
-        if emoji == settings.commands.feedback.vote_up_emoji {
+        if emoji == config.vote_up_emoji {
             votes_up = reaction.count - 1;
-        } else if emoji == settings.commands.feedback.vote_down_emoji {
+        } else if emoji == config.vote_down_emoji {
             votes_down = reaction.count - 1;
         }
     }
@@ -75,7 +76,7 @@ pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
         .await
         .unwrap();
 
-    if votes_up.saturating_sub(votes_down) >= settings.commands.feedback.min_feature_up_votes {
+    if votes_up.saturating_sub(votes_down) >= config.min_feature_up_votes {
         Api::lock(async_closure! {
             |api| {
                 api.end_feature_vote(descriptor).await;

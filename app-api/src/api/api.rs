@@ -4,9 +4,9 @@ use app_shared::{
     models::{ApiToken, Rights},
     prelude::*,
     serde::Serialize,
-    state::Settings,
 };
 
+use crate::api_config::ApiConfig;
 use crate::{Database, Github, ServicesStorage, TFATokensStorage};
 
 #[derive(Debug, Clone, Serialize)]
@@ -37,25 +37,21 @@ pub struct Api {
 
 impl Api {
     #[instrument]
-    pub async fn new(settings: &Settings) -> Self {
+    pub async fn new() -> Self {
         info!("creating api");
 
         // GitHub
-        let github = Github::new(settings.github.token.clone());
+        let github = Github::new().await;
 
         // Database
-        let database = Database::connect(&settings.database.connect).await;
+        let database = Database::connect().await;
         database.migrate().await;
 
         // Tokens storage
         let tokens_storage = TFATokensStorage::default();
+        let config = ApiConfig::get().await.unwrap();
 
-        let root_token = ApiToken::new(
-            Settings::clone_state().await.api.root_secret,
-            Rights::full(),
-            None,
-            true,
-        );
+        let root_token = ApiToken::new(config.root_secret, Rights::full(), None, true);
         database.update_root_token(root_token).await;
 
         let mut services_storage = ServicesStorage::new();

@@ -7,11 +7,7 @@ use app_http_server::Server;
 use tracing_loki::url::Url;
 use tracing_subscriber::{prelude::*, Layer};
 
-use app_shared::{
-    prelude::*,
-    state::{DiscordSession, Settings},
-    tokio,
-};
+use app_shared::{prelude::*, tokio, ConfigLoader, DiscordSession, Settings};
 
 async fn setup_logging() {
     use tracing_subscriber::filter::LevelFilter;
@@ -63,18 +59,21 @@ async fn main() {
 
     setup_logging().await;
 
+    // Config Loader
+    ConfigLoader::set_state(ConfigLoader::new("./configs").await).await;
+
     // Session
     DiscordSession::set_state(DiscordSession { user: None }).await;
 
     // Api
-    let api = Api::new(&settings).await;
+    let api = Api::new().await;
     Api::set_state(api).await;
 
     // Discord
     let discord_handle = tokio::spawn(async {
-        BotClient::run(settings.discord.token).await;
+        BotClient::run().await;
     });
 
-    Server::run(settings.server.address).await;
+    Server::run().await;
     discord_handle.await.unwrap();
 }

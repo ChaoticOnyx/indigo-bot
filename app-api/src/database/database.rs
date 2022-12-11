@@ -1,3 +1,4 @@
+use crate::database::db_config::DbConfig;
 use crate::database::tables::{
     AccountTable, BugMessageTable, FeatureMessageTable, RoleTable, TokenTable, WebhookTable,
 };
@@ -21,10 +22,11 @@ pub struct Database {
 
 impl Database {
     #[instrument]
-    pub async fn connect(conn: &str) -> Self {
+    pub async fn connect() -> Self {
         info!("setting up database");
 
-        let pool = PgPoolOptions::new().connect(conn).await.unwrap();
+        let config = DbConfig::get().await.unwrap();
+        let pool = PgPoolOptions::new().connect(&config.connect).await.unwrap();
 
         Self { pool }
     }

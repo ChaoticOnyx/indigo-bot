@@ -1,9 +1,10 @@
 mod endpoints;
 mod html_response;
+mod http_config;
 mod response;
 mod server;
 mod templates;
 
-use response::ResponseHelpers;
 use html_response::HtmlResponse;
+use response::ResponseHelpers;
 pub use server::Server;

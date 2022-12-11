@@ -4,6 +4,7 @@ version = "1.0.0"
 edition = "2021"
 
 [dependencies]
+app-macros = { path = "../app-macros" }
 app-api = { path = "../app-api" }
 app-shared = { path = "../app-shared" }
 

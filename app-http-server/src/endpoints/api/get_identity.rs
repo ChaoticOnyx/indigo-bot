@@ -1,7 +1,7 @@
 use actix_http::StatusCode;
 use actix_web::{get, Responder};
 
-pub use app_shared::{prelude::*, state::discord_session::DiscordSession};
+pub use app_shared::{prelude::*, DiscordSession};
 
 use crate::ResponseHelpers;
 

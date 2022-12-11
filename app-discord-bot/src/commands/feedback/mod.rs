@@ -1,4 +1,5 @@
-﻿mod constants;
+﻿mod config;
+mod constants;
 mod forget_feature_message;
 mod handle_bug_report;
 mod handle_feature_report;

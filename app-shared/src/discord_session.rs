@@ -2,8 +2,6 @@ use crate::prelude::*;
 use once_cell::sync::Lazy;
 use serenity::{model::user::CurrentUser, prelude::Mutex};
 
-use super::GlobalState;
-
 static SESSION: Lazy<Mutex<Option<DiscordSession>>> = Lazy::new(|| Mutex::new(None));
 
 #[derive(Debug, Clone)]

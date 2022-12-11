@@ -71,7 +71,7 @@ VALUES (DEFAULT, $1, $2, $3, $4, $5);
         trace!("find_by_descriptor");
 
         let FeatureVoteDescriptor(message_id, channel_id) = descriptor;
-        sqlx::query("SELECT id FROM feature_message WHERE channel_id = $1 AND message_id = $2")
+        sqlx::query("SELECT * FROM feature_message WHERE channel_id = $1 AND message_id = $2")
             .bind(channel_id.0 as i64)
             .bind(message_id.0 as i64)
             .map(Self::map)

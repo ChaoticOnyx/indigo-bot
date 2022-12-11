@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use crate::commands::feedback::config::FeedbackConfig;
 use app_api::Api;
 use app_shared::{
     models::FeatureVote,
@@ -13,7 +14,6 @@ use app_shared::{
         },
         prelude::Context,
     },
-    state::Settings,
 };
 
 use super::constants::*;
@@ -22,14 +22,14 @@ use crate::commands::feedback::helpers::{create_feature_embed, get_value_as_stri
 #[instrument(skip(ctx))]
 pub async fn handle_feature_report(ctx: &Context, cmd: &ApplicationCommandInteraction) {
     trace!("handle_feature_report");
-    let settings = Settings::clone_state().await;
+    let config = FeedbackConfig::get().await.unwrap();
 
     // Shortcuts
-    let channel_id = &settings.commands.feedback.channel_id;
+    let channel_id = &config.channel_id;
     let user = cmd.user.clone();
     let option = cmd.data.options.first().unwrap();
-    let vote_up_emoji = settings.commands.feedback.vote_up_emoji.clone();
-    let vote_down_emoji = settings.commands.feedback.vote_down_emoji.clone();
+    let vote_up_emoji = config.vote_up_emoji.clone();
+    let vote_down_emoji = config.vote_down_emoji.clone();
     let mut feature_title = String::new();
     let mut feature_description = String::new();
 

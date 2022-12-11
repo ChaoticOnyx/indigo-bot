@@ -2,7 +2,6 @@
 use app_shared::{
     models::{BugReport, FeatureVote, FeatureVoteDescriptor},
     prelude::*,
-    state::Settings,
 };
 
 impl Api {
@@ -45,31 +44,13 @@ impl Api {
     pub async fn create_feature_issue(&self, title: String, description: String) -> i64 {
         trace!("create_feature_issue");
 
-        let settings = Settings::clone_state().await;
-
-        self.github
-            .create_issue(
-                settings.commands.feedback.features_repository,
-                title,
-                description,
-                settings.commands.feedback.feature_issue_labels,
-            )
-            .await
+        self.github.create_feature_issue(title, description).await
     }
 
     #[instrument]
     pub async fn create_bug_issue(&self, title: String, description: String) -> i64 {
         trace!("create_bug_issue");
 
-        let settings = Settings::clone_state().await;
-
-        self.github
-            .create_issue(
-                settings.commands.feedback.bugs_repository,
-                title,
-                description,
-                settings.commands.feedback.bug_issue_labels,
-            )
-            .await
+        self.github.create_bug_issue(title, description).await
     }
 }
