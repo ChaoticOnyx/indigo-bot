@@ -104,12 +104,12 @@ pub fn config(args: TokenStream, item: TokenStream) -> TokenStream {
                 })).await
             }
 
-            async fn save(self) {
+            async fn save(self) -> Self {
                 use app_shared::prelude::GlobalStateLock;
 
                 app_shared::ConfigLoader::lock(app_macros::async_closure!(|cfg| {
-                    cfg.save_config(&self).await;
-                })).await;
+                    cfg.save_config(self).await
+                })).await
             }
 
             fn __type(&self) -> app_shared::config::ConfigType {

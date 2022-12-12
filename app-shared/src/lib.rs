@@ -21,3 +21,4 @@ pub use serde_json;
 pub use serde_yaml;
 pub use serenity;
 pub use tokio;
+pub use itertools;

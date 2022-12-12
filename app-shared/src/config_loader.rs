@@ -129,19 +129,21 @@ impl ConfigLoader {
         }
     }
 
-    pub async fn save_config<T>(&mut self, config: &T)
+    pub async fn save_config<T>(&mut self, config: T) -> T
     where
         T: Config + Sync + Send + 'static,
     {
         let config_type = config.__type();
         let path = self.files.get(&config_type).unwrap();
 
-        *self.configs.get_mut(&config_type).unwrap() = serde_yaml::to_value(config).unwrap();
+        *self.configs.get_mut(&config_type).unwrap() = serde_yaml::to_value(&config).unwrap();
         *self.cache.get_mut(&config_type).unwrap() = Box::new(config.clone());
 
-        fs::write(path, serde_yaml::to_string(config).unwrap())
+        fs::write(path, serde_yaml::to_string(&config).unwrap())
             .await
             .unwrap();
+
+        config
     }
 }
 

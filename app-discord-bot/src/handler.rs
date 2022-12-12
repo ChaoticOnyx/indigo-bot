@@ -1,10 +1,12 @@
 use crate::commands::{self, feedback::COMMAND_NAME};
 use crate::discord_config::DiscordConfig;
+use crate::roles_list;
 use app_shared::{
     prelude::*,
     serenity::{
         model::prelude::{
-            interaction::Interaction, ChannelId, GuildId, Message, MessageId, Reaction, Ready,
+            interaction::Interaction, ChannelId, GuildId, Member, Message, MessageId, Reaction,
+            Ready,
         },
         prelude::*,
     },
@@ -15,6 +17,25 @@ pub struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
+    #[instrument(skip(self, ctx))]
+    async fn guild_member_update(
+        &self,
+        ctx: Context,
+        old_if_available: Option<Member>,
+        new: Member,
+    ) {
+        trace!("guild_member_update");
+
+        let guild_id = new.guild_id;
+        let config = DiscordConfig::get().await.unwrap();
+
+        if config.guild_id != guild_id {
+            return;
+        }
+
+        roles_list::guild_member_update(&ctx, &old_if_available, &new).await;
+    }
+
     #[instrument(skip(self, ctx))]
     async fn message(&self, ctx: Context, new_message: Message) {
         trace!("message");
@@ -109,6 +130,7 @@ impl EventHandler for Handler {
         );
 
         commands::feedback::handlers::ready(&ctx, &ready).await;
+        roles_list::ready(&ctx, &ready).await;
     }
 
     #[instrument(skip(self, ctx))]
