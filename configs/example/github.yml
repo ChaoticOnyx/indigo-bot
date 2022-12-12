@@ -1,6 +1,6 @@
 type: GithubConfig
 ## Токен для работы через API Github.
-#token = 'token'
+#token: 'token'
 
 ## Место, куда будут отправляться иссуи с предложениями. GitHub токен должен иметь доступ к нему.
 #features_repository: 'owner/name'

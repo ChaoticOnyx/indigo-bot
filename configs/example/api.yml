@@ -1,3 +1,3 @@
 type: ApiConfig
 ## Особый секрет с полным доступом ко всему API, в БД он всегда имеет ID равным 1.
-#root_secret = 'secret'
+#root_secret: 'secret'
