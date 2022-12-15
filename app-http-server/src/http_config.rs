@@ -5,4 +5,5 @@ use std::net::SocketAddr;
 #[derive(Debug)]
 pub struct HttpConfig {
     pub address: SocketAddr,
+    pub hot_reload: bool,
 }
