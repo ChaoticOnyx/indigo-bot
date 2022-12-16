@@ -4,7 +4,6 @@ mod api_config;
 mod database;
 mod github;
 mod services;
-mod state;
 mod tfa_tokens_storage;
 
 pub use api::{Api, ApiError};

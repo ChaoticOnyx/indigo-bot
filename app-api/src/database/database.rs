@@ -25,7 +25,7 @@ impl Database {
     pub async fn connect() -> Self {
         info!("setting up database");
 
-        let config = DbConfig::get().await.unwrap();
+        let config = DbConfig::get().unwrap();
         let pool = PgPoolOptions::new().connect(&config.connect).await.unwrap();
 
         Self { pool }

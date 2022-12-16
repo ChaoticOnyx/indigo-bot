@@ -10,7 +10,7 @@ use crate::ResponseHelpers;
 pub async fn endpoint() -> impl Responder {
     trace!("get_identity");
 
-    let session = DiscordSession::clone_state().await;
+    let session = DiscordSession::clone_state();
 
     let Some(user) = session.user else {
 		return ResponseHelpers::new(StatusCode::INTERNAL_SERVER_ERROR, "discord session not found")

@@ -1,66 +1,46 @@
+use std::cell::RefCell;
 use std::fmt::Debug;
 
-use futures_util::future::BoxFuture;
-use once_cell::sync::Lazy;
-use tokio::sync::Mutex;
+use parking_lot::ReentrantMutex;
 
-use crate::prelude::*;
-
-#[async_trait]
 pub trait GlobalState
 where
     Self: Sized + 'static + Debug,
 {
-    async fn get_static() -> &'static Lazy<Mutex<Option<Self>>>;
+    fn get_static() -> &'static ReentrantMutex<RefCell<Option<Self>>>;
 }
 
-#[async_trait]
 pub trait GlobalStateClone: GlobalState
 where
     Self: Clone,
 {
-    async fn clone_state() -> Self {
-        let var = Self::get_static().await;
-        let lock = var.lock().await;
+    fn clone_state() -> Self {
+        let var = Self::get_static();
+        let lock = var.lock();
 
-        lock.clone().unwrap()
+        lock.clone().take().unwrap()
     }
 }
 
-#[async_trait]
 pub trait GlobalStateSet: GlobalState {
-    async fn set_state(value: Self) {
-        let var = Self::get_static().await;
-        let mut lock = var.lock().await;
+    fn set_state(value: Self) {
+        let var = Self::get_static();
+        let lock = var.lock();
 
-        *lock = Some(value);
+        *lock.borrow_mut() = Some(value);
     }
 }
 
-#[async_trait]
 pub trait GlobalStateLock: GlobalState {
-    #[must_use]
-    async fn lock<F, O>(f: F) -> O
+    fn lock<F, O>(f: F) -> O
     where
-        F: Send + FnOnce(&mut Self) -> BoxFuture<'_, O>,
+        F: Send + FnOnce(&mut Self) -> O,
         Self: Sync + Send,
     {
-        let var = Self::get_static().await;
-        let mut lock = var.lock().await;
+        let var = Self::get_static();
+        let lock = var.lock();
+        let mut state = lock.borrow_mut();
 
-        f(lock.as_mut().unwrap()).await
-    }
-
-    fn lock_sync<F, O>(f: F) -> O
-    where
-        F: Send + FnOnce(&mut Self) -> BoxFuture<'_, O>,
-        Self: Sync + Send,
-    {
-        tokio::runtime::Handle::current().block_on(async {
-            let var = Self::get_static().await;
-            let mut lock = var.lock().await;
-
-            f(lock.as_mut().unwrap()).await
-        })
+        f(state.as_mut().unwrap())
     }
 }

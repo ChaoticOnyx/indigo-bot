@@ -1,6 +1,7 @@
 ﻿use actix_web::{post, web, Responder};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use app_api::Api;
+use app_macros::tokio_blocking;
 use serde::{Deserialize, Serialize};
 
 use crate::ResponseHelpers;
@@ -27,11 +28,10 @@ pub async fn endpoint(
     let secret = Secret(secret.token().to_string());
     let Body { role_id } = body.0;
 
-    let response = Api::lock(async_closure!(|api| {
+    let response = Api::lock(tokio_blocking!(|api| {
         api.add_role_to_account(secret, AnyUserId::AccountId(account_id), role_id)
             .await
-    }))
-    .await;
+    }));
 
     ResponseHelpers::from_api_result(response)
 }

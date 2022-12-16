@@ -4,8 +4,6 @@ pub use crate::{
     state::{GlobalState, GlobalStateClone, GlobalStateLock, GlobalStateSet},
 };
 
-pub use app_macros::async_closure;
-
 pub use serenity::model::id::UserId as DiscordUserId;
 pub use serenity::model::user::User as DiscordUser;
 

@@ -1,17 +1,30 @@
 use proc_macro::TokenStream;
+use proc_macro2::Span;
+use proc_macro_crate::{crate_name, FoundCrate};
 use quote::quote;
-use syn::parse::Nothing;
+use std::collections::HashSet;
+use syn::parse::{Nothing, ParseStream};
+use syn::punctuated::Punctuated;
 use syn::{
     parse::Parse, parse_macro_input, parse_quote, Attribute, ExprClosure, Fields, FieldsNamed,
-    Ident, ItemStruct,
+    Ident, ItemStruct, Token,
 };
+
+fn normalize_crate(name: &str) -> Ident {
+    let found_crate = crate_name(name).unwrap_or_else(|_| FoundCrate::Name(name.to_string()));
+
+    match found_crate {
+        FoundCrate::Itself => Ident::new("crate", Span::call_site()),
+        FoundCrate::Name(name) => Ident::new(&name, Span::call_site()),
+    }
+}
 
 struct ValidateApiSecret {
     pub varname: Ident,
 }
 
 impl Parse for ValidateApiSecret {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
         let varname = input.parse()?;
 
         Ok(Self { varname })
@@ -42,17 +55,18 @@ pub fn validate_api_secret(item: TokenStream) -> TokenStream {
 }
 
 #[proc_macro]
-pub fn async_closure(item: TokenStream) -> TokenStream {
+pub fn tokio_blocking(item: TokenStream) -> TokenStream {
     let item = parse_macro_input!(item as ExprClosure);
 
     let inputs = item.inputs;
     let body = item.body;
+    let shared_crate = normalize_crate("app-shared");
 
     let expanded = quote! {
-        {
-            pub use app_shared::futures_util::FutureExt;
-
-            |#inputs| { async move #body }.boxed()
+        |#inputs| {
+            #shared_crate::tokio::runtime::Handle::current().block_on(async {
+                #body
+            })
         }
     };
 
@@ -96,20 +110,20 @@ pub fn config(args: TokenStream, item: TokenStream) -> TokenStream {
     let fn_impl = quote! {
         #[app_shared::prelude::async_trait]
         impl app_shared::config::Config for #struct_ident {
-            async fn get() -> Option<Self> {
+            fn get() -> Option<Self> {
                 use app_shared::prelude::GlobalStateLock;
 
-                app_shared::ConfigLoader::lock(app_macros::async_closure!(|cfg| {
+                app_shared::ConfigLoader::lock(|cfg| {
                     cfg.find_config::<Self>(app_shared::config::ConfigType(String::from(#struct_name)))
-                })).await
+                })
             }
 
-            async fn save(self) -> Self {
+            fn save(self) -> Self {
                 use app_shared::prelude::GlobalStateLock;
 
-                app_shared::ConfigLoader::lock(app_macros::async_closure!(|cfg| {
-                    cfg.save_config(self).await
-                })).await
+                app_shared::ConfigLoader::lock(|cfg| {
+                    cfg.save_config(self)
+                })
             }
 
             fn __type(&self) -> app_shared::config::ConfigType {
@@ -122,6 +136,80 @@ pub fn config(args: TokenStream, item: TokenStream) -> TokenStream {
         #item_struct
         #fn_impl
     };
+
+    TokenStream::from(expanded)
+}
+
+#[derive(Debug, Clone)]
+struct GlobalArgs {
+    pub impl_set: bool,
+    pub impl_lock: bool,
+    pub impl_clone: bool,
+}
+
+impl Parse for GlobalArgs {
+    fn parse(input: ParseStream) -> syn::parse::Result<Self> {
+        let vars: HashSet<String> = Punctuated::<Ident, Token![,]>::parse_terminated(input)?
+            .into_iter()
+            .map(|ident| ident.to_string())
+            .collect();
+
+        Ok(Self {
+            impl_lock: vars.contains("lock"),
+            impl_set: vars.contains("set"),
+            impl_clone: vars.contains("clone"),
+        })
+    }
+}
+
+#[proc_macro_attribute]
+pub fn global(args: TokenStream, item: TokenStream) -> TokenStream {
+    let item_struct = parse_macro_input!(item as ItemStruct);
+    let args = parse_macro_input!(args as GlobalArgs);
+
+    let struct_ident = item_struct.ident.clone();
+    let const_ident = Ident::new(
+        &struct_ident.to_string().to_uppercase(),
+        struct_ident.span(),
+    );
+
+    let shared_crate = normalize_crate("app-shared");
+
+    let mut expanded = quote! {
+        static #const_ident: #shared_crate::parking_lot::ReentrantMutex<std::cell::RefCell<Option<#struct_ident>>> = #shared_crate::parking_lot::ReentrantMutex::new(std::cell::RefCell::new(None));
+
+        #item_struct
+
+        impl #shared_crate::state::GlobalState for #struct_ident {
+            fn get_static() -> &'static #shared_crate::parking_lot::ReentrantMutex<std::cell::RefCell<Option<Self>>> {
+                &#const_ident
+            }
+        }
+    };
+
+    if args.impl_set {
+        expanded = quote! {
+            #expanded
+
+            impl #shared_crate::state::GlobalStateSet for #struct_ident {}
+        }
+    }
+
+    if args.impl_clone {
+        expanded = quote! {
+            #expanded
+
+            impl #shared_crate::state::GlobalStateClone for #struct_ident {}
+        }
+    }
+
+    if args.impl_lock {
+        expanded = quote! {
+            #expanded
+
+            impl #shared_crate::state::GlobalStateLock for #struct_ident {}
+        }
+    }
 
     TokenStream::from(expanded)
 }

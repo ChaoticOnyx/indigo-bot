@@ -10,7 +10,7 @@ use crate::commands::feedback::{helpers::is_user_id_mine, update_reactions};
 pub async fn reaction_remove(ctx: &Context, reaction: &Reaction) {
     trace!("reaction_remove");
 
-    let config = FeedbackConfig::get().await.unwrap();
+    let config = FeedbackConfig::get().unwrap();
 
     if reaction.channel_id != config.channel_id || is_user_id_mine(reaction.user_id.unwrap()).await
     {

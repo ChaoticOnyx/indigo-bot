@@ -348,6 +348,8 @@ dependencies = [
 name = "app-macros"
 version = "1.0.0"
 dependencies = [
+ "proc-macro-crate",
+ "proc-macro2",
  "quote",
  "syn",
 ]
@@ -364,6 +366,7 @@ dependencies = [
  "itertools",
  "octocrab",
  "once_cell",
+ "parking_lot 0.12.1",
  "rand",
  "serde",
  "serde_json",
@@ -1952,6 +1955,17 @@ name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
+
+[[package]]
+name = "proc-macro-crate"
+version = "1.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eda0fc3b0fb7c975631757e14d9049da17374063edb6ebbcbc54d880d4fe94e9"
+dependencies = [
+ "once_cell",
+ "thiserror",
+ "toml",
+]
 
 [[package]]
 name = "proc-macro2"

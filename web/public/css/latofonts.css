@@ -1,0 +1,161 @@
+/* Webfont: Lato-Black */
+@font-face {
+  font-family: "LatoBlack";
+  src: url("/public/fonts/Lato-Black.woff") format("woff");
+  font-style: normal;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-BlackItalic */
+@font-face {
+  font-family: "LatoBlack";
+  src: url("/public/fonts/Lato-BlackItalic.woff") format("woff");
+  font-style: italic;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-Bold */
+@font-face {
+  font-family: "LatoBold";
+  src: url("/public/fonts/Lato-Bold.woff") format("woff");
+  font-style: normal;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-BoldItalic */
+@font-face {
+  font-family: "LatoBold";
+  src: url("/public/fonts/Lato-BoldItalic.woff") format("woff");
+  font-style: italic;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-Hairline */
+@font-face {
+  font-family: "LatoHairline";
+  src: url("/public/fonts/Lato-Hairline.woff") format("woff");
+  font-style: normal;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-HairlineItalic */
+@font-face {
+  font-family: "LatoHairline";
+  src: url("/public/fonts/Lato-HairlineItalic.woff") format("woff");
+  font-style: italic;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-Heavy */
+@font-face {
+  font-family: "LatoHeavy";
+  src: url("/public/fonts/Lato-Heavy.woff") format("woff");
+  font-style: normal;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-HeavyItalic */
+@font-face {
+  font-family: "LatoHeavy";
+  src: url("/public/fonts/Lato-HeavyItalic.woff") format("woff");
+  font-style: italic;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-Italic */
+@font-face {
+  font-family: "Lato";
+  src: url("/public/fonts/Lato-Italic.woff") format("woff");
+  font-style: italic;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-Light */
+@font-face {
+  font-family: "LatoLight";
+  src: url("/public/fonts/Lato-Light.woff") format("woff");
+  font-style: normal;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-LightItalic */
+@font-face {
+  font-family: "LatoLight";
+  src: url("/public/fonts/Lato-LightItalic.woff") format("woff");
+  font-style: italic;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-Medium */
+@font-face {
+  font-family: "LatoMedium";
+  src: url("/public/fonts/Lato-Medium.woff") format("woff");
+  font-style: normal;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-MediumItalic */
+@font-face {
+  font-family: "LatoMedium";
+  src: url("/public/fonts/Lato-MediumItalic.woff") format("woff");
+  font-style: italic;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-Regular */
+@font-face {
+  font-family: "Lato";
+  src: url("/public/fonts/Lato-Regular.woff") format("woff");
+  font-style: normal;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-Semibold */
+@font-face {
+  font-family: "LatoSemibold";
+  src: url("/public/fonts/Lato-Semibold.woff") format("woff");
+  font-style: normal;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-SemiboldItalic */
+@font-face {
+  font-family: "LatoSemibold";
+  src: url("/public/fonts/Lato-SemiboldItalic.woff") format("woff");
+  font-style: italic;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-Thin */
+@font-face {
+  font-family: "LatoThin";
+  src: url("/public/fonts/Lato-Thin.woff") format("woff");
+  font-style: normal;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}
+
+/* Webfont: Lato-ThinItalic */
+@font-face {
+  font-family: "LatoThin";
+  src: url("/public/fonts/Lato-ThinItalic.woff") format("woff");
+  font-style: italic;
+  font-weight: normal;
+  text-rendering: optimizeLegibility;
+}

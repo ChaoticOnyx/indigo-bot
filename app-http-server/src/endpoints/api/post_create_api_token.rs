@@ -1,6 +1,7 @@
 ﻿use actix_web::{post, web, Responder};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use app_api::Api;
+use app_macros::tokio_blocking;
 use serde::Deserialize;
 
 use app_shared::{
@@ -30,13 +31,12 @@ pub async fn endpoint(body: web::Json<Body>, secret: BearerAuth) -> impl Respond
     } = body.0;
     let secret = Secret(secret.token().to_string());
 
-    let result = Api::lock(async_closure!(|api| {
+    let result = Api::lock(tokio_blocking!(|api| {
         let duration = expiration.map(|expiration| expiration - Utc::now());
 
         api.create_api_token(secret, rights, duration, is_service)
             .await
-    }))
-    .await;
+    }));
 
     ResponseHelpers::from_api_result(result)
 }

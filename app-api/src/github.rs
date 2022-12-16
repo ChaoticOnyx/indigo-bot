@@ -20,7 +20,7 @@ pub struct GithubConfig {
 
 impl Github {
     pub async fn new() -> Self {
-        let config = GithubConfig::get().await.unwrap();
+        let config = GithubConfig::get().unwrap();
         let client = Octocrab::builder()
             .personal_token(config.token)
             .build()
@@ -33,7 +33,7 @@ impl Github {
     pub async fn create_feature_issue(&self, title: String, body: String) -> i64 {
         trace!("create_feature_issue");
 
-        let config = GithubConfig::get().await.unwrap();
+        let config = GithubConfig::get().unwrap();
 
         self.create_issue(
             config.features_repository,
@@ -48,7 +48,7 @@ impl Github {
     pub async fn create_bug_issue(&self, title: String, body: String) -> i64 {
         trace!("create_bug_issue");
 
-        let config = GithubConfig::get().await.unwrap();
+        let config = GithubConfig::get().unwrap();
         self.create_issue(config.bugs_repository, title, body, config.bug_issue_labels)
             .await
     }

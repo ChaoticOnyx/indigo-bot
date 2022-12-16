@@ -13,7 +13,7 @@ impl BotClient {
     pub async fn run() {
         trace!("run");
 
-        let config = DiscordConfig::get().await.unwrap();
+        let config = DiscordConfig::get().unwrap();
         let mut client = Client::builder(&config.token, GatewayIntents::all())
             .event_handler(Handler)
             .await

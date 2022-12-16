@@ -33,8 +33,8 @@ struct RolesListConfig {
 pub async fn ready(ctx: &Context, ready: &Ready) {
     info!("ready");
 
-    let mut config = RolesListConfig::get().await.unwrap();
-    let bot_cfg = DiscordConfig::get().await.unwrap();
+    let mut config = RolesListConfig::get().unwrap();
+    let bot_cfg = DiscordConfig::get().unwrap();
     let guild_id: GuildId = bot_cfg.guild_id;
     let mut cached: BTreeMap<RoleId, Vec<User>> = BTreeMap::new();
 
@@ -51,7 +51,7 @@ pub async fn ready(ctx: &Context, ready: &Ready) {
         }
     }
 
-    RolesListConfig::save(config).await;
+    RolesListConfig::save(config);
 }
 
 #[instrument(skip(ctx))]
@@ -67,8 +67,8 @@ pub async fn guild_member_update(ctx: &Context, old_if_available: &Option<Member
 
     roles_to_update.append(&mut new.roles.iter().cloned().collect());
 
-    let mut config = RolesListConfig::get().await.unwrap();
-    let bot_cfg = DiscordConfig::get().await.unwrap();
+    let mut config = RolesListConfig::get().unwrap();
+    let bot_cfg = DiscordConfig::get().unwrap();
     let guild_id: GuildId = bot_cfg.guild_id;
     let mut cached: BTreeMap<RoleId, Vec<User>> = BTreeMap::new();
 
@@ -89,7 +89,7 @@ pub async fn guild_member_update(ctx: &Context, old_if_available: &Option<Member
         }
     }
 
-    RolesListConfig::save(config).await;
+    RolesListConfig::save(config);
 }
 
 #[instrument(skip(ctx))]

@@ -1,13 +1,14 @@
 ﻿use crate::config::ConfigType;
-use once_cell::sync::Lazy;
+use parking_lot::ReentrantMutex;
 use std::any::Any;
+use std::cell::RefCell;
 use std::collections::BTreeMap;
-use tokio::fs;
-use tokio::sync::Mutex;
+use std::fs;
 
 use crate::prelude::*;
 
-static CONFIG_LOADER: Lazy<Mutex<Option<ConfigLoader>>> = Lazy::new(|| Mutex::new(None));
+static CONFIG_LOADER: ReentrantMutex<RefCell<Option<ConfigLoader>>> =
+    ReentrantMutex::new(RefCell::new(None));
 
 #[derive(Debug)]
 pub struct ConfigLoader {
@@ -18,14 +19,18 @@ pub struct ConfigLoader {
 
 impl ConfigLoader {
     #[instrument]
-    pub async fn new(path: &str) -> Self {
+    pub fn new(path: &str) -> Self {
         info!("new");
 
-        let mut read_dir = fs::read_dir(path).await.unwrap();
+        let read_dir = fs::read_dir(path).unwrap();
         let mut configs = BTreeMap::new();
         let mut files = BTreeMap::new();
 
-        while let Some(entry) = read_dir.next_entry().await.unwrap() {
+        for entry in read_dir {
+            let Ok(entry) = entry else {
+                continue;
+            };
+
             let path = entry.path();
             let Some(extension) = path.extension() else {
                 continue
@@ -36,7 +41,7 @@ impl ConfigLoader {
             }
 
             debug!("loading file {}", path.display());
-            let content = fs::read(&path).await.unwrap();
+            let content = fs::read(&path).unwrap();
             let value = match serde_yaml::from_slice::<serde_yaml::Value>(&content) {
                 Err(err) => {
                     error!("error while reading '{}': '{err}'", path.display());
@@ -129,7 +134,7 @@ impl ConfigLoader {
         }
     }
 
-    pub async fn save_config<T>(&mut self, config: T) -> T
+    pub fn save_config<T>(&mut self, config: T) -> T
     where
         T: Config + Sync + Send + 'static,
     {
@@ -139,17 +144,14 @@ impl ConfigLoader {
         *self.configs.get_mut(&config_type).unwrap() = serde_yaml::to_value(&config).unwrap();
         *self.cache.get_mut(&config_type).unwrap() = Box::new(config.clone());
 
-        fs::write(path, serde_yaml::to_string(&config).unwrap())
-            .await
-            .unwrap();
+        fs::write(path, serde_yaml::to_string(&config).unwrap()).unwrap();
 
         config
     }
 }
 
-#[async_trait]
 impl GlobalState for ConfigLoader {
-    async fn get_static() -> &'static Lazy<Mutex<Option<Self>>> {
+    fn get_static() -> &'static ReentrantMutex<RefCell<Option<Self>>> {
         &CONFIG_LOADER
     }
 }

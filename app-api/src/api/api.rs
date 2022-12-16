@@ -1,4 +1,5 @@
-﻿use std::fmt::{Display, Formatter};
+﻿use app_macros::global;
+use std::fmt::{Display, Formatter};
 
 use app_shared::{
     models::{ApiToken, Rights},
@@ -28,6 +29,7 @@ impl Display for ApiError {
 }
 
 #[derive(Debug)]
+#[global(set, lock)]
 pub struct Api {
     pub database: Database,
     pub github: Github,
@@ -49,7 +51,7 @@ impl Api {
 
         // Tokens storage
         let tokens_storage = TFATokensStorage::default();
-        let config = ApiConfig::get().await.unwrap();
+        let config = ApiConfig::get().unwrap();
 
         let root_token = ApiToken::new(config.root_secret, Rights::full(), None, true);
         database.update_root_token(root_token).await;

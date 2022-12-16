@@ -1,4 +1,3 @@
-use crate::prelude::async_trait;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
@@ -28,9 +27,8 @@ impl DerefMut for ConfigType {
     }
 }
 
-#[async_trait]
 pub trait Config: Clone + Serialize + DeserializeOwned + Sync + Send + 'static {
-    async fn get() -> Option<Self>;
-    async fn save(self) -> Self;
+    fn get() -> Option<Self>;
+    fn save(self) -> Self;
     fn __type(&self) -> ConfigType;
 }

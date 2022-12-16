@@ -1,22 +1,11 @@
 use crate::prelude::*;
-use once_cell::sync::Lazy;
+use app_macros::global;
 use serde::{Deserialize, Serialize};
-use serenity::prelude::Mutex;
 
 const SETTINGS_PATH: &str = "settings.toml";
-static SETTINGS: Lazy<Mutex<Option<Settings>>> = Lazy::new(|| Mutex::new(None));
-
-#[async_trait]
-impl GlobalState for Settings {
-    async fn get_static() -> &'static Lazy<Mutex<Option<Self>>> {
-        &SETTINGS
-    }
-}
-
-impl GlobalStateSet for Settings {}
-impl GlobalStateClone for Settings {}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[global(set, clone)]
 pub struct Settings {
     pub logging: LoggingSection,
 }

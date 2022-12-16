@@ -1,7 +1,11 @@
 use crate::http_config::HttpConfig;
+use crate::manifest::Manifest;
 use actix_web::{App, HttpServer};
-use app_shared::chrono::Duration;
-use app_shared::{chrono::Utc, prelude::*, tokio};
+use app_shared::{
+    chrono::{Duration, Utc},
+    prelude::*,
+    tokio,
+};
 use notify::{RecursiveMode, Watcher};
 use std::path::Path;
 use std::sync;
@@ -17,10 +21,14 @@ impl Server {
     pub async fn run() {
         info!("run");
 
-        let config = HttpConfig::get().await.unwrap();
+        let config = HttpConfig::get().unwrap();
 
-        let templates = Tera::new("templates/**/*.html").unwrap();
-        Templates::set_state(Templates(templates)).await;
+        let mut templates = Tera::new("templates/**/*.html").unwrap();
+        templates.register_filter("asset_path", Manifest::asset_path);
+        Templates::set_state(Templates(templates));
+
+        let manifest = Manifest::new();
+        Manifest::set_state(manifest);
 
         if config.hot_reload {
             Self::start_hot_relaod().await;
@@ -28,9 +36,12 @@ impl Server {
 
         HttpServer::new(move || {
             App::new()
-                .service(actix_files::Files::new("/static", "./static"))
-                .service(endpoints::hub())
-                .service(endpoints::api())
+                .wrap(actix_web::middleware::NormalizePath::default())
+                .service(actix_files::Files::new("/public", "./public"))
+                .service(endpoints::api::scope())
+                .service(endpoints::www::scope())
+                .service(endpoints::www::hub::scope())
+                .service(endpoints::www::not_found::endpoint)
         })
         .bind(config.address)
         .unwrap()
@@ -50,6 +61,10 @@ impl Server {
                 .watch(Path::new("./templates"), RecursiveMode::Recursive)
                 .unwrap();
 
+            watcher
+                .watch(Path::new("./public"), RecursiveMode::NonRecursive)
+                .unwrap();
+
             for ev in rx {
                 match ev {
                     Err(err) => error!("{err}"),
@@ -61,10 +76,14 @@ impl Server {
                         }
 
                         debug!("reloading templates");
-                        Templates::lock(async_closure!(|tera| {
-                            tera.full_reload().unwrap();
-                        }))
-                        .await;
+                        Templates::lock(|tera| {
+                            if let Err(err) = tera.full_reload() {
+                                error!("{err}");
+                            }
+                        });
+
+                        debug!("reloading manifest");
+                        Manifest::lock(|manifest| manifest.reload());
                     }
                 }
             }

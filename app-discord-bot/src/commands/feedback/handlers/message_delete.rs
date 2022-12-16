@@ -18,11 +18,11 @@ pub async fn message_delete(
 ) {
     trace!("message_delete");
 
-    let config = FeedbackConfig::get().await.unwrap();
+    let config = FeedbackConfig::get().unwrap();
 
     if channel_id != config.channel_id {
         return;
     }
 
-    forget_feature_message(ctx, channel_id, deleted_message_id).await;
+    forget_feature_message(ctx, channel_id, deleted_message_id);
 }

@@ -10,7 +10,7 @@ mod post_create_api_token;
 mod post_create_webhook;
 mod post_webhook;
 
-pub fn api() -> Scope {
+pub fn scope() -> Scope {
     actix_web::web::scope("/api")
         // GET
         .service(get_identity::endpoint)

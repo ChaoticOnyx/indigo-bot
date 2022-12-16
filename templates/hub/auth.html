@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Хаб - Вход{% endblock title %}
+
+{% block body %}
+<div class="content gap-5 flex flex-col items-center justify-center">
+	<h2 class="text-2xl font-bold">Аутентификация</h2>
+	<form class="tokenForm gap-4 flex flex-col items-center justify-center">
+		<div class="secret">
+			<input maxlength="1" class="input-singleSymbol" type="text" />
+			<input maxlength="1" class="input-singleSymbol" type="text" />
+			<input maxlength="1" class="input-singleSymbol" type="text" />
+			<input maxlength="1" class="input-singleSymbol" type="text" />
+		</div>
+		
+		<button type="submit" class="button-primary w-full">Войти</button>
+		
+		<em class="text-white/80 font-italic text-sm text-center max-w-prose">Для доступа к хабу необходимо ввести выше временный токен, выдаваемый ботом {{ bot.name }}#{{ bot.discriminator }} в дискорде.</em>
+	</form>
+</div>
+
+<script>
+	function handleInput(ev) {
+		ev.preventDefault()
+
+		ev.target.value = ev.data.toUpperCase()
+		ev.target.nextElementSibling?.focus()
+	}
+
+	document.querySelectorAll(".secret input").forEach(el => {
+		el.addEventListener("input", handleInput)
+	})
+</script>
+{% endblock body %}

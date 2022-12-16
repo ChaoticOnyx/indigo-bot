@@ -1,21 +1,10 @@
-﻿use app_shared::{once_cell::sync::Lazy, prelude::*, serenity::prelude::Mutex};
+﻿use app_macros::global;
 use std::ops::{Deref, DerefMut};
 use tera::Tera;
 
-static TEMPLATES: Lazy<Mutex<Option<Templates>>> = Lazy::new(|| Mutex::new(None));
-
 #[derive(Debug, Clone)]
+#[global(set, lock)]
 pub struct Templates(pub Tera);
-
-#[async_trait]
-impl GlobalState for Templates {
-    async fn get_static() -> &'static Lazy<Mutex<Option<Self>>> {
-        &TEMPLATES
-    }
-}
-
-impl GlobalStateSet for Templates {}
-impl GlobalStateLock for Templates {}
 
 impl Deref for Templates {
     type Target = Tera;

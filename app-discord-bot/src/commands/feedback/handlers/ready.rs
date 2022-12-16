@@ -10,7 +10,7 @@ use crate::commands::feedback::helpers::create_and_pin_message;
 pub async fn ready(ctx: &Context, _ready: &Ready) {
     trace!("ready");
 
-    let mut config = FeedbackConfig::get().await.unwrap();
+    let mut config = FeedbackConfig::get().unwrap();
 
     let channel = &config.channel_id;
     let template = config
@@ -37,13 +37,13 @@ pub async fn ready(ctx: &Context, _ready: &Ready) {
 
             let new_message = create_and_pin_message(ctx, channel, &template).await;
             config.template_message_id = Some(new_message.id);
-            config.save().await;
+            config.save();
         }
     } else {
         debug!("pinned message with report template not found, creating a new one");
 
         let new_message = create_and_pin_message(ctx, channel, &template).await;
         config.template_message_id = Some(new_message.id);
-        config.save().await;
+        config.save();
     }
 }

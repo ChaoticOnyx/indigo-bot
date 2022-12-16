@@ -1,5 +1,6 @@
 ﻿use actix_web::{get, web, Responder};
 use app_api::Api;
+use app_macros::tokio_blocking;
 use serde::Deserialize;
 
 use app_shared::{models::Secret, prelude::*};
@@ -24,11 +25,10 @@ pub async fn endpoint(query: web::Query<Query>) -> impl Responder {
         tfa_secret,
     } = query.0;
 
-    let result = Api::lock(async_closure!(|api| {
+    let result = Api::lock(tokio_blocking!(|api| {
         api.connect_byond_account_by_2fa(secret, tfa_secret, ckey)
             .await
-    }))
-    .await;
+    }));
 
     ResponseHelpers::from_api_result(result.map(|_| "ok"))
 }

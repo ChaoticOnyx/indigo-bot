@@ -12,7 +12,7 @@ use app_shared::{prelude::*, tokio, ConfigLoader, DiscordSession, Settings};
 async fn setup_logging() {
     use tracing_subscriber::filter::LevelFilter;
 
-    let settings = Settings::clone_state().await;
+    let settings = Settings::clone_state();
     let filter = LevelFilter::from_str(&settings.logging.log_level).unwrap();
 
     if settings.logging.loki.enabled {
@@ -55,19 +55,19 @@ async fn setup_logging() {
 async fn main() {
     // Settings
     let settings = Settings::load();
-    Settings::set_state(settings.clone()).await;
+    Settings::set_state(settings.clone());
 
     setup_logging().await;
 
     // Config Loader
-    ConfigLoader::set_state(ConfigLoader::new("./configs").await).await;
+    ConfigLoader::set_state(ConfigLoader::new("./configs"));
 
     // Session
-    DiscordSession::set_state(DiscordSession { user: None }).await;
+    DiscordSession::set_state(DiscordSession { user: None });
 
     // Api
     let api = Api::new().await;
-    Api::set_state(api).await;
+    Api::set_state(api);
 
     // Discord
     let discord_handle = tokio::spawn(async {

@@ -27,7 +27,7 @@ impl EventHandler for Handler {
         trace!("guild_member_update");
 
         let guild_id = new.guild_id;
-        let config = DiscordConfig::get().await.unwrap();
+        let config = DiscordConfig::get().unwrap();
 
         if config.guild_id != guild_id {
             return;
@@ -41,7 +41,7 @@ impl EventHandler for Handler {
         trace!("message");
 
         let guild_id = new_message.guild_id;
-        let config = DiscordConfig::get().await.unwrap();
+        let config = DiscordConfig::get().unwrap();
 
         if guild_id.is_some() && config.guild_id != guild_id.unwrap() {
             return;
@@ -60,7 +60,7 @@ impl EventHandler for Handler {
     ) {
         trace!("message_delete");
 
-        let config = DiscordConfig::get().await.unwrap();
+        let config = DiscordConfig::get().unwrap();
 
         if guild_id.is_some() && config.guild_id != guild_id.unwrap() {
             return;
@@ -79,7 +79,7 @@ impl EventHandler for Handler {
     async fn reaction_add(&self, ctx: Context, reaction: Reaction) {
         trace!("reaction_remove");
 
-        let config = DiscordConfig::get().await.unwrap();
+        let config = DiscordConfig::get().unwrap();
 
         if reaction.guild_id.is_some() && config.guild_id != reaction.guild_id.unwrap() {
             return;
@@ -92,7 +92,7 @@ impl EventHandler for Handler {
     async fn reaction_remove(&self, ctx: Context, reaction: Reaction) {
         trace!("reaction_remove");
 
-        let config = DiscordConfig::get().await.unwrap();
+        let config = DiscordConfig::get().unwrap();
 
         if reaction.guild_id.is_some() && config.guild_id != reaction.guild_id.unwrap() {
             return;
@@ -107,10 +107,9 @@ impl EventHandler for Handler {
 
         DiscordSession::set_state(DiscordSession {
             user: Some(ready.user.clone()),
-        })
-        .await;
+        });
 
-        let config = DiscordConfig::get().await.unwrap();
+        let config = DiscordConfig::get().unwrap();
         let guild = config.guild_id;
 
         info!("registering application commands");
@@ -141,7 +140,7 @@ impl EventHandler for Handler {
             return;
         };
 
-        let config = DiscordConfig::get().await.unwrap();
+        let config = DiscordConfig::get().unwrap();
 
         if cmd.guild_id.is_some() && config.guild_id != cmd.guild_id.unwrap() {
             return;

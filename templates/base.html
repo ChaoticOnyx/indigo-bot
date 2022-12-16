@@ -1,0 +1,20 @@
+﻿<!doctype html>
+<html lang="ru">
+
+<head>
+	{% block head %}
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">	
+	<link rel="stylesheet" href="/public/css/normalize.css">
+	<link rel="stylesheet" href="/public/css/latofonts.css">
+	<link rel="stylesheet" href="{{ "base.css" | asset_path }}">
+	<title>{% block title %}{% endblock title %}</title>
+	{% endblock head %}
+</head>
+
+<body>
+	{% block body %}
+	{% endblock body %}
+</body>
+
+</html>
