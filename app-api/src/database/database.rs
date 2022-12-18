@@ -1,8 +1,9 @@
 use crate::database::db_config::DbConfig;
 use crate::database::tables::{
-    AccountTable, BugMessageTable, FeatureMessageTable, RoleTable, TokenTable, WebhookTable,
+    AccountTable, BugMessageTable, FeatureMessageTable, RoleTable, SessionTable, TokenTable,
+    WebhookTable,
 };
-use app_shared::models::RoleId;
+use app_shared::models::{RoleId, Session};
 use app_shared::{
     chrono::DateTime,
     chrono::Utc,
@@ -51,6 +52,7 @@ impl Database {
         TokenTable::create(pool).await.unwrap();
         WebhookTable::create(pool).await.unwrap();
         RoleTable::create(pool).await.unwrap();
+        SessionTable::create(pool).await.unwrap();
     }
 
     #[instrument(skip(self))]
@@ -79,21 +81,15 @@ impl Database {
     }
 
     #[instrument(skip(self))]
-    pub async fn update_root_token(&self, token: ApiToken) {
+    pub async fn create_root_token_if_does_not_exist(&self, token: ApiToken) {
         trace!("update_root_token");
 
-        let has_token = TokenTable::find_by_id(&self.pool, 1)
+        let has_token = TokenTable::find_by_secret(&self.pool, token.secret.clone())
             .await
             .unwrap()
             .is_some();
 
-        if has_token {
-            debug!("updating root token");
-
-            TokenTable::update(&self.pool, token.secret, token.expiration, token.rights)
-                .await
-                .unwrap();
-        } else {
+        if !has_token {
             debug!("creating new root token");
 
             TokenTable::insert(&self.pool, token).await.unwrap();
@@ -234,5 +230,21 @@ impl Database {
         trace!("find_role_by_id");
 
         RoleTable::find_by_id(&self.pool, role_id).await.unwrap()
+    }
+
+    #[instrument(skip(self))]
+    pub async fn find_session_by_secret(&self, session_secret: Secret) -> Option<Session> {
+        trace!("find_session_by_secret");
+
+        SessionTable::find_by_secret(&self.pool, session_secret)
+            .await
+            .unwrap()
+    }
+
+    #[instrument(skip(self))]
+    pub async fn create_session(&self, session: Session) {
+        trace!("create_session");
+
+        SessionTable::insert(&self.pool, session).await.unwrap();
     }
 }

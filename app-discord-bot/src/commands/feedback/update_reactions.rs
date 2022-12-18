@@ -25,7 +25,7 @@ pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
 
     let descriptor = FeatureVoteDescriptor(reaction.message_id, reaction.channel_id);
     let is_vote_ended = Api::lock(tokio_blocking!(|api| {
-        api.is_vote_ended(descriptor).await
+        api.private_api.is_vote_ended(descriptor).await
     }));
 
     if is_vote_ended {
@@ -78,11 +78,11 @@ pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
 
     if votes_up.saturating_sub(votes_down) >= config.min_feature_up_votes {
         Api::lock(tokio_blocking!(|api| {
-            api.end_feature_vote(descriptor).await;
+            api.private_api.end_feature_vote(descriptor).await;
         }));
 
         let feature_vote = Api::lock(tokio_blocking!(|api| {
-            api.get_feature_vote(descriptor).await
+            api.private_api.get_feature_vote(descriptor).await
         }))
         .unwrap();
 
@@ -95,7 +95,7 @@ pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
         }
 
         Api::lock(tokio_blocking!(|api| {
-            api.end_feature_vote(descriptor).await;
+            api.private_api.end_feature_vote(descriptor).await;
         }));
     }
 }

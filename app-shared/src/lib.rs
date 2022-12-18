@@ -16,7 +16,6 @@ pub use futures_util;
 pub use hex_color;
 pub use itertools;
 pub use octocrab;
-pub use once_cell;
 pub use parking_lot;
 pub use serde;
 pub use serde_json;

@@ -90,6 +90,6 @@ pub async fn handle_feature_report(ctx: &Context, cmd: &ApplicationCommandIntera
     };
 
     Api::lock(tokio_blocking!(|api| {
-        api.new_feature_vote(feature_vote).await
+        api.private_api.new_feature_vote(feature_vote).await
     }));
 }

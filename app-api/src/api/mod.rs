@@ -1,8 +1,5 @@
-mod account;
-mod api;
-mod bug_feature;
-mod tfa;
-mod token;
-mod webhook;
+mod private;
+mod public;
 
-pub use api::{Api, ApiError};
+pub use public::Api;
+pub use private::PrivateApi;

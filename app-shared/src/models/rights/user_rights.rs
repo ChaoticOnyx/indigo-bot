@@ -5,13 +5,13 @@ bitflags! {
     #[derive(Serialize, Deserialize)]
     #[serde(transparent)]
     pub struct UserRights: u64 {
-        /// Can get connected accounts.
+        /// Может получать интеграции.
         const GET_CONNECTED_ACCOUNTS = (1 << 0);
-        /// Can connect account.
+        /// Может создавать интеграции.
         const ADD_CONNECTED_ACCOUNTS = (1 << 1);
-        /// Can add roles to users with lower rights.
+        /// Может добавлять роли пользователям с меньшими правами.
         const ADD_ROLES = (1 << 2);
-        /// Can remove roles from users with lower rights.
+        /// Может удалять роли пользователям с меньшими правами.
         const REMOVE_ROLES = (1 << 2);
     }
 }

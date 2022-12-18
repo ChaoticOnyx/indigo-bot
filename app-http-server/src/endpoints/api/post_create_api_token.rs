@@ -22,7 +22,7 @@ pub struct Body {
 #[instrument]
 #[post("/token")]
 pub async fn endpoint(body: web::Json<Body>, secret: BearerAuth) -> impl Responder {
-    trace!("post_create_api_token");
+    trace!("endpoint");
 
     let Body {
         rights,

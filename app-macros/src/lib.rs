@@ -37,7 +37,7 @@ pub fn validate_api_secret(item: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         {
-            let token = self.database.find_api_token_by_secret(#varname).await;
+            let token = self.private_api.database.find_api_token_by_secret(#varname).await;
 
             let Some(token) = token else {
                 return Err(ApiError::Unauthorized("invalid api secret".to_string()))

@@ -22,7 +22,7 @@ pub async fn endpoint(
     body: web::Json<Body>,
     secret: BearerAuth,
 ) -> impl Responder {
-    trace!("post_add_account_role");
+    trace!("endpoint");
 
     let account_id = AccountId(account_id.into_inner());
     let secret = Secret(secret.token().to_string());

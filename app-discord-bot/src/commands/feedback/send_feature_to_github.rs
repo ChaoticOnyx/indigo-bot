@@ -11,7 +11,8 @@ pub async fn send_feature_to_github(message: &Message, author: &DiscordUser) {
     let content = format!("{}\n\n_Этот иссуй был создан автоматически по [сообщению из дискорда]({}). Автор: {author}._", embed.description.unwrap(), message.link());
 
     Api::lock(tokio_blocking!(|api| {
-        api.create_feature_issue(embed.title.unwrap(), content)
+        api.private_api
+            .create_feature_issue(embed.title.unwrap(), content)
             .await;
     }));
 }

@@ -16,7 +16,7 @@ pub struct Body {
 #[instrument]
 #[delete("/token")]
 pub async fn endpoint(body: web::Json<Body>, secret: BearerAuth) -> impl Responder {
-    trace!("delete_api_token");
+    trace!("endpoint");
 
     let Body { target_secret } = body.0;
     let secret = Secret(secret.token().to_string());

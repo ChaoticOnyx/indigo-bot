@@ -2,7 +2,7 @@
 
 use super::prelude::*;
 use app_shared::chrono::Utc;
-use app_shared::models::Rights;
+use app_shared::models::{AccountId, Rights};
 use app_shared::{
     chrono::DateTime,
     models::{ApiToken, Secret},
@@ -20,13 +20,13 @@ impl TokenTable {
             "
 create table if not exists token
 (
-    id         bigserial not null
+    secret     text      not null
         constraint token_pk
-            primary key,
-    secret     text      not null,
+                    primary key,
     expiration text      null,
     rights     jsonb     not null,
     created_at text      not null,
+    creator    bigint    null,
     is_service bool      not null
 );
             ",
@@ -40,12 +40,13 @@ create table if not exists token
         trace!("insert");
 
         sqlx::query(
-            "INSERT INTO token (id, secret, expiration, rights, created_at, is_service) VALUES (DEFAULT, $1, $2, $3, $4, $5)",
+            "INSERT INTO token (secret, expiration, rights, created_at, creator, is_service) VALUES ($1, $2, $3, $4, $5, $6)",
         )
             .bind(token.secret.0)
             .bind(token.expiration.map(|date| date.to_string()))
             .bind(serde_json::to_value(&token.rights).unwrap())
             .bind(token.created_at.to_string())
+            .bind(token.creator.map(|account_id| account_id.0))
             .bind(token.is_service)
             .execute(pool)
             .await
@@ -82,17 +83,6 @@ create table if not exists token
     }
 
     #[instrument]
-    pub async fn find_by_id(pool: &Pool<Postgres>, id: i64) -> Result<Option<ApiToken>, Error> {
-        trace!("find_by_id");
-
-        sqlx::query("SELECT * FROM token WHERE id = $1")
-            .bind(id)
-            .map(Self::map)
-            .fetch_optional(pool)
-            .await
-    }
-
-    #[instrument]
     pub async fn find_by_secret(
         pool: &Pool<Postgres>,
         api_secret: Secret,
@@ -115,6 +105,7 @@ create table if not exists token
                 .map(|date| DateTime::from_str(&date).unwrap()),
             rights: serde_json::from_value(row.get::<serde_json::Value, _>("rights")).unwrap(),
             created_at: DateTime::from_str(&row.get::<String, _>("created_at")).unwrap(),
+            creator: row.get::<Option<i64>, _>("creator").map(AccountId),
             is_service: row.get::<bool, _>("is_service"),
         }
     }

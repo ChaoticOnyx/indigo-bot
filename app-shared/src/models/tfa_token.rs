@@ -5,15 +5,15 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TFAToken {
-    pub user: DiscordUser,
+    pub discord_user_id: DiscordUserId,
     pub secret: Secret,
     pub expiration: DateTime<Utc>,
 }
 
 impl TFAToken {
-    pub fn new(secret: Secret, user: DiscordUser, duration: Duration) -> Self {
+    pub fn new(secret: Secret, discord_user_id: DiscordUserId, duration: Duration) -> Self {
         Self {
-            user,
+            discord_user_id,
             secret,
             expiration: Utc::now() + duration,
         }

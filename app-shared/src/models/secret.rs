@@ -12,7 +12,7 @@ impl Secret {
     pub fn new_random_webhook_secret() -> Self {
         let secret: String = rand::thread_rng()
             .sample_iter(&Alphanumeric)
-            .take(80)
+            .take(256)
             .map(char::from)
             .collect();
 
@@ -22,7 +22,7 @@ impl Secret {
     pub fn new_random_api_secret() -> Self {
         let secret: String = rand::thread_rng()
             .sample_iter(&Alphanumeric)
-            .take(60)
+            .take(256)
             .map(char::from)
             .collect();
 
@@ -32,11 +32,21 @@ impl Secret {
     pub fn new_random_tfa_secret() -> Self {
         let mut rng = rand::thread_rng();
 
-        let secret: String = (0..4)
+        let secret: String = (0..5)
             .map(|_| {
                 let idx = rng.gen_range(0..CHARSET.len());
                 CHARSET[idx] as char
             })
+            .collect();
+
+        Self(secret)
+    }
+
+    pub fn new_random_session_secret() -> Self {
+        let secret: String = rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(256)
+            .map(char::from)
             .collect();
 
         Self(secret)

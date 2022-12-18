@@ -17,7 +17,7 @@ pub struct Query {
 #[instrument]
 #[get("/byond/connect/byond")]
 pub async fn endpoint(query: web::Query<Query>) -> impl Responder {
-    trace!("get_connect_byond");
+    trace!("endpoint");
 
     let Query {
         secret,

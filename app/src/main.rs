@@ -75,5 +75,6 @@ async fn main() {
     });
 
     Server::run().await;
+
     discord_handle.await.unwrap();
 }

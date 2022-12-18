@@ -1,4 +1,4 @@
-﻿use crate::models::{Rights, Secret};
+﻿use crate::models::{AccountId, Rights, Secret};
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -8,6 +8,7 @@ pub struct ApiToken {
     pub expiration: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
     pub rights: Rights,
+    pub creator: Option<AccountId>,
     pub is_service: bool,
 }
 
@@ -15,6 +16,7 @@ impl ApiToken {
     pub fn new(
         secret: Secret,
         rights: Rights,
+        creator: Option<AccountId>,
         duration: Option<Duration>,
         is_service: bool,
     ) -> Self {
@@ -23,6 +25,7 @@ impl ApiToken {
             rights,
             expiration: duration.map(|duration| Utc::now() + duration),
             created_at: Utc::now(),
+            creator,
             is_service,
         }
     }

@@ -1,5 +1,6 @@
 mod account;
 mod any_user_id;
+mod api_error;
 mod api_token;
 mod bug_report;
 mod byond_ckey;
@@ -9,12 +10,14 @@ mod rights;
 mod role;
 mod secret;
 mod service;
+mod session;
 mod ss14_guid;
 mod tfa_token;
 mod webhook;
 
 pub use account::{Account, AccountId};
 pub use any_user_id::AnyUserId;
+pub use api_error::ApiError;
 pub use api_token::ApiToken;
 pub use bug_report::BugReport;
 pub use byond_ckey::ByondCkey;
@@ -24,6 +27,7 @@ pub use rights::{Rights, RightsScope, ScopedServiceRights, TokenRights, UserRigh
 pub use role::{Role, RoleId};
 pub use secret::Secret;
 pub use service::{ServiceError, ServiceId};
+pub use session::Session;
 pub use ss14_guid::SS14Guid;
 pub use tfa_token::TFAToken;
 pub use webhook::{Webhook, WebhookConfiguration, WebhookPayload, WebhookResponse};

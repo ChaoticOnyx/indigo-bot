@@ -11,6 +11,24 @@ pub struct Webhook {
     pub configuration: WebhookConfiguration,
 }
 
+impl Webhook {
+    pub fn new(
+        name: String,
+        secret: Secret,
+        service_id: ServiceId,
+        custom_creation_time: Option<DateTime<Utc>>,
+        configuration: WebhookConfiguration,
+    ) -> Self {
+        Self {
+            name,
+            secret,
+            service_id,
+            created_at: custom_creation_time.unwrap_or_else(|| Utc::now()),
+            configuration,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct WebhookConfiguration(pub serde_json::Value);

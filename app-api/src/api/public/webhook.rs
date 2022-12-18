@@ -1,14 +1,12 @@
-﻿use app_macros::validate_api_secret;
+﻿use crate::Api;
+use app_macros::validate_api_secret;
 use app_shared::{
-    chrono::Utc,
     models::{
-        Secret, ServiceError, ServiceId, Webhook, WebhookConfiguration, WebhookPayload,
+        ApiError, Secret, ServiceError, ServiceId, Webhook, WebhookConfiguration, WebhookPayload,
         WebhookResponse,
     },
     prelude::*,
 };
-
-use crate::{Api, ApiError};
 
 impl Api {
     #[instrument]
@@ -27,7 +25,7 @@ impl Api {
             return Err(ApiError::Forbidden("insufficient access".to_string()));
         }
 
-        if !self.services_storage.is_service_exists(&target) {
+        if !self.private_api.services_storage.is_service_exists(&target) {
             return Err(ApiError::Other("invalid service".to_string()));
         }
 
@@ -36,6 +34,7 @@ impl Api {
         }
 
         match self
+            .private_api
             .services_storage
             .configure_webhook(self, &target, &configuration)
             .await
@@ -44,16 +43,14 @@ impl Api {
             Err(err) => return Err(ApiError::Other(format!("invalid configuration: {err}"))),
         }
 
-        let secret = Secret::new_random_webhook_secret();
-        let webhook = Webhook {
+        let webhook = Webhook::new(
             name,
-            secret,
-            service_id: target,
-            created_at: Utc::now(),
+            self.private_api.create_unique_webhook_secret().await,
+            target,
+            None,
             configuration,
-        };
-
-        self.database.add_webhook(webhook.clone()).await;
+        );
+        self.private_api.database.add_webhook(webhook.clone()).await;
 
         Ok(webhook)
     }
@@ -67,7 +64,11 @@ impl Api {
         trace!("delete_webhook");
 
         let token = validate_api_secret!(api_secret);
-        let webhook = self.database.find_webhook_by_secret(webhook_secret).await;
+        let webhook = self
+            .private_api
+            .database
+            .find_webhook_by_secret(webhook_secret)
+            .await;
 
         let Some(webhook) = webhook else {
             return Err(ApiError::Other("invalid webhook secret".to_string()))
@@ -81,7 +82,10 @@ impl Api {
             return Err(ApiError::Forbidden("insufficient access".to_string()));
         }
 
-        self.database.delete_webhook_by_secret(webhook.secret).await;
+        self.private_api
+            .database
+            .delete_webhook_by_secret(webhook.secret)
+            .await;
 
         Ok(())
     }
@@ -95,6 +99,7 @@ impl Api {
         trace!("handle_webhook");
 
         let webhook = self
+            .private_api
             .database
             .find_webhook_by_secret(webhook_secret.clone())
             .await;
@@ -103,7 +108,8 @@ impl Api {
             return Err(ServiceError::Any("invalid webhook".to_string()))
         };
 
-        self.services_storage
+        self.private_api
+            .services_storage
             .handle(self, &webhook.service_id, &webhook.configuration, &payload)
             .await
     }

@@ -14,7 +14,8 @@ pub fn forget_feature_message(_ctx: &Context, channel_id: ChannelId, message_id:
     trace!("forget_message_delete");
 
     Api::lock(tokio_blocking!(|api| {
-        api.end_feature_vote(FeatureVoteDescriptor(message_id, channel_id))
+        api.private_api
+            .end_feature_vote(FeatureVoteDescriptor(message_id, channel_id))
             .await
     }));
 }

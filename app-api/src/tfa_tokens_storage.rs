@@ -17,7 +17,7 @@ impl TFATokensStorage {
     }
 
     #[instrument(skip(self))]
-    pub fn new_token(&mut self, user: DiscordUser, duration: Duration) -> TFAToken {
+    pub fn new_token(&mut self, discord_user_id: DiscordUserId, duration: Duration) -> TFAToken {
         trace!("new_token");
 
         let mut secret;
@@ -32,7 +32,7 @@ impl TFATokensStorage {
             break;
         }
 
-        let token = TFAToken::new(secret, user, duration);
+        let token = TFAToken::new(secret, discord_user_id, duration);
         self.tokens.push(token.clone());
 
         token
@@ -48,11 +48,11 @@ impl TFATokensStorage {
     }
 
     #[instrument(skip(self))]
-    pub fn find_by_user_id(&self, user_id: DiscordUserId) -> Option<&TFAToken> {
+    pub fn find_by_discord_user_id(&self, discord_user_id: DiscordUserId) -> Option<&TFAToken> {
         trace!("find_by_user_id");
 
         self.tokens
             .iter()
-            .find(|token| token.user.id == user_id && !token.is_expired())
+            .find(|token| token.discord_user_id == discord_user_id && !token.is_expired())
     }
 }

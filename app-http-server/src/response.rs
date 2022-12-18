@@ -1,6 +1,6 @@
 ﻿use actix_http::StatusCode;
 use actix_web::{HttpResponse, HttpResponseBuilder};
-use app_api::ApiError;
+use app_shared::models::ApiError;
 use serde::Serialize;
 
 #[derive(Debug, Clone)]
@@ -22,6 +22,9 @@ impl ResponseHelpers {
             }
             ApiError::Forbidden(err) => HttpResponseBuilder::new(StatusCode::FORBIDDEN).json(err),
             ApiError::Other(err) => HttpResponseBuilder::new(StatusCode::BAD_REQUEST).json(err),
+            ApiError::Internal(err) => {
+                HttpResponseBuilder::new(StatusCode::INTERNAL_SERVER_ERROR).json(err)
+            }
         }
     }
 

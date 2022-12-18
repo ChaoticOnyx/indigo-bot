@@ -20,7 +20,7 @@ pub async fn message(ctx: &Context, new_message: &Message) {
 
     let user = new_message.author.clone();
     let token = Api::lock(tokio_blocking!(|api| {
-        api.get_or_create_tfa_token(user).await
+        api.private_api.get_or_create_tfa_for_account(user.id).await
     }));
 
     new_message

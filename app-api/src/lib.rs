@@ -6,8 +6,5 @@ mod github;
 mod services;
 mod tfa_tokens_storage;
 
-pub use api::{Api, ApiError};
-use database::Database;
-use github::Github;
-use services::{Service, ServicesStorage};
-use tfa_tokens_storage::TFATokensStorage;
+pub use api::{Api, PrivateApi};
+use services::Service;

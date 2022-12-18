@@ -1,18 +1,17 @@
-use crate::http_config::HttpConfig;
-use crate::manifest::Manifest;
-use actix_web::{App, HttpServer};
+use crate::{
+    endpoints, http_config::HttpConfig, manifest::Manifest, middleware::AuthRedirectorBuilder,
+    templates::Templates,
+};
+use actix_session::{storage::CookieSessionStore, SessionMiddleware};
+use actix_web::{cookie::Key, middleware::TrailingSlash, App, HttpServer};
 use app_shared::{
     chrono::{Duration, Utc},
     prelude::*,
     tokio,
 };
 use notify::{RecursiveMode, Watcher};
-use std::path::Path;
-use std::sync;
+use std::{path::Path, sync::mpsc};
 use tera::Tera;
-
-use super::endpoints;
-use crate::templates::Templates;
 
 pub struct Server;
 
@@ -31,12 +30,27 @@ impl Server {
         Manifest::set_state(manifest);
 
         if config.hot_reload {
-            Self::start_hot_relaod().await;
+            Self::start_hot_reload().await;
         }
+
+        let key = Key::from(config.cookies_key.as_bytes());
 
         HttpServer::new(move || {
             App::new()
-                .wrap(actix_web::middleware::NormalizePath::default())
+                .wrap(
+                    AuthRedirectorBuilder::default()
+                        .redirect_to("/hub/auth")
+                        .affected_paths(vec!["/hub/".to_string()])
+                        .build()
+                        .unwrap(),
+                )
+                .wrap(SessionMiddleware::new(
+                    CookieSessionStore::default(),
+                    key.clone(),
+                ))
+                .wrap(actix_web::middleware::NormalizePath::new(
+                    TrailingSlash::Trim,
+                ))
                 .service(actix_files::Files::new("/public", "./public"))
                 .service(endpoints::api::scope())
                 .service(endpoints::www::scope())
@@ -50,9 +64,9 @@ impl Server {
         .unwrap();
     }
 
-    async fn start_hot_relaod() {
+    async fn start_hot_reload() {
         tokio::runtime::Handle::current().spawn(async {
-            let (tx, rx) = sync::mpsc::channel();
+            let (tx, rx) = mpsc::channel();
             let mut watcher = notify::recommended_watcher(tx).unwrap();
             let cooldown = Duration::seconds(1);
             let mut last_event = Utc::now();

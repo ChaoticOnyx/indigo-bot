@@ -74,10 +74,10 @@ pub async fn handle_bug_report(ctx: &Context, cmd: &ApplicationCommandInteractio
     );
 
     let issue_id = Api::lock(tokio_blocking!(|api| {
-        let issue_id = api.create_bug_issue(bug_title, body).await;
+        let issue_id = api.private_api.create_bug_issue(bug_title, body).await;
 
         let bugreport = BugReport::new(author_id, issue_id);
-        api.add_bug_report(bugreport).await;
+        api.private_api.add_bug_report(bugreport).await;
 
         issue_id
     }));
