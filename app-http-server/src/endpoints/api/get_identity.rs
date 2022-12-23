@@ -13,7 +13,7 @@ pub async fn endpoint() -> impl Responder {
     let session = DiscordSession::clone_state();
 
     let Some(user) = session.user else {
-		return ResponseHelpers::new(StatusCode::INTERNAL_SERVER_ERROR, "discord session not found")
+		return ResponseHelpers::new(StatusCode::INTERNAL_SERVER_ERROR, "Discord сессия не найдена")
     };
 
     ResponseHelpers::new(

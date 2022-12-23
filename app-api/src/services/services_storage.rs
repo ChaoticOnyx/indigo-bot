@@ -3,6 +3,7 @@
 use app_shared::{
     models::{ServiceError, ServiceId, WebhookConfiguration, WebhookPayload, WebhookResponse},
     prelude::*,
+    tokio::runtime::Runtime,
 };
 
 use crate::services::RoundEndService;
@@ -13,6 +14,7 @@ use super::{ChatToDiscordService, EchoService, Service};
 #[derive(Debug)]
 pub struct ServicesStorage {
     services: BTreeMap<ServiceId, Box<dyn Service>>,
+    rt: Runtime,
 }
 
 impl ServicesStorage {
@@ -22,6 +24,10 @@ impl ServicesStorage {
 
         Self {
             services: BTreeMap::new(),
+            rt: app_shared::tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap(),
         }
     }
 
@@ -53,7 +59,7 @@ impl ServicesStorage {
     }
 
     #[instrument(skip(self))]
-    pub async fn configure_webhook(
+    pub fn configure_webhook(
         &self,
         api: &Api,
         service_id: &ServiceId,
@@ -62,11 +68,13 @@ impl ServicesStorage {
         trace!("configure_webhook");
 
         let service = self.services.get(service_id).unwrap();
-        service.configure(configuration, api).await
+
+        self.rt
+            .block_on(async { service.configure(configuration, api).await })
     }
 
     #[instrument(skip(self))]
-    pub async fn handle(
+    pub fn handle(
         &self,
         api: &Api,
         service_id: &ServiceId,
@@ -76,7 +84,9 @@ impl ServicesStorage {
         trace!("handle");
 
         let service = self.services.get(service_id).unwrap();
-        let result = service.handle(configuration, payload, api).await;
+        let result = self
+            .rt
+            .block_on(async { service.handle(configuration, payload, api).await });
 
         debug!("{result:#?}");
 

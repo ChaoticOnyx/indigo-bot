@@ -8,7 +8,7 @@ use app_shared::{
 impl PrivateApi {
     /// Создаёт уникальный секрет для сессии.
     #[instrument]
-    pub async fn create_unique_session_secret(&self) -> Secret {
+    pub fn create_unique_session_secret(&self) -> Secret {
         trace!("create_unique_session_secret");
 
         let new_secret = loop {
@@ -17,7 +17,6 @@ impl PrivateApi {
             if self
                 .database
                 .find_session_by_secret(secret.clone())
-                .await
                 .is_none()
             {
                 break secret;
@@ -29,46 +28,47 @@ impl PrivateApi {
 
     /// Возвращает сессию по её секрету.
     #[instrument]
-    pub async fn find_session_by_secret(&self, session_secret: Secret) -> Option<Session> {
+    pub fn find_session_by_secret(&self, session_secret: Secret) -> Option<Session> {
         trace!("find_session_by_secret");
 
-        self.database.find_session_by_secret(session_secret).await
+        self.database.find_session_by_secret(session_secret)
     }
 
     /// Создаёт сессию для указанного аккаунта.
     #[instrument]
-    pub async fn create_session_for_account(
+    pub fn create_session_for_account(
         &self,
         user_id: AnyUserId,
+        user_agent: String,
+        ip: String,
     ) -> Result<Session, ApiError> {
         trace!("create_session_for_account");
 
-        let Some(account) = self.database.find_account(user_id).await else {
+        let Some(account) = self.database.find_account(user_id) else {
             return Err(ApiError::Internal("invalid user_id".to_string()))
         };
 
         let api_token = ApiToken::new(
-            self.create_unique_api_secret().await,
-            self.get_account_rights(AnyUserId::AccountId(account.id), None)
-                .await,
+            self.create_unique_api_secret(),
+            self.get_account_rights(AnyUserId::AccountId(account.id), None),
             None,
             Some(Duration::days(3)),
             false,
         );
 
-        self.database.add_api_token(api_token.clone()).await;
+        self.database.add_api_token(api_token.clone());
 
         let session = Session::new(
-            self.create_unique_session_secret().await,
+            self.create_unique_session_secret(),
             api_token.secret,
             account.id,
             None,
             Duration::days(3),
-            String::new(),
-            String::new(),
+            user_agent,
+            ip,
         );
 
-        self.database.create_session(session.clone()).await;
+        self.database.create_session(session.clone());
 
         Ok(session)
     }

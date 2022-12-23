@@ -1,13 +1,13 @@
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use proc_macro_crate::{crate_name, FoundCrate};
-use quote::quote;
+use quote::{quote, TokenStreamExt};
 use std::collections::HashSet;
 use syn::parse::{Nothing, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::{
-    parse::Parse, parse_macro_input, parse_quote, Attribute, ExprClosure, Fields, FieldsNamed,
-    Ident, ItemStruct, Token,
+    parse::Parse, parse_macro_input, parse_quote, Attribute, Fields, FieldsNamed, Ident,
+    ItemStruct, Token,
 };
 
 fn normalize_crate(name: &str) -> Ident {
@@ -37,7 +37,7 @@ pub fn validate_api_secret(item: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         {
-            let token = self.private_api.database.find_api_token_by_secret(#varname).await;
+            let token = self.private_api.database.find_api_token_by_secret(#varname);
 
             let Some(token) = token else {
                 return Err(ApiError::Unauthorized("invalid api secret".to_string()))
@@ -48,25 +48,6 @@ pub fn validate_api_secret(item: TokenStream) -> TokenStream {
             };
 
             token
-        }
-    };
-
-    TokenStream::from(expanded)
-}
-
-#[proc_macro]
-pub fn tokio_blocking(item: TokenStream) -> TokenStream {
-    let item = parse_macro_input!(item as ExprClosure);
-
-    let inputs = item.inputs;
-    let body = item.body;
-    let shared_crate = normalize_crate("app-shared");
-
-    let expanded = quote! {
-        |#inputs| {
-            #shared_crate::tokio::runtime::Handle::current().block_on(async {
-                #body
-            })
         }
     };
 
@@ -180,7 +161,7 @@ pub fn global(args: TokenStream, item: TokenStream) -> TokenStream {
 
         #item_struct
 
-        impl #shared_crate::state::GlobalState for #struct_ident {
+        impl #shared_crate::global_state::GlobalState for #struct_ident {
             fn get_static() -> &'static #shared_crate::parking_lot::ReentrantMutex<std::cell::RefCell<Option<Self>>> {
                 &#const_ident
             }
@@ -188,27 +169,21 @@ pub fn global(args: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     if args.impl_set {
-        expanded = quote! {
-            #expanded
-
-            impl #shared_crate::state::GlobalStateSet for #struct_ident {}
-        }
+        expanded.append_all(quote! {
+            impl #shared_crate::global_state::GlobalStateSet for #struct_ident {}
+        });
     }
 
     if args.impl_clone {
-        expanded = quote! {
-            #expanded
-
-            impl #shared_crate::state::GlobalStateClone for #struct_ident {}
-        }
+        expanded.append_all(quote! {
+            impl #shared_crate::global_state::GlobalStateClone for #struct_ident {}
+        });
     }
 
     if args.impl_lock {
-        expanded = quote! {
-            #expanded
-
-            impl #shared_crate::state::GlobalStateLock for #struct_ident {}
-        }
+        expanded.append_all(quote! {
+            impl #shared_crate::global_state::GlobalStateLock for #struct_ident {}
+        });
     }
 
     TokenStream::from(expanded)

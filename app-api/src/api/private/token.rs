@@ -4,7 +4,7 @@ use app_shared::{models::Secret, prelude::*};
 impl PrivateApi {
     /// Создаёт уникальный секрет для Api токена.
     #[instrument]
-    pub async fn create_unique_api_secret(&self) -> Secret {
+    pub fn create_unique_api_secret(&self) -> Secret {
         trace!("create_unique_api_secret");
 
         let new_secret = loop {
@@ -13,7 +13,6 @@ impl PrivateApi {
             if self
                 .database
                 .find_api_token_by_secret(secret.clone())
-                .await
                 .is_none()
             {
                 break secret;

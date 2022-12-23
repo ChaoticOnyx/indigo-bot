@@ -8,21 +8,15 @@ use app_shared::{
 impl PrivateApi {
     /// Возвращает существующий или создаёт новый TFA токен для аккаунта.
     #[instrument]
-    pub async fn get_or_create_tfa_for_account(
-        &mut self,
-        discord_user_id: DiscordUserId,
-    ) -> TFAToken {
+    pub fn get_or_create_tfa_for_account(&mut self, discord_user_id: DiscordUserId) -> TFAToken {
         trace!("get_or_create_tfa_for_account");
 
         if self
             .database
             .find_account(AnyUserId::DiscordId(discord_user_id))
-            .await
             .is_none()
         {
-            self.database
-                .add_account(discord_user_id, Utc::now(), &[])
-                .await;
+            self.database.add_account(discord_user_id, Utc::now(), &[]);
         }
 
         self.tokens_storage.remove_expired_tokens();
@@ -43,7 +37,7 @@ impl PrivateApi {
 
     /// Возвращает TFA токен по его секрету.
     #[instrument]
-    pub async fn find_tfa_token_by_secret(&self, secret: Secret) -> Option<TFAToken> {
+    pub fn find_tfa_token_by_secret(&self, secret: Secret) -> Option<TFAToken> {
         trace!("find_tfa_token_by_secret");
 
         self.tokens_storage.find_by_secret(secret).cloned()

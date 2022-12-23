@@ -26,24 +26,22 @@ pub struct PrivateApi {
 
 impl PrivateApi {
     #[instrument]
-    pub async fn new() -> Self {
+    pub fn new() -> Self {
         info!("creating private api");
 
         // GitHub
-        let github = Github::new().await;
+        let github = Github::new();
 
         // Database
-        let database = Database::connect().await;
-        database.migrate().await;
+        let database = Database::connect();
+        database.migrate();
 
         // Tokens storage
         let tokens_storage = TFATokensStorage::default();
         let config = ApiConfig::get().unwrap();
 
         let root_token = ApiToken::new(config.root_secret, Rights::full(), None, None, true);
-        database
-            .create_root_token_if_does_not_exist(root_token)
-            .await;
+        database.create_root_token_if_does_not_exist(root_token);
 
         let mut services_storage = ServicesStorage::new();
         services_storage.register();

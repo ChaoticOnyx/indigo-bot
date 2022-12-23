@@ -1,5 +1,4 @@
 use app_api::Api;
-use app_macros::tokio_blocking;
 use app_shared::{
     models::FeatureVoteDescriptor,
     prelude::*,
@@ -24,9 +23,7 @@ pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
     }
 
     let descriptor = FeatureVoteDescriptor(reaction.message_id, reaction.channel_id);
-    let is_vote_ended = Api::lock(tokio_blocking!(|api| {
-        api.private_api.is_vote_ended(descriptor).await
-    }));
+    let is_vote_ended = Api::lock(|api| api.private_api.is_vote_ended(descriptor));
 
     if is_vote_ended {
         debug!("message not found");
@@ -77,14 +74,11 @@ pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
         .unwrap();
 
     if votes_up.saturating_sub(votes_down) >= config.min_feature_up_votes {
-        Api::lock(tokio_blocking!(|api| {
-            api.private_api.end_feature_vote(descriptor).await;
-        }));
+        Api::lock(|api| {
+            api.private_api.end_feature_vote(descriptor);
+        });
 
-        let feature_vote = Api::lock(tokio_blocking!(|api| {
-            api.private_api.get_feature_vote(descriptor).await
-        }))
-        .unwrap();
+        let feature_vote = Api::lock(|api| api.private_api.get_feature_vote(descriptor)).unwrap();
 
         let author = feature_vote.author_id.to_user(&ctx.http).await.ok();
 
@@ -94,8 +88,8 @@ pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
             warn!("user not found {}", feature_vote.author_id);
         }
 
-        Api::lock(tokio_blocking!(|api| {
-            api.private_api.end_feature_vote(descriptor).await;
-        }));
+        Api::lock(|api| {
+            api.private_api.end_feature_vote(descriptor);
+        });
     }
 }

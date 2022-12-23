@@ -1,9 +1,7 @@
 use crate::constants::COOKIES_SESSION_KEY;
 use actix_http::Payload;
-use actix_session::Session as SessionExtractor;
 use actix_web::{error::ErrorUnauthorized, Error, FromRequest, HttpRequest};
 use app_api::Api;
-use app_macros::tokio_blocking;
 use app_shared::{
     futures_util::future::LocalBoxFuture,
     futures_util::FutureExt,
@@ -24,17 +22,12 @@ impl FromRequest for AuthorizedSession {
         let req = req.clone();
 
         async move {
-            let session = SessionExtractor::from_request(&req, &mut Payload::None)
-                .await
-                .unwrap();
-
-            let Some(session_secret) = session.get(COOKIES_SESSION_KEY).unwrap().map(Secret) else {
+            let Some(session_secret) = req.cookie(COOKIES_SESSION_KEY).map(|cookie| Secret(cookie.value().to_string())) else {
                 return Err(ErrorUnauthorized("has no session"))
             };
 
-            let session: Option<Session> = Api::lock(tokio_blocking!(|api| {
-                api.private_api.find_session_by_secret(session_secret).await
-            }));
+            let session: Option<Session> =
+                Api::lock_async(|api| api.private_api.find_session_by_secret(session_secret)).await.unwrap();
 
             let Some(session) = session else {
                 return Err(ErrorUnauthorized("invalid session"))

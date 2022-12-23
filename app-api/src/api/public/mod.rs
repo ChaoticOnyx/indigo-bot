@@ -1,7 +1,7 @@
 mod account;
 mod api_token;
-mod webhook;
 mod session;
+mod webhook;
 
 use crate::api::PrivateApi;
 use app_macros::global;
@@ -15,11 +15,11 @@ pub struct Api {
 
 impl Api {
     #[instrument]
-    pub async fn new() -> Self {
+    pub fn new() -> Self {
         info!("creating api");
 
         Self {
-            private_api: PrivateApi::new().await,
+            private_api: PrivateApi::new(),
         }
     }
 }

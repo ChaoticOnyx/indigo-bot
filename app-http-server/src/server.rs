@@ -2,66 +2,77 @@ use crate::{
     endpoints, http_config::HttpConfig, manifest::Manifest, middleware::AuthRedirectorBuilder,
     templates::Templates,
 };
-use actix_session::{storage::CookieSessionStore, SessionMiddleware};
-use actix_web::{cookie::Key, middleware::TrailingSlash, App, HttpServer};
+use actix_web::{middleware::TrailingSlash, App, HttpServer};
 use app_shared::{
     chrono::{Duration, Utc},
     prelude::*,
     tokio,
+    tokio::runtime::Runtime,
 };
 use notify::{RecursiveMode, Watcher};
 use std::{path::Path, sync::mpsc};
 use tera::Tera;
 
-pub struct Server;
+#[derive(Debug)]
+pub struct Server {
+    rt: Runtime,
+}
 
 impl Server {
     #[instrument]
-    pub async fn run() {
+    pub fn new() -> Self {
+        trace!("new");
+
+        Self {
+            rt: app_shared::tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap(),
+        }
+    }
+
+    #[instrument]
+    pub fn run(&self) {
         info!("run");
 
         let config = HttpConfig::get().unwrap();
 
-        let mut templates = Tera::new("templates/**/*.html").unwrap();
-        templates.register_filter("asset_path", Manifest::asset_path);
-        Templates::set_state(Templates(templates));
+        self.rt.block_on(async {
+            let mut templates = Tera::new("templates/**/*.html").unwrap();
+            templates.register_filter("asset_path", Manifest::asset_path);
+            Templates::set_state(Templates(templates));
 
-        let manifest = Manifest::new();
-        Manifest::set_state(manifest);
+            let manifest = Manifest::new();
+            Manifest::set_state(manifest);
 
-        if config.hot_reload {
-            Self::start_hot_reload().await;
-        }
+            if config.hot_reload {
+                Self::start_hot_reload().await;
+            }
 
-        let key = Key::from(config.cookies_key.as_bytes());
-
-        HttpServer::new(move || {
-            App::new()
-                .wrap(
-                    AuthRedirectorBuilder::default()
-                        .redirect_to("/hub/auth")
-                        .affected_paths(vec!["/hub/".to_string()])
-                        .build()
-                        .unwrap(),
-                )
-                .wrap(SessionMiddleware::new(
-                    CookieSessionStore::default(),
-                    key.clone(),
-                ))
-                .wrap(actix_web::middleware::NormalizePath::new(
-                    TrailingSlash::Trim,
-                ))
-                .service(actix_files::Files::new("/public", "./public"))
-                .service(endpoints::api::scope())
-                .service(endpoints::www::scope())
-                .service(endpoints::www::hub::scope())
-                .service(endpoints::www::not_found::endpoint)
-        })
-        .bind(config.address)
-        .unwrap()
-        .run()
-        .await
-        .unwrap();
+            HttpServer::new(move || {
+                App::new()
+                    .wrap(
+                        AuthRedirectorBuilder::default()
+                            .redirect_to("/hub/auth")
+                            .affected_paths(vec!["/hub/".to_string()])
+                            .build()
+                            .unwrap(),
+                    )
+                    .wrap(actix_web::middleware::NormalizePath::new(
+                        TrailingSlash::Trim,
+                    ))
+                    .service(actix_files::Files::new("/public", "./public"))
+                    .service(endpoints::api::scope())
+                    .service(endpoints::www::scope())
+                    .service(endpoints::www::hub::scope())
+                    .service(endpoints::www::not_found::endpoint)
+            })
+            .bind(config.address)
+            .unwrap()
+            .run()
+            .await
+            .unwrap();
+        });
     }
 
     async fn start_hot_reload() {
@@ -90,11 +101,13 @@ impl Server {
                         }
 
                         debug!("reloading templates");
-                        Templates::lock(|tera| {
+                        Templates::lock_async(|tera| {
                             if let Err(err) = tera.full_reload() {
                                 error!("{err}");
                             }
-                        });
+                        })
+                        .await
+                        .unwrap();
 
                         debug!("reloading manifest");
                         Manifest::lock(|manifest| manifest.reload());

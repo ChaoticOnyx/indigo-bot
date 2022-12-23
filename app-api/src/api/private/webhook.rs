@@ -5,7 +5,7 @@ use app_shared::prelude::*;
 impl PrivateApi {
     /// Создаёт уникальный секрет для webhook.
     #[instrument]
-    pub async fn create_unique_webhook_secret(&self) -> Secret {
+    pub fn create_unique_webhook_secret(&self) -> Secret {
         trace!("create_unique_webhook_secret");
 
         let new_secret = loop {
@@ -14,7 +14,6 @@ impl PrivateApi {
             if self
                 .database
                 .find_webhook_by_secret(secret.clone())
-                .await
                 .is_none()
             {
                 break secret;

@@ -7,7 +7,7 @@ use app_shared::{
 
 impl Api {
     #[instrument]
-    pub async fn connect_byond_account_by_2fa(
+    pub fn connect_byond_account_by_2fa(
         &self,
         api_secret: Secret,
         tfa_secret: Secret,
@@ -27,22 +27,20 @@ impl Api {
 
         let account = self
             .private_api
-            .find_account_by_tfa_token_secret(tfa_secret)
-            .await;
+            .find_account_by_tfa_token_secret(tfa_secret);
 
         let Some(account) = account else {
             return Err(ApiError::Other("account not found".to_string()))
         };
 
         self.private_api
-            .connect_byond_account(AnyUserId::AccountId(account.id), ckey)
-            .await?;
+            .connect_byond_account(AnyUserId::AccountId(account.id), ckey)?;
 
         Ok(())
     }
 
     #[instrument]
-    pub async fn add_role_to_account(
+    pub fn add_role_to_account(
         &self,
         api_secret: Secret,
         user_id: AnyUserId,
@@ -51,7 +49,7 @@ impl Api {
         trace!("add_role_to_account");
 
         let token = validate_api_secret!(api_secret);
-        let role = self.private_api.database.find_role_by_id(role_id).await;
+        let role = self.private_api.database.find_role_by_id(role_id);
 
         if !token.rights.user.contains(UserRights::ADD_ROLES) {
             return Err(ApiError::Forbidden("insufficient access".to_string()));
@@ -67,10 +65,7 @@ impl Api {
             return Err(ApiError::Forbidden("insufficient access".to_string()));
         }
 
-        let account_rights = self
-            .private_api
-            .get_account_rights(user_id.clone(), None)
-            .await;
+        let account_rights = self.private_api.get_account_rights(user_id.clone(), None);
 
         if (!token.is_service && token.rights < account_rights)
             || (token.is_service && token.rights <= account_rights)
@@ -78,9 +73,7 @@ impl Api {
             return Err(ApiError::Forbidden("insufficient access".to_string()));
         }
 
-        self.private_api
-            .add_role_to_account(user_id, role_id)
-            .await?;
+        self.private_api.add_role_to_account(user_id, role_id)?;
 
         Ok(())
     }

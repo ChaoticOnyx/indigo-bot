@@ -9,7 +9,7 @@ use tracing_subscriber::{prelude::*, Layer};
 
 use app_shared::{prelude::*, tokio, ConfigLoader, DiscordSession, Settings};
 
-async fn setup_logging() {
+fn setup_logging() {
     use tracing_subscriber::filter::LevelFilter;
 
     let settings = Settings::clone_state();
@@ -51,13 +51,12 @@ async fn setup_logging() {
 }
 
 #[instrument]
-#[tokio::main]
-async fn main() {
+fn main() {
     // Settings
     let settings = Settings::load();
     Settings::set_state(settings.clone());
 
-    setup_logging().await;
+    setup_logging();
 
     // Config Loader
     ConfigLoader::set_state(ConfigLoader::new("./configs"));
@@ -66,15 +65,20 @@ async fn main() {
     DiscordSession::set_state(DiscordSession { user: None });
 
     // Api
-    let api = Api::new().await;
+    let api = Api::new();
     Api::set_state(api);
 
     // Discord
-    let discord_handle = tokio::spawn(async {
-        BotClient::run().await;
+    let discord_thread = std::thread::spawn(|| {
+        let client = BotClient::new();
+        client.run();
     });
 
-    Server::run().await;
+    let server_thread = std::thread::spawn(|| {
+        let server = Server::new();
+        server.run();
+    });
 
-    discord_handle.await.unwrap();
+    discord_thread.join().unwrap();
+    server_thread.join().unwrap();
 }

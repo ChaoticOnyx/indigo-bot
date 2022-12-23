@@ -1,16 +1,13 @@
 ﻿use crate::config::ConfigType;
-use parking_lot::ReentrantMutex;
+use app_macros::global;
 use std::any::Any;
-use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::fs;
 
 use crate::prelude::*;
 
-static CONFIG_LOADER: ReentrantMutex<RefCell<Option<ConfigLoader>>> =
-    ReentrantMutex::new(RefCell::new(None));
-
 #[derive(Debug)]
+#[global(lock, set)]
 pub struct ConfigLoader {
     configs: BTreeMap<ConfigType, serde_yaml::Value>,
     cache: BTreeMap<ConfigType, Box<dyn Any + Sync + Send>>,
@@ -149,11 +146,3 @@ impl ConfigLoader {
         config
     }
 }
-
-impl GlobalState for ConfigLoader {
-    fn get_static() -> &'static ReentrantMutex<RefCell<Option<Self>>> {
-        &CONFIG_LOADER
-    }
-}
-impl GlobalStateSet for ConfigLoader {}
-impl GlobalStateLock for ConfigLoader {}

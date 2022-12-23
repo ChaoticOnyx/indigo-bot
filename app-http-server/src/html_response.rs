@@ -20,7 +20,9 @@ impl HtmlResponse {
             None => Context::new(),
         };
 
-        let html = Templates::lock(|tera| tera.render(template_name, &context).unwrap());
+        let html = Templates::lock_async(move |tera| tera.render(template_name, &context).unwrap())
+            .await
+            .unwrap();
 
         HttpResponseBuilder::new(StatusCode::OK)
             .content_type(ContentType::html())

@@ -1,7 +1,6 @@
 pub use crate::{
     config::Config,
-    state,
-    state::{GlobalState, GlobalStateClone, GlobalStateLock, GlobalStateSet},
+    global_state::{GlobalState, GlobalStateClone, GlobalStateLock, GlobalStateSet},
 };
 
 pub use serenity::model::id::UserId as DiscordUserId;

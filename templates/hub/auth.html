@@ -3,32 +3,105 @@
 
 {% block body %}
 <div class="content gap-5 flex flex-col items-center justify-center">
-	<h2 class="text-2xl font-bold">Аутентификация</h2>
-	<form class="tokenForm gap-4 flex flex-col items-center justify-center">
-		<div class="secret">
-			<input maxlength="1" class="input-singleSymbol" type="text" />
-			<input maxlength="1" class="input-singleSymbol" type="text" />
-			<input maxlength="1" class="input-singleSymbol" type="text" />
-			<input maxlength="1" class="input-singleSymbol" type="text" />
-			<input maxlength="1" class="input-singleSymbol" type="text" />
-		</div>
-		
-		<button type="submit" class="button-primary w-full">Войти</button>
-		
-		<em class="text-white/80 font-italic text-sm text-center max-w-prose">Для доступа к хабу необходимо ввести выше временный токен, выдаваемый ботом {{ bot.name }}#{{ bot.discriminator }} в дискорде.</em>
-	</form>
+    <h2 class="text-2xl font-bold">Аутентификация</h2>
+    <form action="/api/auth?redirect=/" class="tokenForm gap-4 flex flex-col items-center justify-center" id="authForm"
+          method="post">
+        <div class="secret" id="secretInputs">
+            <input autocomplete="off" class="input--singleSymbol" id="firstInput" maxlength="1" type="text"/>
+            <input autocomplete="off" class="input--singleSymbol" maxlength="1" type="text"/>
+            <input autocomplete="off" class="input--singleSymbol" maxlength="1" type="text"/>
+            <input autocomplete="off" class="input--singleSymbol" maxlength="1" type="text"/>
+            <input autocomplete="off" class="input--singleSymbol" maxlength="1" type="text"/>
+        </div>
+
+        <div id="errorMessage" hidden="hidden" class="text-red-500">Test!</div>
+        <button class="button--primary w-full" type="submit">Войти</button>
+
+        <em class="text-white/80 font-italic text-sm text-center max-w-prose">Для доступа к хабу необходимо ввести выше
+            временный токен, выдаваемый ботом {{ bot.name }}#{{ bot.discriminator }} в дискорде.</em>
+    </form>
 </div>
 
 <script>
-	function handleInput(ev) {
-		ev.preventDefault()
+    function handleInput(ev) {
+        ev.preventDefault()
 
-		ev.target.value = ev.data.toUpperCase()
-		ev.target.nextElementSibling?.focus()
-	}
+        ev.target.value = ev.target.value.toUpperCase()
+        ev.target.nextElementSibling?.focus()
+    }
 
-	document.querySelectorAll(".secret input").forEach(el => {
-		el.addEventListener("input", handleInput)
-	})
+    function handlePaste(ev) {
+        ev.preventDefault()
+
+        let text = ev.clipboardData.getData('text/plain').trim()
+
+        if (text === '') {
+            return;
+        }
+
+        let isFirst = ev.target.id === 'firstInput'
+        let el;
+
+        if (!isFirst) {
+            el = document.querySelector('#firstInput')
+        } else {
+            el = ev.target
+        }
+
+        let symbolIndex = 0
+        while (el !== null && symbolIndex < text.length) {
+            el.value = text[symbolIndex]
+            el = el.nextElementSibling
+            symbolIndex++
+        }
+    }
+
+    async function handleSubmit(ev) {
+        ev.preventDefault()
+
+        const inputs = document.querySelector("#secretInputs")
+        let tfa_secret = []
+
+        for (const child of inputs.children) {
+            tfa_secret.push(child.value)
+        }
+
+        tfa_secret = tfa_secret.join('')
+            const response = await fetch('/api/auth', {
+                method: 'POST',
+                mode: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    tfa_secret
+                }),
+            })
+
+            if (!response.ok) {
+                const reason = await response.json()
+                const errorText = document.querySelector("#errorMessage")
+                
+                errorText.innerText = `Ошибка при попытке авторизоваться! ${reason}`
+                errorText.hidden = false
+                
+                return;
+            }
+
+            let url = new URLSearchParams(location.search)
+            let newLocation = url.get('redirect_to')
+
+            if (newLocation !== null) {
+                location.href = newLocation
+            }
+    }
+
+    document.querySelectorAll(".secret input").forEach(el => {
+        el.addEventListener("input", handleInput)
+        el.addEventListener("paste", handlePaste)
+    })
+
+    document.querySelector("#authForm").addEventListener("submit", handleSubmit)
 </script>
 {% endblock body %}

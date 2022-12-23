@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use crate::commands::feedback::config::FeedbackConfig;
 use app_api::Api;
-use app_macros::tokio_blocking;
 use app_shared::{
     models::FeatureVote,
     prelude::*,
@@ -89,7 +88,5 @@ pub async fn handle_feature_report(ctx: &Context, cmd: &ApplicationCommandIntera
         ..feature_message.into()
     };
 
-    Api::lock(tokio_blocking!(|api| {
-        api.private_api.new_feature_vote(feature_vote).await
-    }));
+    Api::lock(|api| api.private_api.new_feature_vote(feature_vote));
 }

@@ -43,4 +43,18 @@ pub trait GlobalStateLock: GlobalState {
 
         f(state.as_mut().unwrap())
     }
+
+    fn lock_async<F, O>(f: F) -> tokio::task::JoinHandle<O>
+    where
+        F: Send + 'static + FnOnce(&mut Self) -> O,
+        Self: Sync + Send,
+        O: Send + 'static,
+    {
+        tokio::task::spawn_blocking(move || {
+            let var = Self::get_static();
+            let lock = var.lock();
+            let mut state = lock.borrow_mut();
+            f(state.as_mut().unwrap())
+        })
+    }
 }

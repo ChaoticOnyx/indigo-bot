@@ -6,5 +6,4 @@ use std::net::SocketAddr;
 pub struct HttpConfig {
     pub address: SocketAddr,
     pub hot_reload: bool,
-    pub cookies_key: String,
 }

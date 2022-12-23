@@ -10,7 +10,7 @@ use app_shared::{
 
 impl Api {
     #[instrument]
-    pub async fn create_webhook(
+    pub fn create_webhook(
         &self,
         api_secret: Secret,
         target: ServiceId,
@@ -37,7 +37,6 @@ impl Api {
             .private_api
             .services_storage
             .configure_webhook(self, &target, &configuration)
-            .await
         {
             Ok(_) => (),
             Err(err) => return Err(ApiError::Other(format!("invalid configuration: {err}"))),
@@ -45,18 +44,18 @@ impl Api {
 
         let webhook = Webhook::new(
             name,
-            self.private_api.create_unique_webhook_secret().await,
+            self.private_api.create_unique_webhook_secret(),
             target,
             None,
             configuration,
         );
-        self.private_api.database.add_webhook(webhook.clone()).await;
+        self.private_api.database.add_webhook(webhook.clone());
 
         Ok(webhook)
     }
 
     #[instrument]
-    pub async fn delete_webhook(
+    pub fn delete_webhook(
         &self,
         api_secret: Secret,
         webhook_secret: Secret,
@@ -67,8 +66,7 @@ impl Api {
         let webhook = self
             .private_api
             .database
-            .find_webhook_by_secret(webhook_secret)
-            .await;
+            .find_webhook_by_secret(webhook_secret);
 
         let Some(webhook) = webhook else {
             return Err(ApiError::Other("invalid webhook secret".to_string()))
@@ -84,14 +82,13 @@ impl Api {
 
         self.private_api
             .database
-            .delete_webhook_by_secret(webhook.secret)
-            .await;
+            .delete_webhook_by_secret(webhook.secret);
 
         Ok(())
     }
 
     #[instrument]
-    pub async fn handle_webhook(
+    pub fn handle_webhook(
         &self,
         webhook_secret: Secret,
         payload: WebhookPayload,
@@ -101,16 +98,17 @@ impl Api {
         let webhook = self
             .private_api
             .database
-            .find_webhook_by_secret(webhook_secret.clone())
-            .await;
+            .find_webhook_by_secret(webhook_secret.clone());
 
         let Some(webhook) = webhook else {
             return Err(ServiceError::Any("invalid webhook".to_string()))
         };
 
-        self.private_api
-            .services_storage
-            .handle(self, &webhook.service_id, &webhook.configuration, &payload)
-            .await
+        self.private_api.services_storage.handle(
+            self,
+            &webhook.service_id,
+            &webhook.configuration,
+            &payload,
+        )
     }
 }

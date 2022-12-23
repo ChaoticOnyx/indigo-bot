@@ -1,5 +1,4 @@
 use app_api::Api;
-use app_macros::tokio_blocking;
 use app_shared::{
     prelude::*,
     serenity::{
@@ -19,9 +18,9 @@ pub async fn message(ctx: &Context, new_message: &Message) {
     }
 
     let user = new_message.author.clone();
-    let token = Api::lock(tokio_blocking!(|api| {
-        api.private_api.get_or_create_tfa_for_account(user.id).await
-    }));
+    let token = Api::lock_async(move |api| api.private_api.get_or_create_tfa_for_account(user.id))
+        .await
+        .unwrap();
 
     new_message
         .reply_mention(

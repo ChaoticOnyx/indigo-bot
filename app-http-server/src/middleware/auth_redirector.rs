@@ -1,5 +1,7 @@
+use crate::constants::COOKIES_SESSION_KEY;
 use crate::extractors::AuthorizedSession;
 use actix_http::Payload;
+use actix_web::cookie::Cookie;
 use actix_web::{
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
     http::{header, StatusCode},
@@ -83,8 +85,14 @@ where
                 .ok();
 
             if session.is_none() {
+                let mut cookie = Cookie::new(COOKIES_SESSION_KEY, "");
+                cookie.make_removal();
+
+                let come_back = request_path;
+                let redirect_url = format!("{}?redirect_to={}", redirector.redirect_to, come_back);
                 let response = HttpResponseBuilder::new(StatusCode::TEMPORARY_REDIRECT)
-                    .insert_header((header::LOCATION, redirector.redirect_to))
+                    .insert_header((header::LOCATION, redirect_url))
+                    .cookie(cookie)
                     .finish();
 
                 Ok(req.into_response(response))

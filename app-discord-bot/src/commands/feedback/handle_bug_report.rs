@@ -1,6 +1,5 @@
 use super::constants::*;
 use app_api::Api;
-use app_macros::tokio_blocking;
 use app_shared::{
     models::BugReport,
     prelude::*,
@@ -73,14 +72,13 @@ pub async fn handle_bug_report(ctx: &Context, cmd: &ApplicationCommandInteractio
         "_Этот иссуй был создан автоматически по сообщению из дискорда. Автор: {author}._"
     );
 
-    let issue_id = Api::lock(tokio_blocking!(|api| {
-        let issue_id = api.private_api.create_bug_issue(bug_title, body).await;
+    let issue_id = Api::lock(|api| {
+        let issue_id = api.private_api.create_bug_issue(bug_title, body);
 
         let bugreport = BugReport::new(author_id, issue_id);
-        api.private_api.add_bug_report(bugreport).await;
-
+        api.private_api.add_bug_report(bugreport);
         issue_id
-    }));
+    });
 
     debug!("responding to user");
     cmd.create_interaction_response(&ctx.http, |response| {

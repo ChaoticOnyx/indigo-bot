@@ -8,7 +8,7 @@ use app_shared::{
 
 impl Api {
     #[instrument]
-    pub async fn create_api_token(
+    pub fn create_api_token(
         &self,
         api_secret: Secret,
         rights: Rights,
@@ -34,7 +34,7 @@ impl Api {
         }
 
         let new_token = ApiToken::new(
-            self.private_api.create_unique_api_secret().await,
+            self.private_api.create_unique_api_secret(),
             rights,
             token.creator,
             duration,
@@ -45,28 +45,17 @@ impl Api {
             return Err(ApiError::Other("new token is already expired".to_string()));
         }
 
-        self.private_api
-            .database
-            .add_api_token(new_token.clone())
-            .await;
+        self.private_api.database.add_api_token(new_token.clone());
 
         Ok(new_token)
     }
 
     #[instrument]
-    pub async fn delete_api_token(
-        &self,
-        api_secret: Secret,
-        target: Secret,
-    ) -> Result<(), ApiError> {
+    pub fn delete_api_token(&self, api_secret: Secret, target: Secret) -> Result<(), ApiError> {
         trace!("delete_api_token");
 
         let token = validate_api_secret!(api_secret);
-        let target_token = self
-            .private_api
-            .database
-            .find_api_token_by_secret(target)
-            .await;
+        let target_token = self.private_api.database.find_api_token_by_secret(target);
 
         let Some(target_token) = target_token else {
             return Err(ApiError::Other("target token does not exist".to_string()))
@@ -88,8 +77,7 @@ impl Api {
 
         self.private_api
             .database
-            .delete_api_token_by_secret(target_token.secret)
-            .await;
+            .delete_api_token_by_secret(target_token.secret);
 
         Ok(())
     }

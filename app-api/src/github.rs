@@ -1,11 +1,13 @@
 use app_macros::config;
 use std::collections::BTreeSet;
 
+use app_shared::tokio::runtime::Runtime;
 use app_shared::{octocrab::Octocrab, prelude::*};
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Github {
     client: Octocrab,
+    rt: Runtime,
 }
 
 #[config]
@@ -19,18 +21,22 @@ pub struct GithubConfig {
 }
 
 impl Github {
-    pub async fn new() -> Self {
+    pub fn new() -> Self {
+        let rt = app_shared::tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
         let config = GithubConfig::get().unwrap();
         let client = Octocrab::builder()
             .personal_token(config.token)
             .build()
             .unwrap();
 
-        Self { client }
+        Self { client, rt }
     }
 
     #[instrument(skip(self))]
-    pub async fn create_feature_issue(&self, title: String, body: String) -> i64 {
+    pub fn create_feature_issue(&self, title: String, body: String) -> i64 {
         trace!("create_feature_issue");
 
         let config = GithubConfig::get().unwrap();
@@ -41,20 +47,19 @@ impl Github {
             body,
             config.feature_issue_labels,
         )
-        .await
     }
 
     #[instrument(skip(self))]
-    pub async fn create_bug_issue(&self, title: String, body: String) -> i64 {
+    pub fn create_bug_issue(&self, title: String, body: String) -> i64 {
         trace!("create_bug_issue");
 
         let config = GithubConfig::get().unwrap();
+
         self.create_issue(config.bugs_repository, title, body, config.bug_issue_labels)
-            .await
     }
 
     #[instrument(skip(self))]
-    pub async fn create_issue(
+    pub fn create_issue(
         &self,
         repository: String,
         title: String,
@@ -64,16 +69,19 @@ impl Github {
         trace!("create_issue");
 
         let (owner, repo) = repository.split_once('/').unwrap();
-        let issue = self
-            .client
-            .issues(owner, repo)
-            .create(title)
-            .body(body)
-            .labels(Some(labels.into_iter().collect()))
-            .send()
-            .await
-            .unwrap();
 
-        issue.number
+        self.rt.block_on(async {
+            let issue = self
+                .client
+                .issues(owner, repo)
+                .create(title)
+                .body(body)
+                .labels(Some(labels.into_iter().collect()))
+                .send()
+                .await
+                .unwrap();
+
+            issue.number
+        })
     }
 }

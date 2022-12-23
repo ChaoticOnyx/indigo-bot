@@ -6,7 +6,6 @@ use actix_web::{
 };
 
 use app_api::Api;
-use app_macros::tokio_blocking;
 use app_shared::{
     models::{Secret, WebhookPayload},
     prelude::*,
@@ -24,10 +23,9 @@ pub async fn endpoint(
     let webhook_secret = webhook_secret.into_inner();
     let payload = payload.map(|json| json.into_inner()).unwrap_or_default();
 
-    let result = Api::lock(tokio_blocking!(|api| {
-        api.handle_webhook(webhook_secret, WebhookPayload(payload))
-            .await
-    }));
+    let result = Api::lock_async(|api| api.handle_webhook(webhook_secret, WebhookPayload(payload)))
+        .await
+        .unwrap();
 
     match result {
         Ok(res) => HttpResponseBuilder::new(StatusCode::OK).json(res),
