@@ -26,11 +26,11 @@ impl Api {
                 .contains(TokenRights::SERVICE_TOKEN_CREATE))
             || (!is_service && !token.rights.token.contains(TokenRights::TOKEN_CREATE))
         {
-            return Err(ApiError::Forbidden("insufficient access".to_string()));
+            return Err(ApiError::Forbidden("Недостаточно доступа".to_string()));
         }
 
         if token.rights < rights {
-            return Err(ApiError::Forbidden("insufficient access".to_string()));
+            return Err(ApiError::Forbidden("Недостаточно доступа".to_string()));
         }
 
         let new_token = ApiToken::new(
@@ -42,7 +42,7 @@ impl Api {
         );
 
         if new_token.is_expired() {
-            return Err(ApiError::Other("new token is already expired".to_string()));
+            return Err(ApiError::Other("Новый токен уже устаревший".to_string()));
         }
 
         self.private_api.database.add_api_token(new_token.clone());
@@ -57,12 +57,22 @@ impl Api {
         let token = validate_api_secret!(api_secret);
         let target_token = self.private_api.database.find_api_token_by_secret(target);
 
+        // Никакого брутфорса токенов без прав!
+        if !token.rights.token.contains(TokenRights::TOKEN_DELETE)
+            && token
+                .rights
+                .token
+                .contains(TokenRights::SERVICE_TOKEN_DELETE)
+        {
+            return Err(ApiError::Forbidden("Недостаточно доступа".to_string()));
+        }
+
         let Some(target_token) = target_token else {
-            return Err(ApiError::Other("target token does not exist".to_string()))
+            return Err(ApiError::Other("Целевой токен не существует".to_string()))
         };
 
         if token.rights < target_token.rights {
-            return Err(ApiError::Forbidden("insufficient access".to_string()));
+            return Err(ApiError::Forbidden("Недостаточно доступа".to_string()));
         };
 
         if (target_token.is_service
@@ -72,7 +82,7 @@ impl Api {
                 .contains(TokenRights::SERVICE_TOKEN_DELETE))
             || (!target_token.is_service && !token.rights.token.contains(TokenRights::TOKEN_DELETE))
         {
-            return Err(ApiError::Forbidden("insufficient access".to_string()));
+            return Err(ApiError::Forbidden("Недостаточно доступа".to_string()));
         }
 
         self.private_api

@@ -21,16 +21,20 @@ impl Api {
 
         let token = validate_api_secret!(api_secret);
 
-        if !token.rights.service.can_create_tokens_for_service(&target) {
-            return Err(ApiError::Forbidden("insufficient access".to_string()));
+        if !token
+            .rights
+            .service
+            .can_create_webhooks_for_service(&target)
+        {
+            return Err(ApiError::Forbidden("Недостаточно доступа".to_string()));
         }
 
         if !self.private_api.services_storage.is_service_exists(&target) {
-            return Err(ApiError::Other("invalid service".to_string()));
+            return Err(ApiError::Other("Некорректный сервис".to_string()));
         }
 
         if name.trim().is_empty() {
-            return Err(ApiError::Other("webhook name is empty".to_string()));
+            return Err(ApiError::Other("Пустое название вебхука".to_string()));
         }
 
         match self
@@ -39,7 +43,7 @@ impl Api {
             .configure_webhook(self, &target, &configuration)
         {
             Ok(_) => (),
-            Err(err) => return Err(ApiError::Other(format!("invalid configuration: {err}"))),
+            Err(err) => return Err(ApiError::Other(format!("Некорректная конфигурация: {err}"))),
         }
 
         let webhook = Webhook::new(
@@ -63,21 +67,27 @@ impl Api {
         trace!("delete_webhook");
 
         let token = validate_api_secret!(api_secret);
+
+        // Никакого брутфорса вебхуков без прав!
+        if !token.rights.service.can_delete_webhooks_at_all() {
+            return Err(ApiError::Forbidden("Недостаточно доступа".to_string()));
+        }
+
         let webhook = self
             .private_api
             .database
             .find_webhook_by_secret(webhook_secret);
 
         let Some(webhook) = webhook else {
-            return Err(ApiError::Other("invalid webhook secret".to_string()))
+            return Err(ApiError::Other("Некорректный вебхук".to_string()))
         };
 
         if !token
             .rights
             .service
-            .can_delete_tokens_for_service(&webhook.service_id)
+            .can_delete_webhooks_for_service(&webhook.service_id)
         {
-            return Err(ApiError::Forbidden("insufficient access".to_string()));
+            return Err(ApiError::Forbidden("Недостаточно доступа".to_string()));
         }
 
         self.private_api
@@ -101,7 +111,7 @@ impl Api {
             .find_webhook_by_secret(webhook_secret.clone());
 
         let Some(webhook) = webhook else {
-            return Err(ServiceError::Any("invalid webhook".to_string()))
+            return Err(ServiceError::Any("Некорректный вебхук".to_string()))
         };
 
         self.private_api.services_storage.handle(

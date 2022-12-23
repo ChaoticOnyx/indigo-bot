@@ -45,7 +45,7 @@ impl PrivateApi {
         trace!("create_session_for_account");
 
         let Some(account) = self.database.find_account(user_id) else {
-            return Err(ApiError::Internal("invalid user_id".to_string()))
+            return Err(ApiError::Internal("Некорректный user_id".to_string()))
         };
 
         let api_token = ApiToken::new(

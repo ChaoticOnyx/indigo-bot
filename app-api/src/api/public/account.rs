@@ -22,7 +22,7 @@ impl Api {
             .user
             .contains(UserRights::ADD_CONNECTED_ACCOUNTS)
         {
-            return Err(ApiError::Forbidden("insufficient access".to_string()));
+            return Err(ApiError::Forbidden("Недостаточно доступа".to_string()));
         }
 
         let account = self
@@ -30,7 +30,7 @@ impl Api {
             .find_account_by_tfa_token_secret(tfa_secret);
 
         let Some(account) = account else {
-            return Err(ApiError::Other("account not found".to_string()))
+            return Err(ApiError::Other("Аккаунт не найден".to_string()))
         };
 
         self.private_api
@@ -52,17 +52,17 @@ impl Api {
         let role = self.private_api.database.find_role_by_id(role_id);
 
         if !token.rights.user.contains(UserRights::ADD_ROLES) {
-            return Err(ApiError::Forbidden("insufficient access".to_string()));
+            return Err(ApiError::Forbidden("Недостаточно доступа".to_string()));
         }
 
         let Some(role) = role else {
-            return Err(ApiError::Other("invalid role_id".to_string()))
+            return Err(ApiError::Other("Некорректный role_id".to_string()))
         };
 
         if (!token.is_service && token.rights < role.rights)
             || (token.is_service && token.rights <= role.rights)
         {
-            return Err(ApiError::Forbidden("insufficient access".to_string()));
+            return Err(ApiError::Forbidden("Недостаточно доступа".to_string()));
         }
 
         let account_rights = self.private_api.get_account_rights(user_id.clone(), None);
@@ -70,7 +70,7 @@ impl Api {
         if (!token.is_service && token.rights < account_rights)
             || (token.is_service && token.rights <= account_rights)
         {
-            return Err(ApiError::Forbidden("insufficient access".to_string()));
+            return Err(ApiError::Forbidden("Недостаточно доступа".to_string()));
         }
 
         self.private_api.add_role_to_account(user_id, role_id)?;

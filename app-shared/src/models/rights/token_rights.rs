@@ -5,13 +5,13 @@ bitflags! {
     #[derive(Serialize, Deserialize)]
     #[serde(transparent)]
     pub struct TokenRights: u64 {
-        /// Can create tokens with no more rights than he has himself.
+        /// Может создавать токены с правами не больше чем у самого себя.
         const TOKEN_CREATE = (1 << 0);
-        /// Can delete tokens with no more rights than he has himself.
+        /// Может удалять токены с правами не больше чем у самого себя.
         const TOKEN_DELETE = (1 << 1);
-        /// Can create service tokens with no more rights than he has himself.
+        /// Может создавать сервисные токены с правами не больше чем у самого себя.
         const SERVICE_TOKEN_CREATE = (1 << 2);
-        /// Can delete service tokens with no more rights than he has himself.
+        /// Может удалять сервисные токены с правами не больше чем у самого себя.
         const SERVICE_TOKEN_DELETE = (1 << 3);
     }
 }

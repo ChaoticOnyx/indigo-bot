@@ -35,19 +35,19 @@ where
         use RightsScope::{Everything, None, Some};
 
         match (self, rhs) {
-            // Both have None
+            // Оба None
             (None, None) => None,
-            // Both have Some
+            // Оба Some
             (Some(scopes), Some(scopes_rhs)) => {
                 Some(scopes.into_iter().chain(scopes_rhs.into_iter()).collect())
             }
-            // Both have Everything
+            // Оба Everything
             (Everything(rights), Everything(rights_rhs)) => Everything(rights | rights_rhs),
-            // Someone have None and Some
+            // Комбинация None и Some
             (None, Some(scopes)) | (Some(scopes), None) => Some(scopes),
-            // Someone have None and Everything
+            // Комбинация None и Everything
             (None, Everything(rights)) | (Everything(rights), None) => Everything(rights),
-            // Someone have Some and Everything
+            // Комбинация Some и Everything
             (Some(_), Everything(rights)) | (Everything(rights), Some(_)) => Everything(rights),
         }
     }

@@ -37,19 +37,15 @@ impl PrivateApi {
         trace!("connect_byond_account");
 
         let Some(account) = self.find_account_by_id(user_id.clone()) else {
-            return Err(ApiError::Other("account not found".to_string()))
+            return Err(ApiError::Other("Аккаунт не найден".to_string()))
         };
 
         if ckey.0.trim().is_empty() {
-            return Err(ApiError::Other("ckey is empty".to_string()));
+            return Err(ApiError::Other("Пустой ckey".to_string()));
         }
 
         if account.byond_ckey.is_some() {
-            warn!("byond account is already connected");
-
-            return Err(ApiError::Other(
-                "byond account is already connected".to_string(),
-            ));
+            return Err(ApiError::Other("Аккаунт BYOND уже подключен".to_string()));
         }
 
         self.database
@@ -85,13 +81,15 @@ impl PrivateApi {
         trace!("add_role_to_account");
 
         let Some(account) = self.find_account_by_id(user_id) else {
-            return Err(ApiError::Other("invalid user_id".to_string()))
+            return Err(ApiError::Other("Некорректный user_id".to_string()))
         };
 
         let account_roles = self.get_account_roles(AnyUserId::AccountId(account.id));
 
         if account_roles.iter().any(|role| role.id == role_id) {
-            return Err(ApiError::Other("user already has this role".to_string()));
+            return Err(ApiError::Other(
+                "Пользователь уже имеет эту роль".to_string(),
+            ));
         }
 
         self.database

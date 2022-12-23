@@ -14,7 +14,7 @@ impl Api {
         trace!("create_session_by_tfa");
 
         let Some(account) = self.private_api.find_account_by_tfa_token_secret(tfa_secret) else {
-            return Err(ApiError::Other("invalid tfa token".to_string()))
+            return Err(ApiError::Other("Некорректный TFA токен".to_string()))
         };
 
         let session = self.private_api.create_session_for_account(
