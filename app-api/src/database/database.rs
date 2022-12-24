@@ -288,11 +288,43 @@ impl Database {
     }
 
     #[instrument(skip(self))]
-    pub fn create_session(&self, session: Session) {
-        trace!("create_session");
+    pub fn add_session(&self, session: Session) {
+        trace!("add_session");
 
         self.rt.block_on(async {
             SessionTable::insert(&self.pool, session).await.unwrap();
         });
+    }
+
+    #[instrument(skip(self))]
+    pub fn delete_expired_sessions(&self) {
+        trace!("remove_expired_session");
+
+        self.rt.block_on(async {
+            let sessions = SessionTable::get_all(&self.pool).await.unwrap();
+
+            for session in sessions {
+                if session.is_expired() {
+                    SessionTable::delete_by_secret(&self.pool, session.secret)
+                        .await
+                        .unwrap();
+
+                    TokenTable::delete_by_secret(&self.pool, session.api_secret)
+                        .await
+                        .unwrap();
+                }
+            }
+        })
+    }
+
+    #[instrument(skip(self))]
+    pub fn delete_session_by_secret(&self, session_secret: Secret) {
+        trace!("delete_session_by_secret");
+
+        self.rt.block_on(async {
+            SessionTable::delete_by_secret(&self.pool, session_secret)
+                .await
+                .unwrap();
+        })
     }
 }

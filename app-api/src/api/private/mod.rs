@@ -40,7 +40,7 @@ impl PrivateApi {
         let tokens_storage = TFATokensStorage::default();
         let config = ApiConfig::get().unwrap();
 
-        let root_token = ApiToken::new(config.root_secret, Rights::full(), None, None, true);
+        let root_token = ApiToken::new(config.root_secret, Rights::full(), None, None, true, None);
         database.create_root_token_if_does_not_exist(root_token);
 
         let mut services_storage = ServicesStorage::new();

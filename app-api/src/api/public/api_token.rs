@@ -39,6 +39,7 @@ impl Api {
             token.creator,
             duration,
             is_service,
+            None,
         );
 
         if new_token.is_expired() {

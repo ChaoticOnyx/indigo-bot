@@ -19,12 +19,13 @@ impl ApiToken {
         creator: Option<AccountId>,
         duration: Option<Duration>,
         is_service: bool,
+        custom_creation_time: Option<DateTime<Utc>>,
     ) -> Self {
         Self {
             secret,
             rights,
             expiration: duration.map(|duration| Utc::now() + duration),
-            created_at: Utc::now(),
+            created_at: custom_creation_time.unwrap_or_else(|| Utc::now()),
             creator,
             is_service,
         }

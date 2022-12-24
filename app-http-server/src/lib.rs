@@ -1,4 +1,5 @@
 mod constants;
+mod cookies;
 mod endpoints;
 mod extractors;
 mod html_response;

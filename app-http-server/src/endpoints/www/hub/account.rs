@@ -7,5 +7,5 @@ use app_shared::prelude::*;
 pub async fn endpoint(session: AuthorizedSession) -> impl Responder {
     error!("session: {session:#?}");
 
-    HttpResponse::Ok()
+    HttpResponse::Ok().body(format!("{session:#?}"))
 }

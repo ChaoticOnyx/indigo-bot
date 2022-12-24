@@ -1,6 +1,7 @@
+use crate::middleware::SessionExtenderOptionsBuilder;
 use crate::{
-    endpoints, http_config::HttpConfig, manifest::Manifest, middleware::AuthRedirectorBuilder,
-    templates::Templates,
+    endpoints, http_config::HttpConfig, manifest::Manifest,
+    middleware::AuthRedirectorOptionsBuilder, templates::Templates,
 };
 use actix_web::{middleware::TrailingSlash, App, HttpServer};
 use app_shared::{
@@ -52,9 +53,15 @@ impl Server {
             HttpServer::new(move || {
                 App::new()
                     .wrap(
-                        AuthRedirectorBuilder::default()
+                        AuthRedirectorOptionsBuilder::default()
                             .redirect_to("/hub/auth")
                             .affected_paths(vec!["/hub/".to_string()])
+                            .build()
+                            .unwrap(),
+                    )
+                    .wrap(
+                        SessionExtenderOptionsBuilder::default()
+                            .extend_before(Duration::days(1))
                             .build()
                             .unwrap(),
                     )

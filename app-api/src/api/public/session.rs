@@ -19,10 +19,32 @@ impl Api {
 
         let session = self.private_api.create_session_for_account(
             AnyUserId::AccountId(account.id),
+            None,
             user_agent,
             ip,
         )?;
 
         Ok(session)
+    }
+
+    /// Продлевает сессию и создаёт новый секрет.
+    #[instrument]
+    pub fn extend_session(
+        &self,
+        session_secret: Secret,
+        user_agent: String,
+        ip: String,
+    ) -> Result<Session, ApiError> {
+        trace!("extend_session");
+
+        self.private_api
+            .extend_session(session_secret, user_agent, ip)
+    }
+
+    #[instrument]
+    pub fn delete_session(&self, session_secret: Secret) -> Result<(), ApiError> {
+        trace!("delete_session");
+
+        self.private_api.delete_session(session_secret)
     }
 }

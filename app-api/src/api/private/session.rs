@@ -1,4 +1,5 @@
 use crate::api::private::PrivateApi;
+use app_shared::chrono::{DateTime, Utc};
 use app_shared::{
     chrono::Duration,
     models::{AnyUserId, ApiError, ApiToken, Secret, Session},
@@ -6,11 +7,60 @@ use app_shared::{
 };
 
 impl PrivateApi {
+    #[instrument]
+    fn cleanup_sessions(&self) {
+        trace!("cleanup_sessions");
+
+        self.database.delete_expired_sessions();
+    }
+
+    /// Продлевает сессию и создаёт новые секреты.
+    #[instrument]
+    pub fn extend_session(
+        &self,
+        session_secret: Secret,
+        user_agent: String,
+        ip: String,
+    ) -> Result<Session, ApiError> {
+        trace!("extend_session");
+
+        self.cleanup_sessions();
+        let Some(session) = self.database.find_session_by_secret(session_secret.clone()) else {
+            return Err(ApiError::Other("Некорректная сессия".to_string()))
+        };
+
+        self.delete_session(session_secret)?;
+
+        self.create_session_for_account(
+            AnyUserId::AccountId(session.account_id),
+            Some(session.created_at),
+            user_agent,
+            ip,
+        )
+    }
+
+    /// Удаляет сессию.
+    #[instrument]
+    pub fn delete_session(&self, session_secret: Secret) -> Result<(), ApiError> {
+        trace!("delete_session");
+
+        self.cleanup_sessions();
+        let Some(session) = self.database.find_session_by_secret(session_secret) else {
+            return Err(ApiError::Other("Некорректная сессия".to_string()))
+        };
+
+        self.database.delete_session_by_secret(session.secret);
+        self.database.delete_api_token_by_secret(session.api_secret);
+
+        Ok(())
+    }
+
     /// Создаёт уникальный секрет для сессии.
     #[instrument]
     pub fn create_unique_session_secret(&self) -> Secret {
         trace!("create_unique_session_secret");
 
+        self.cleanup_sessions();
         let new_secret = loop {
             let secret = Secret::new_random_session_secret();
 
@@ -31,6 +81,7 @@ impl PrivateApi {
     pub fn find_session_by_secret(&self, session_secret: Secret) -> Option<Session> {
         trace!("find_session_by_secret");
 
+        self.cleanup_sessions();
         self.database.find_session_by_secret(session_secret)
     }
 
@@ -39,11 +90,13 @@ impl PrivateApi {
     pub fn create_session_for_account(
         &self,
         user_id: AnyUserId,
+        custom_creation_date: Option<DateTime<Utc>>,
         user_agent: String,
         ip: String,
     ) -> Result<Session, ApiError> {
         trace!("create_session_for_account");
 
+        self.cleanup_sessions();
         let Some(account) = self.database.find_account(user_id) else {
             return Err(ApiError::Internal("Некорректный user_id".to_string()))
         };
@@ -54,6 +107,7 @@ impl PrivateApi {
             None,
             Some(Duration::days(3)),
             false,
+            custom_creation_date,
         );
 
         self.database.add_api_token(api_token.clone());
@@ -62,13 +116,13 @@ impl PrivateApi {
             self.create_unique_session_secret(),
             api_token.secret,
             account.id,
-            None,
+            custom_creation_date,
             Duration::days(3),
             user_agent,
             ip,
         );
 
-        self.database.create_session(session.clone());
+        self.database.add_session(session.clone());
 
         Ok(session)
     }

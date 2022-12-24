@@ -49,6 +49,29 @@ create table if not exists session
     }
 
     #[instrument]
+    pub async fn get_all(pool: &Pool<Postgres>) -> Result<Vec<Session>, Error> {
+        trace!("get_all");
+
+        sqlx::query("SELECT * FROM session")
+            .map(Self::map)
+            .fetch_all(pool)
+            .await
+    }
+
+    #[instrument]
+    pub async fn delete_by_secret(
+        pool: &Pool<Postgres>,
+        session_secret: Secret,
+    ) -> Result<PgQueryResult, Error> {
+        trace!("delete_by_secret");
+
+        sqlx::query("DELETE FROM session WHERE secret = $1")
+            .bind(session_secret.0)
+            .execute(pool)
+            .await
+    }
+
+    #[instrument]
     pub async fn find_by_secret(
         pool: &Pool<Postgres>,
         session_secret: Secret,

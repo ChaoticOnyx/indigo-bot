@@ -1,12 +1,11 @@
 use actix_http::StatusCode;
-use actix_web::cookie::time::OffsetDateTime;
-use actix_web::cookie::{Cookie, SameSite};
 use actix_web::http::header;
 use actix_web::web::Json;
 use actix_web::{post, HttpRequest, HttpResponseBuilder, Responder};
 use serde::{Deserialize, Serialize};
 
 use crate::constants::COOKIES_SESSION_KEY;
+use crate::cookies::SessionCookie;
 use crate::response::ResponseHelpers;
 use app_api::Api;
 use app_shared::{
@@ -51,20 +50,8 @@ pub async fn endpoint(request: HttpRequest, form: Json<Payload>) -> impl Respond
 
     match session {
         Err(err) => ResponseHelpers::from_api_error(err),
-        Ok(session) => {
-            let mut session_cookie = Cookie::new(COOKIES_SESSION_KEY, session.secret.0);
-            let expiration =
-                OffsetDateTime::from_unix_timestamp(session.expiration.timestamp()).unwrap();
-
-            session_cookie.set_expires(Some(expiration));
-            session_cookie.set_http_only(true);
-            session_cookie.set_secure(true);
-            session_cookie.set_same_site(SameSite::Strict);
-            session_cookie.set_path("/");
-
-            HttpResponseBuilder::new(StatusCode::OK)
-                .cookie(session_cookie)
-                .finish()
-        }
+        Ok(session) => HttpResponseBuilder::new(StatusCode::OK)
+            .cookie(SessionCookie::new(session))
+            .finish(),
     }
 }
