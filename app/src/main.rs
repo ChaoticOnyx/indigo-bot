@@ -7,7 +7,7 @@ use app_http_server::Server;
 use tracing_loki::url::Url;
 use tracing_subscriber::{prelude::*, Layer};
 
-use app_shared::{prelude::*, tokio, ConfigLoader, DiscordSession, Settings};
+use app_shared::{prelude::*, tokio, ConfigLoader, DiscordSession, Settings, UserAgentParser};
 
 fn setup_logging() {
     use tracing_subscriber::filter::LevelFilter;
@@ -57,6 +57,9 @@ fn main() {
     Settings::set_state(settings.clone());
 
     setup_logging();
+
+    // User agent parser
+    UserAgentParser::set_state(UserAgentParser::new());
 
     // Config Loader
     ConfigLoader::set_state(ConfigLoader::new("./configs"));

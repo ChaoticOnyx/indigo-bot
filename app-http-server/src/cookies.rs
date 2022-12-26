@@ -14,7 +14,7 @@ impl SessionCookie {
         session_cookie.set_expires(Some(expiration));
         session_cookie.set_http_only(true);
         session_cookie.set_secure(true);
-        session_cookie.set_same_site(SameSite::Strict);
+        session_cookie.set_same_site(SameSite::Lax);
         session_cookie.set_path("/");
 
         session_cookie

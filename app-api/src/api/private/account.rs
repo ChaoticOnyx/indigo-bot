@@ -135,4 +135,56 @@ impl PrivateApi {
 
         Ok(())
     }
+
+    /// Меняет имя пользователя (если оно не занято).
+    #[instrument]
+    pub fn change_username(
+        &self,
+        user_id: AnyUserId,
+        mut new_username: String,
+    ) -> Result<(), ApiError> {
+        trace!("change_username");
+
+        new_username = new_username.trim().to_string();
+
+        if new_username.is_empty() {
+            return Err(ApiError::Other(
+                "Имя пользователя не должно быть пустым".to_string(),
+            ));
+        }
+
+        if new_username.chars().count() > 25 {
+            return Err(ApiError::Other(
+                "Имя пользователя не должно быть длинее 25 символов!".to_string(),
+            ));
+        }
+
+        if !self.database.is_username_free(new_username.clone()) {
+            return Err(ApiError::Other("Имя пользователя занято".to_string()));
+        }
+
+        let account = self.find_account_by_id(user_id)?;
+        self.database.change_username(account.id, new_username);
+
+        Ok(())
+    }
+
+    /// Меняет аватарку пользователя.
+    #[instrument]
+    pub fn change_avatar_url(
+        &self,
+        user_id: AnyUserId,
+        mut new_avatar_url: String,
+    ) -> Result<(), ApiError> {
+        trace!("change_avatar_url");
+
+        if new_avatar_url.trim().is_empty() {
+            new_avatar_url = String::from("/public/images/avatar.png");
+        }
+
+        let account = self.find_account_by_id(user_id)?;
+        self.database.change_avatar_url(account.id, new_avatar_url);
+
+        Ok(())
+    }
 }

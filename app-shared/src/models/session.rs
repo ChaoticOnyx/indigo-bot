@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 pub struct Session {
     pub secret: Secret,
     pub api_secret: Secret,
+    pub csrf_token: Secret,
     pub account_id: AccountId,
     pub created_at: DateTime<Utc>,
     pub expiration: DateTime<Utc>,
@@ -17,6 +18,7 @@ impl Session {
     pub fn new(
         secret: Secret,
         api_secret: Secret,
+        csrf_token: Secret,
         account_id: AccountId,
         custom_creation_date: Option<DateTime<Utc>>,
         duration: Duration,
@@ -26,6 +28,7 @@ impl Session {
         Self {
             secret,
             api_secret,
+            csrf_token,
             account_id,
             created_at: custom_creation_date.unwrap_or_else(|| Utc::now()),
             expiration: Utc::now() + duration,

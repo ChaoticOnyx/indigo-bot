@@ -2,7 +2,7 @@ use crate::api::private::PrivateApi;
 use app_shared::{
     chrono::Duration,
     chrono::{DateTime, Utc},
-    models::{AnyUserId, ApiError, ApiToken, Secret, Session},
+    models::{AccountId, AnyUserId, ApiError, ApiToken, Secret, Session},
     prelude::*,
 };
 
@@ -76,6 +76,27 @@ impl PrivateApi {
         new_secret
     }
 
+    /// Создаёт уникальный CSRF секрет.
+    #[instrument]
+    pub fn create_unique_csrf_secret(&self) -> Secret {
+        trace!("create_unique_csrf_secret");
+
+        self.cleanup_sessions();
+        let new_secret = loop {
+            let secret = Secret::new_random_csrf_secret();
+
+            if self
+                .database
+                .find_session_by_csrf_secret(secret.clone())
+                .is_none()
+            {
+                break secret;
+            }
+        };
+
+        new_secret
+    }
+
     /// Возвращает сессию по её секрету.
     #[instrument]
     pub fn find_session_by_secret(&self, session_secret: Secret) -> Option<Session> {
@@ -115,6 +136,7 @@ impl PrivateApi {
         let session = Session::new(
             self.create_unique_session_secret(),
             api_token.secret,
+            self.create_unique_csrf_secret(),
             account.id,
             custom_creation_date,
             Duration::days(3),
@@ -125,5 +147,21 @@ impl PrivateApi {
         self.database.add_session(session.clone());
 
         Ok(session)
+    }
+
+    #[instrument]
+    pub fn is_csrf_secret_valid(&self, csrf_secret: Secret) -> bool {
+        trace!("is_csrf_secret_valid");
+
+        self.database
+            .find_session_by_csrf_secret(csrf_secret)
+            .is_some()
+    }
+
+    #[instrument]
+    pub fn get_account_sessions(&self, account_id: AccountId) -> Vec<Session> {
+        trace!("get_sessions_for_account");
+
+        self.database.get_account_sessions(account_id)
     }
 }

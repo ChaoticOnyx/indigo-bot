@@ -14,15 +14,16 @@ impl SessionTable {
             "
 create table if not exists session
 (
-    secret     text      not null
+    secret      text      not null
         constraint session_pk
                     primary key,
-    api_secret text   not null,
-    account_id bigint not null,
-    created_at text   not null,
-    expiration text   not null,
-    user_agent text   not null,
-    ip         text   not null
+    api_secret  text   not null,
+	csrf_secret text not null,
+    account_id  bigint not null,
+    created_at  text   not null,
+    expiration  text   not null,
+    user_agent  text   not null,
+    ip          text   not null
 );
 ",
         )
@@ -35,10 +36,11 @@ create table if not exists session
         trace!("insert");
 
         sqlx::query(
-            "INSERT INTO session (secret, api_secret, account_id, created_at, expiration, user_agent, ip) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+            "INSERT INTO session (secret, api_secret, csrf_secret, account_id, created_at, expiration, user_agent, ip) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
         )
             .bind(session.secret.0)
             .bind(session.api_secret.0)
+            .bind(session.csrf_token.0)
             .bind(session.account_id.0)
             .bind(session.created_at.to_string())
             .bind(session.expiration.to_string())
@@ -85,11 +87,39 @@ create table if not exists session
             .await
     }
 
+    pub async fn find_by_account_id(
+        pool: &Pool<Postgres>,
+        account_id: AccountId,
+    ) -> Result<Vec<Session>, Error> {
+        trace!("find_by_account_id");
+
+        sqlx::query("SELECT * FROM session WHERE account_id = $1")
+            .bind(account_id.0)
+            .map(Self::map)
+            .fetch_all(pool)
+            .await
+    }
+
+    #[instrument]
+    pub async fn find_by_csrf_secret(
+        pool: &Pool<Postgres>,
+        csrf_secret: Secret,
+    ) -> Result<Option<Session>, Error> {
+        trace!("find_by_csrf_secret");
+
+        sqlx::query("SELECT * FROM session WHERE csrf_secret = $1")
+            .bind(csrf_secret.0)
+            .map(Self::map)
+            .fetch_optional(pool)
+            .await
+    }
+
     #[instrument(skip(row))]
     fn map(row: PgRow) -> Session {
         Session {
             secret: Secret(row.get::<String, _>("secret")),
             api_secret: Secret(row.get::<String, _>("api_secret")),
+            csrf_token: Secret(row.get::<String, _>("csrf_secret")),
             account_id: AccountId(row.get::<i64, _>("account_id")),
             created_at: DateTime::from_str(&row.get::<String, _>("created_at")).unwrap(),
             expiration: DateTime::from_str(&row.get::<String, _>("expiration")).unwrap(),

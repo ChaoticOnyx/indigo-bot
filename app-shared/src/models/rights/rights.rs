@@ -26,6 +26,10 @@ impl Rights {
             service: ScopedServiceRights::empty(),
         }
     }
+
+    pub fn bits(&self) -> u64 {
+        self.user.bits() + self.token.bits() + self.service.sum().bits()
+    }
 }
 
 impl BitOr for Rights {

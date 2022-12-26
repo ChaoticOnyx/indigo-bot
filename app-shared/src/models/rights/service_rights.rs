@@ -45,7 +45,7 @@ impl ScopedServiceRights {
 }
 
 bitflags! {
-    #[derive(Serialize, Deserialize)]
+    #[derive(Default, Serialize, Deserialize)]
     #[serde(transparent)]
     pub struct ServiceRights: u64 {
         /// Может создавать вебхуки.

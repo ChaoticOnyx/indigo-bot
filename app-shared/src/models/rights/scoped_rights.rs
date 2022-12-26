@@ -14,6 +14,20 @@ where
     None,
 }
 
+impl<T, R> RightsScope<T, R>
+where
+    T: Sized + Ord,
+    R: Sized + Ord + Default + Copy + BitOr<Output = R>,
+{
+    pub fn sum(&self) -> R {
+        match &self {
+            RightsScope::None => R::default(),
+            RightsScope::Everything(rights) => *rights,
+            RightsScope::Some(scopes) => scopes.values().fold(R::default(), |acc, x| acc.bitor(*x)),
+        }
+    }
+}
+
 impl<T, R> Default for RightsScope<T, R>
 where
     T: Sized + Ord,

@@ -153,11 +153,18 @@ impl Database {
     ) -> Option<AccountIntegrations> {
         trace!("find_account_integrations_by_user_id");
 
-        self.rt.block_on(async {
-            AccountIntegrationsTable::find_by_id(&self.pool, user_id)
-                .await
-                .unwrap()
-        })
+        self.rt
+            .block_on(async {
+                AccountIntegrationsTable::find_by_id(&self.pool, user_id)
+                    .await
+                    .unwrap()
+            })
+            .map(|table| AccountIntegrations {
+                account_id: table.account_id,
+                discord_user_id: table.discord_user_id,
+                byond_ckey: table.byond_ckey,
+                ss14_guid: table.ss14_guid,
+            })
     }
 
     #[instrument(skip(self))]
@@ -165,12 +172,22 @@ impl Database {
         trace!("find_account");
 
         let integrations = self.find_account_integrations_by_user_id(user_id)?;
+        let roles = self.get_account_roles(integrations.account_id);
 
-        self.rt.block_on(async {
-            AccountTable::find_by_id(&self.pool, integrations.account_id)
-                .await
-                .unwrap()
-        })
+        self.rt
+            .block_on(async {
+                AccountTable::find_by_id(&self.pool, integrations.account_id)
+                    .await
+                    .unwrap()
+            })
+            .map(|table| Account {
+                id: table.id,
+                integrations,
+                roles,
+                username: table.username,
+                avatar_url: table.avatar_url,
+                created_at: table.created_at,
+            })
     }
 
     #[instrument(skip(self))]
@@ -183,6 +200,17 @@ impl Database {
                 .unwrap()
                 .is_none()
         })
+    }
+
+    #[instrument(skip(self))]
+    pub fn change_avatar_url(&self, account_id: AccountId, new_avatar_url: String) {
+        trace!("change_avatar_url");
+
+        self.rt.block_on(async {
+            AccountTable::update_avatar_url(&self.pool, account_id, new_avatar_url)
+                .await
+                .unwrap()
+        });
     }
 
     #[instrument(skip(self))]
@@ -204,13 +232,29 @@ impl Database {
 
             AccountIntegrationsTable::insert(
                 &self.pool,
-                AccountIntegrations::new(account_id, discord_user_id, None, None),
+                AccountIntegrationsTable {
+                    account_id,
+                    discord_user_id,
+                    byond_ckey: None,
+                    ss14_guid: None,
+                },
             )
             .await
             .unwrap();
 
             account_id
         })
+    }
+
+    #[instrument(skip(self))]
+    pub fn change_username(&self, account_id: AccountId, new_username: String) {
+        trace!("update_username");
+
+        self.rt.block_on(async {
+            AccountTable::update_username(&self.pool, account_id, new_username)
+                .await
+                .unwrap();
+        });
     }
 
     #[instrument(skip(self))]
@@ -319,11 +363,33 @@ impl Database {
     }
 
     #[instrument(skip(self))]
+    pub fn find_session_by_csrf_secret(&self, csrf_secret: Secret) -> Option<Session> {
+        trace!("find_session_by_csrf_secret");
+
+        self.rt.block_on(async {
+            SessionTable::find_by_csrf_secret(&self.pool, csrf_secret)
+                .await
+                .unwrap()
+        })
+    }
+
+    #[instrument(skip(self))]
     pub fn find_session_by_secret(&self, session_secret: Secret) -> Option<Session> {
         trace!("find_session_by_secret");
 
         self.rt.block_on(async {
             SessionTable::find_by_secret(&self.pool, session_secret)
+                .await
+                .unwrap()
+        })
+    }
+
+    #[instrument(skip(self))]
+    pub fn get_account_sessions(&self, account_id: AccountId) -> Vec<Session> {
+        trace!("get_account_sessions");
+
+        self.rt.block_on(async {
+            SessionTable::find_by_account_id(&self.pool, account_id)
                 .await
                 .unwrap()
         })

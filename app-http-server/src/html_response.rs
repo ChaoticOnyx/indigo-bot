@@ -1,17 +1,19 @@
 ﻿use crate::templates::Templates;
-use actix_web::http::header::ContentType;
-use actix_web::http::StatusCode;
-use actix_web::{HttpResponse, HttpResponseBuilder};
-use app_shared::{prelude::*, serde_json};
+use actix_web::{
+    http::{header::ContentType, StatusCode},
+    HttpResponse, HttpResponseBuilder,
+};
+use app_shared::prelude::*;
+use serde::Serialize;
 use tera::Context;
 
 pub struct HtmlResponse;
 
 impl HtmlResponse {
-    #[instrument]
+    #[instrument(skip(context))]
     pub async fn from_template(
         template_name: &'static str,
-        context: Option<serde_json::Value>,
+        context: Option<impl Serialize>,
     ) -> HttpResponse {
         trace!("from_template");
 

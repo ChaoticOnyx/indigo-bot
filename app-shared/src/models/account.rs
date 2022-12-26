@@ -1,4 +1,4 @@
-﻿use crate::models::RoleId;
+﻿use crate::models::{AccountIntegrations, Role};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -12,5 +12,6 @@ pub struct Account {
     pub username: String,
     pub avatar_url: String,
     pub created_at: DateTime<Utc>,
-    pub roles: Vec<RoleId>,
+    pub roles: Vec<Role>,
+    pub integrations: AccountIntegrations,
 }

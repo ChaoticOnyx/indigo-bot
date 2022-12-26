@@ -6,15 +6,14 @@ use app_api::Api;
 use app_shared::{
     futures_util::future::LocalBoxFuture,
     futures_util::FutureExt,
-    models::{Account, Secret, Session, AnyUserId, AccountIntegrations},
+    models::{Account, Secret, Session},
     prelude::*,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuthenticatedUser {
     pub session: Session,
-    pub account: Account,
-    pub integrations: AccountIntegrations
+    pub account: Account
 }
 
 impl FromRequest for AuthenticatedUser {
@@ -35,12 +34,10 @@ impl FromRequest for AuthenticatedUser {
                 Api::lock_async(|api| {
                     let session = api.private_api.find_session_by_secret(session_secret.clone())?;
                     let account = api.find_account_by_session(session_secret).ok()?;
-                    let integrations = api.private_api.find_integrations_by_account_id(AnyUserId::AccountId(account.id)).ok()?;
                     
                     Some(AuthenticatedUser {
                         session,
-                        account,
-                        integrations
+                        account
                     })
                 }).await.unwrap();
 

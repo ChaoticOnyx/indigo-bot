@@ -35,7 +35,7 @@ create table if not exists role
 
         sqlx::query("INSERT INTO role (id, name, color, rights) VALUES (DEFAULT, $1, $2, $3)")
             .bind(role.name)
-            .bind(role.color.to_u32() as i32)
+            .bind(role.color.to_u24() as i32)
             .bind(serde_json::to_value(&role.rights).unwrap())
             .execute(pool)
             .await
@@ -68,7 +68,7 @@ create table if not exists role
         Role {
             id: RoleId(row.get::<i64, _>("id")),
             name: row.get::<String, _>("name"),
-            color: HexColor::from_u32(row.get::<i64, _>("color") as u32),
+            color: HexColor::from_u24(row.get::<i64, _>("color") as u32),
             rights: serde_json::from_value(row.get::<serde_json::Value, _>("rights")).unwrap(),
         }
     }

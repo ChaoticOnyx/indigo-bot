@@ -51,6 +51,16 @@ impl Secret {
 
         Self(secret)
     }
+
+    pub fn new_random_csrf_secret() -> Self {
+        let secret: String = rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(256)
+            .map(char::from)
+            .collect();
+
+        Self(secret)
+    }
 }
 
 impl From<String> for Secret {

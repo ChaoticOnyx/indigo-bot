@@ -5,7 +5,8 @@ export default defineConfig({
         manifest: true,
         rollupOptions: {
             input: [
-                'base.css'
+                'base.css',
+                'main.js'
             ]
         },
         outDir: '../public',

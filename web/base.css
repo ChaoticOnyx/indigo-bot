@@ -11,6 +11,8 @@ h4 {
 
 * {
   box-sizing: border-box;
+
+  @apply border-white/10;
 }
 
 a {
@@ -26,23 +28,94 @@ body {
   height: 100vh;
   margin: 0;
   padding: 0;
+
+  @apply text-white/90;
 }
 
 body {
   display: flex;
 }
 
+input {
+  @apply text-white/90;
+}
+
+input[type="text"] {
+  @apply appearance-none bordered focus:bg-neutral-800 bg-[#101010] rounded-md py-0.5 px-3 transition-colors;
+}
+
+hr {
+  @apply my-3;
+}
+
+.notice {
+  @apply text-white/50 text-sm italic max-w-prose;
+}
+
 .content {
   width: 100%;
   height: 100%;
-  
+
   @apply bg-neutral-900;
 }
 
+.input__container {
+  @apply flex flex-col gap-1.5;
+}
+
+.input__caption {
+  @apply font-bold pl-1.5 text-sm;
+}
+
+.input__error {
+  @apply pl-1.5 text-sm text-red-500;
+}
+
+.bordered {
+  @apply border border-white/10;
+}
+
 .button--primary {
-  @apply transition-colors bg-blue-500/75 hover:bg-blue-500 border border-black/75 text-white font-bold py-1 px-4 rounded;
+  @apply transition-colors bg-blue-500/75 hover:bg-blue-500 bordered text-white font-bold py-1 px-4 rounded;
+}
+
+.button--good {
+  @apply transition-colors bg-green-500/75 hover:bg-green-500 bordered text-white font-bold py-1 px-4 rounded;
+}
+
+.button--bad {
+  @apply transition-colors bg-red-500/75 hover:bg-red-500 bordered text-white font-bold py-1 px-4 rounded;
 }
 
 .input--singleSymbol {
-  @apply rounded border border-black/75 w-[3ch] h-[3ch] text-2xl font-mono text-black text-center;
+  @apply rounded bordered w-[3ch] h-[3ch] text-2xl font-mono text-center;
+}
+
+ul.menu li {
+  cursor: pointer;
+  @apply pl-2 text-white/50 my-1 py-0.5 rounded-sm hover:bg-white/5 transition-colors;
+}
+
+ul.menu li.selected {
+  @apply text-white/90 bg-white/5 border-l-2 border-l-blue-500;
+}
+
+ul.menu a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.role-circle {
+  width: 0.6rem;
+  height: 0.6rem;
+
+  @apply rounded-full;
+}
+
+.role-badge {
+  @apply rounded-md bg-white/5 bordered text-sm px-2 flex items-center justify-between gap-1;
+}
+
+code {
+  @apply bg-black/30 rounded-sm p-0.5 px-1;
 }

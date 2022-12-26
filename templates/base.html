@@ -7,6 +7,9 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">	
 	<link rel="stylesheet" href="/public/css/normalize.css">
 	<link rel="stylesheet" href="/public/css/latofonts.css">
+	<link href="/public/fontawesome/css/fontawesome.css" rel="stylesheet">
+	<link href="/public/fontawesome/css/solid.css" rel="stylesheet">
+	<link href="/public/fontawesome/css/brands.css" rel="stylesheet">
 	<link rel="stylesheet" href="{{ "base.css" | asset_path }}">
 	<title>{% block title %}{% endblock title %}</title>
 	{% endblock head %}
@@ -15,6 +18,8 @@
 <body>
 	{% block body %}
 	{% endblock body %}
+
+	<script src="{{ "main.js" | asset_path }}"></script>
 </body>
 
 </html>

@@ -1,0 +1,18 @@
+{% macro roleBadge(role) %}
+    <div class="role-badge"><span class="role-circle" style="background-color: {{role.color}};"></span><span>{{ role.name }}</span></div>
+{% endmacro roleBadge %}
+
+{% macro image(src, alt, altImage="", style="", class="", id="") %}
+    <img
+		{% if class != "" %} class="{{ class }}" {% endif %}
+		{% if style != "" %} style="{{ style }}" {% endif %}
+		{% if altImage != "" %} data-alt-image="{{ altImage }}" {% endif %}
+		{% if id != "" %} id="{{ id }}" {% endif %}
+		alt="{{ alt }}"
+		src="{{ src }}"
+    />
+{% endmacro image %}
+
+{% macro userAvatar(src, id="") %}
+    {{ controls::image(src=src, alt="Аватар пользователя", altImage="/public/images/avatar.png", style="width: 8rem;", class="rounded-lg", id=id) }}
+{% endmacro userAvatar %}

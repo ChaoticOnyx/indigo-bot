@@ -1,45 +1,45 @@
 /* Webfont: Lato-Black */
 @font-face {
-  font-family: "LatoBlack";
+  font-family: "Lato";
   src: url("/public/fonts/Lato-Black.woff") format("woff");
   font-style: normal;
-  font-weight: normal;
+  font-weight: 900;
   text-rendering: optimizeLegibility;
 }
 
 /* Webfont: Lato-BlackItalic */
 @font-face {
-  font-family: "LatoBlack";
+  font-family: "Lato";
   src: url("/public/fonts/Lato-BlackItalic.woff") format("woff");
   font-style: italic;
-  font-weight: normal;
+  font-weight: 900;
   text-rendering: optimizeLegibility;
 }
 
 /* Webfont: Lato-Bold */
 @font-face {
-  font-family: "LatoBold";
+  font-family: "Lato";
   src: url("/public/fonts/Lato-Bold.woff") format("woff");
   font-style: normal;
-  font-weight: normal;
+  font-weight: 700;
   text-rendering: optimizeLegibility;
 }
 
 /* Webfont: Lato-BoldItalic */
 @font-face {
-  font-family: "LatoBold";
+  font-family: "Lato";
   src: url("/public/fonts/Lato-BoldItalic.woff") format("woff");
   font-style: italic;
-  font-weight: normal;
+  font-weight: 700;
   text-rendering: optimizeLegibility;
 }
 
 /* Webfont: Lato-Hairline */
 @font-face {
-  font-family: "LatoHairline";
+  font-family: "Lato";
   src: url("/public/fonts/Lato-Hairline.woff") format("woff");
   font-style: normal;
-  font-weight: normal;
+  font-weight: 100;
   text-rendering: optimizeLegibility;
 }
 
@@ -48,25 +48,25 @@
   font-family: "LatoHairline";
   src: url("/public/fonts/Lato-HairlineItalic.woff") format("woff");
   font-style: italic;
-  font-weight: normal;
+  font-weight: 100;
   text-rendering: optimizeLegibility;
 }
 
 /* Webfont: Lato-Heavy */
 @font-face {
-  font-family: "LatoHeavy";
+  font-family: "Lato";
   src: url("/public/fonts/Lato-Heavy.woff") format("woff");
   font-style: normal;
-  font-weight: normal;
+  font-weight: 800;
   text-rendering: optimizeLegibility;
 }
 
 /* Webfont: Lato-HeavyItalic */
 @font-face {
-  font-family: "LatoHeavy";
+  font-family: "Lato";
   src: url("/public/fonts/Lato-HeavyItalic.woff") format("woff");
   font-style: italic;
-  font-weight: normal;
+  font-weight: 800;
   text-rendering: optimizeLegibility;
 }
 
@@ -81,37 +81,37 @@
 
 /* Webfont: Lato-Light */
 @font-face {
-  font-family: "LatoLight";
+  font-family: "Lato";
   src: url("/public/fonts/Lato-Light.woff") format("woff");
   font-style: normal;
-  font-weight: normal;
+  font-weight: 300;
   text-rendering: optimizeLegibility;
 }
 
 /* Webfont: Lato-LightItalic */
 @font-face {
-  font-family: "LatoLight";
+  font-family: "Lato";
   src: url("/public/fonts/Lato-LightItalic.woff") format("woff");
   font-style: italic;
-  font-weight: normal;
+  font-weight: 300;
   text-rendering: optimizeLegibility;
 }
 
 /* Webfont: Lato-Medium */
 @font-face {
-  font-family: "LatoMedium";
+  font-family: "Lato";
   src: url("/public/fonts/Lato-Medium.woff") format("woff");
   font-style: normal;
-  font-weight: normal;
+  font-weight: 500;
   text-rendering: optimizeLegibility;
 }
 
 /* Webfont: Lato-MediumItalic */
 @font-face {
-  font-family: "LatoMedium";
+  font-family: "Lato";
   src: url("/public/fonts/Lato-MediumItalic.woff") format("woff");
   font-style: italic;
-  font-weight: normal;
+  font-weight: 500;
   text-rendering: optimizeLegibility;
 }
 
@@ -126,36 +126,36 @@
 
 /* Webfont: Lato-Semibold */
 @font-face {
-  font-family: "LatoSemibold";
+  font-family: "Lato";
   src: url("/public/fonts/Lato-Semibold.woff") format("woff");
   font-style: normal;
-  font-weight: normal;
+  font-weight: 600;
   text-rendering: optimizeLegibility;
 }
 
 /* Webfont: Lato-SemiboldItalic */
 @font-face {
-  font-family: "LatoSemibold";
+  font-family: "Lato";
   src: url("/public/fonts/Lato-SemiboldItalic.woff") format("woff");
   font-style: italic;
-  font-weight: normal;
+  font-weight: 600;
   text-rendering: optimizeLegibility;
 }
 
 /* Webfont: Lato-Thin */
 @font-face {
-  font-family: "LatoThin";
+  font-family: "Lato";
   src: url("/public/fonts/Lato-Thin.woff") format("woff");
   font-style: normal;
-  font-weight: normal;
+  font-weight: 200;
   text-rendering: optimizeLegibility;
 }
 
 /* Webfont: Lato-ThinItalic */
 @font-face {
-  font-family: "LatoThin";
+  font-family: "Lato";
   src: url("/public/fonts/Lato-ThinItalic.woff") format("woff");
   font-style: italic;
-  font-weight: normal;
+  font-weight: 200;
   text-rendering: optimizeLegibility;
 }

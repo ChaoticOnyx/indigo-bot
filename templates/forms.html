@@ -1,0 +1,25 @@
+{% macro input(caption, type, placeholder="", initValue="", name="", required=false, maxLength=0, id="") %}
+    <div class="w-full input__container">
+        <div class="input__caption">{{ caption }}</div>
+        <input
+			name="{{ name }}"
+			class="w-full"
+			type="{{ type }}"
+			placeholder="{{ placeholder }}"
+			value="{{ initValue }}"
+			{% if required %} required {% endif %}
+			{% if maxLength > 0 %} maxlength={{ maxLength }} {% endif %}
+			{% if id != "" %} id="{{ id }}" {% endif %}
+        >
+		{% if name in errors %}
+			{% for error in errors[name] %}
+				<div class="input__error">{{ error }}</div>
+			{% endfor %}
+		{% endif %}
+    </div>
+{% endmacro input %}
+
+{% macro csrf() %}
+	<input type="hidden" name="csrf_token" value="{{ form.csrf_token }}">
+	{% if "csrf_token" in errors %}<div class="input__error">{{ errors["csrf_token"] }}</div>{% endif %}
+{% endmacro csrf %}

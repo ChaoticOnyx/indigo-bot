@@ -1,0 +1,45 @@
+{% import "account.html" as account %}
+{% extends "account.html" %}
+
+{% block menu %}
+{{ account::menu(selected="Profile") }}
+{% endblock menu %}
+
+{% block rightPanel %}
+<h2 class="text-xl font-bold">Настройки профиля</h2>
+<hr>
+<form autocomplete="off" method="post" class="flex flex-col gap-2 h-full justify-between">
+    {{ forms::csrf() }}
+
+    <div class="flex flex-col gap-2">
+        {{ forms::input(
+        caption="Имя пользователя",
+        type="text",
+        placeholder="Новый логин",
+        initValue=form.username,
+        name="username",
+        required=true,
+        maxLength=25)
+        }}
+
+        {{ forms::input(
+        caption="Аватарка",
+        type="text",
+        placeholder="Укажите URL изображения",
+        initValue=form.avatar_url,
+        name="avatar_url",
+        id="avatarUrlInput")
+        }}
+    </div>
+
+    <div class="mt-auto flex justify-end">
+        <button type="submit" class="button--good">Сохранить</button>
+    </div>
+
+    <script>
+        document.querySelector("#avatarUrlInput").addEventListener("input", (ev) => {
+            document.querySelector("#userAvatar").src = ev.target.value
+        })
+    </script>
+</form>
+{% endblock rightPanel %}

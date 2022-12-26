@@ -1,9 +1,11 @@
-use crate::middleware::SessionExtenderOptionsBuilder;
 use crate::{
-    endpoints, http_config::HttpConfig, manifest::Manifest,
-    middleware::AuthRedirectorOptionsBuilder, templates::Templates,
+    endpoints, filters,
+    http_config::HttpConfig,
+    manifest::Manifest,
+    middleware::{AuthRedirectorOptionsBuilder, SessionExtenderOptionsBuilder},
+    templates::Templates,
 };
-use actix_web::{middleware::TrailingSlash, App, HttpServer};
+use actix_web::{middleware::TrailingSlash, web, App, HttpServer};
 use app_shared::{
     chrono::{Duration, Utc},
     prelude::*,
@@ -37,7 +39,9 @@ impl Server {
 
         self.rt.block_on(async {
             let mut templates = Tera::new("templates/**/*.html").unwrap();
-            templates.register_filter("asset_path", Manifest::asset_path);
+            templates.register_filter("asset_path", filters::asset_path_filter);
+            templates.register_filter("role_bits", filters::rights_to_bits_filter);
+            templates.register_filter("main_role", filters::main_role_filter);
             Templates::set_state(Templates(templates));
 
             let manifest = Manifest::new();
@@ -51,8 +55,8 @@ impl Server {
                 App::new()
                     .wrap(
                         AuthRedirectorOptionsBuilder::default()
-                            .redirect_to("/hub/auth")
-                            .affected_paths(vec!["/hub/".to_string()])
+                            .redirect_to("/auth")
+                            .affected_paths(vec![String::from("/account")])
                             .build()
                             .unwrap(),
                     )
@@ -68,8 +72,7 @@ impl Server {
                     .service(actix_files::Files::new("/public", "./public"))
                     .service(endpoints::api::scope())
                     .service(endpoints::www::scope())
-                    .service(endpoints::www::hub::scope())
-                    .service(endpoints::www::not_found::endpoint)
+                    .default_service(web::route().to(endpoints::www::not_found::endpoint))
             })
             .bind(config.address)
             .unwrap()

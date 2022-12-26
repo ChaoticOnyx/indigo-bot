@@ -22,3 +22,14 @@ impl Role {
             .fold(Rights::none(), |acc, rights| acc | rights)
     }
 }
+
+impl Default for Role {
+    fn default() -> Self {
+        Self {
+            id: RoleId(-1),
+            name: String::from("Гость"),
+            color: HexColor::from(u32::MAX),
+            rights: Rights::none(),
+        }
+    }
+}

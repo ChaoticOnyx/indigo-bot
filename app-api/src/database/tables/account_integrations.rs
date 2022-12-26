@@ -1,7 +1,13 @@
 use super::prelude::*;
-use app_shared::models::{AccountId, AccountIntegrations, AnyUserId};
+use app_shared::models::{AccountId, AnyUserId};
 
-pub struct AccountIntegrationsTable;
+#[derive(Debug, Clone)]
+pub struct AccountIntegrationsTable {
+    pub account_id: AccountId,
+    pub discord_user_id: DiscordUserId,
+    pub byond_ckey: Option<ByondUserId>,
+    pub ss14_guid: Option<SS14UserId>,
+}
 
 impl AccountIntegrationsTable {
     #[instrument]
@@ -28,7 +34,7 @@ create table if not exists account_integrations
     #[instrument]
     pub async fn insert(
         pool: &Pool<Postgres>,
-        account_integrations: AccountIntegrations,
+        account_integrations: AccountIntegrationsTable,
     ) -> Result<PgQueryResult, Error> {
         trace!("insert");
 
@@ -45,7 +51,7 @@ create table if not exists account_integrations
     pub async fn find_by_id(
         pool: &Pool<Postgres>,
         user_id: AnyUserId,
-    ) -> Result<Option<AccountIntegrations>, Error> {
+    ) -> Result<Option<AccountIntegrationsTable>, Error> {
         trace!("find_by_id");
 
         let query = match user_id {
@@ -115,8 +121,8 @@ create table if not exists account_integrations
     }
 
     #[instrument(skip(row))]
-    fn map(row: PgRow) -> AccountIntegrations {
-        AccountIntegrations {
+    fn map(row: PgRow) -> Self {
+        Self {
             account_id: AccountId(row.get::<i64, _>("account_id")),
             discord_user_id: DiscordUserId(row.get::<i64, _>("discord_user_id") as u64),
             byond_ckey: row.get::<Option<String>, _>("byond_ckey").map(ByondUserId),

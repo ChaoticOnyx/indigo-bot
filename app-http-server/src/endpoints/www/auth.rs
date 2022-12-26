@@ -17,7 +17,7 @@ pub async fn endpoint(session: Option<AuthenticatedUser>) -> impl Responder {
     let session = DiscordSession::clone_state().user.unwrap();
 
     HtmlResponse::from_template(
-        "hub/auth.html",
+        "auth.html",
         Some(json!({
             "bot": {
                 "name": session.name,

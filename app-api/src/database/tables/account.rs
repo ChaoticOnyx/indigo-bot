@@ -1,11 +1,17 @@
 ﻿use super::prelude::*;
 use app_shared::{
     chrono::{DateTime, Utc},
-    models::{Account, AccountId, Role, RoleId},
+    models::{AccountId, Role, RoleId},
 };
 use std::str::FromStr;
 
-pub struct AccountTable;
+pub struct AccountTable {
+    pub id: AccountId,
+    pub username: String,
+    pub avatar_url: String,
+    pub created_at: DateTime<Utc>,
+    pub roles: Vec<RoleId>,
+}
 
 impl AccountTable {
     #[instrument]
@@ -65,7 +71,7 @@ RETURNING id
     pub async fn find_by_id(
         pool: &Pool<Postgres>,
         account_id: AccountId,
-    ) -> Result<Option<Account>, Error> {
+    ) -> Result<Option<AccountTable>, Error> {
         trace!("find_by_id");
 
         sqlx::query("SELECT * FROM account WHERE id = $1")
@@ -79,7 +85,7 @@ RETURNING id
     pub async fn find_by_username(
         pool: &Pool<Postgres>,
         username: String,
-    ) -> Result<Option<Account>, Error> {
+    ) -> Result<Option<AccountTable>, Error> {
         trace!("find_by_username");
 
         sqlx::query("SELECT * FROM account WHERE username = $1")
@@ -102,9 +108,29 @@ RETURNING id
             .await
     }
 
+    pub async fn update_username(
+        pool: &Pool<Postgres>,
+        account_id: AccountId,
+        new_username: String,
+    ) -> Result<PgQueryResult, Error> {
+        sqlx::query("UPDATE account SET username = $1 WHERE id = $2")
+            .bind(new_username)
+            .bind(account_id.0)
+            .execute(pool)
+            .await
+    }
+    
+    pub async fn update_avatar_url(pool: &Pool<Postgres>, account_id: AccountId, new_avatar_url: String) -> Result<PgQueryResult, Error> {
+        sqlx::query("UPDATE account SET avatar_url = $1 WHERE id = $2")
+            .bind(new_avatar_url)
+            .bind(account_id.0)
+            .execute(pool)
+            .await
+    }
+
     #[instrument(skip(row))]
-    fn map(row: PgRow) -> Account {
-        Account {
+    fn map(row: PgRow) -> Self {
+        Self {
             id: AccountId(row.get::<i64, _>("id")),
             username: row.get::<String, _>("username"),
             avatar_url: row.get::<String, _>("avatar_url"),
