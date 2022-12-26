@@ -1,5 +1,6 @@
 pub mod config;
 mod config_loader;
+mod discord_config;
 mod discord_session;
 pub mod global_state;
 pub mod models;
@@ -7,6 +8,7 @@ pub mod prelude;
 pub mod settings;
 
 pub use config_loader::ConfigLoader;
+pub use discord_config::DiscordConfig;
 pub use discord_session::DiscordSession;
 pub use settings::Settings;
 

@@ -1,4 +1,4 @@
-﻿use crate::{models::RoleId, prelude::*};
+﻿use crate::models::RoleId;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -9,9 +9,8 @@ pub struct AccountId(pub i64);
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Account {
     pub id: AccountId,
-    pub discord_id: DiscordUserId,
-    pub byond_ckey: Option<ByondUserId>,
-    pub ss14_guid: Option<SS14UserId>,
+    pub username: String,
+    pub avatar_url: String,
     pub created_at: DateTime<Utc>,
     pub roles: Vec<RoleId>,
 }

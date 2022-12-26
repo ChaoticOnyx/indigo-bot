@@ -1,4 +1,5 @@
 mod account;
+mod account_integrations;
 mod any_user_id;
 mod api_error;
 mod api_token;
@@ -16,6 +17,7 @@ mod tfa_token;
 mod webhook;
 
 pub use account::{Account, AccountId};
+pub use account_integrations::AccountIntegrations;
 pub use any_user_id::AnyUserId;
 pub use api_error::ApiError;
 pub use api_token::ApiToken;

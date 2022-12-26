@@ -1,30 +1,71 @@
 use crate::api::private::PrivateApi;
+use app_shared::chrono::Utc;
+use app_shared::models::{AccountId, AccountIntegrations};
 use app_shared::{
     models::{Account, AnyUserId, ApiError, Rights, Role, RoleId, Secret},
     prelude::*,
 };
 
 impl PrivateApi {
+    pub fn create_account(
+        &self,
+        username: String,
+        avatar_url: String,
+        discord_user_id: DiscordUserId,
+    ) -> Result<AccountId, ApiError> {
+        let mut new_username = username.clone();
+        let mut counter = 1;
+
+        loop {
+            if self.database.is_username_free(new_username.clone()) {
+                break;
+            } else {
+                new_username = format!("{username}{counter}");
+                counter += 1;
+            }
+        }
+
+        Ok(self
+            .database
+            .add_account(new_username, avatar_url, Utc::now(), &[], discord_user_id))
+    }
+
     /// Находит аккаунт по принадлежащему ему TFA токену.
     #[instrument]
-    pub fn find_account_by_tfa_token_secret(&self, secret: Secret) -> Option<Account> {
+    pub fn find_account_by_tfa_token_secret(
+        &mut self,
+        secret: Secret,
+    ) -> Result<Account, ApiError> {
         trace!("find_account_by_tfa_token_secret");
 
-        let token = self.find_tfa_token_by_secret(secret);
-
-        let Some(token) = token else {
-            return None;
-        };
+        let token = self
+            .find_tfa_token_by_secret(secret)
+            .ok_or(ApiError::Other("Некорректный TFA токен".to_string()))?;
 
         self.find_account_by_id(AnyUserId::DiscordId(token.discord_user_id))
     }
 
     /// Находит аккаунт по одному из его ID.
     #[instrument]
-    pub fn find_account_by_id(&self, user_id: AnyUserId) -> Option<Account> {
+    pub fn find_account_by_id(&self, user_id: AnyUserId) -> Result<Account, ApiError> {
         trace!("find_account_by_id");
 
-        self.database.find_account(user_id)
+        self.database
+            .find_account(user_id)
+            .ok_or(ApiError::Other("Неверный user_id".to_string()))
+    }
+
+    /// Возвращает интеграции аккаунтов.
+    #[instrument]
+    pub fn find_integrations_by_account_id(
+        &self,
+        user_id: AnyUserId,
+    ) -> Result<AccountIntegrations, ApiError> {
+        trace!("find_integrations_by_account_id");
+
+        self.database
+            .find_account_integrations_by_user_id(user_id)
+            .ok_or(ApiError::Other("Аккаунт не существует".to_string()))
     }
 
     /// Создаёт связь между BYOND аккаунтом и внутренним аккаунтом.
@@ -36,15 +77,13 @@ impl PrivateApi {
     ) -> Result<(), ApiError> {
         trace!("connect_byond_account");
 
-        let Some(account) = self.find_account_by_id(user_id.clone()) else {
-            return Err(ApiError::Other("Аккаунт не найден".to_string()))
-        };
-
         if ckey.0.trim().is_empty() {
             return Err(ApiError::Other("Пустой ckey".to_string()));
         }
 
-        if account.byond_ckey.is_some() {
+        let integrations = self.find_integrations_by_account_id(user_id.clone())?;
+
+        if integrations.byond_ckey.is_some() {
             return Err(ApiError::Other("Аккаунт BYOND уже подключен".to_string()));
         }
 
@@ -56,12 +95,12 @@ impl PrivateApi {
 
     /// Возвращает права аккаунта.
     #[instrument]
-    pub fn get_account_rights(&self, user_id: AnyUserId, roles: Option<Vec<Role>>) -> Rights {
+    pub fn get_account_rights(&self, account_id: AccountId, roles: Option<Vec<Role>>) -> Rights {
         trace!("get_account_rights");
 
         let account_roles = match roles {
             Some(roles) => roles,
-            None => self.get_account_roles(user_id.clone()),
+            None => self.get_account_roles(account_id.clone()),
         };
 
         Role::sum_roles_rights(account_roles)
@@ -69,22 +108,22 @@ impl PrivateApi {
 
     /// Возвращает список ролей аккаунта.
     #[instrument]
-    pub fn get_account_roles(&self, user_id: AnyUserId) -> Vec<Role> {
+    pub fn get_account_roles(&self, account_id: AccountId) -> Vec<Role> {
         trace!("get_account_roles");
 
-        self.database.get_account_roles(user_id)
+        self.database.get_account_roles(account_id)
     }
 
     /// Добавляет роль к аккаунту.
     #[instrument]
-    pub fn add_role_to_account(&self, user_id: AnyUserId, role_id: RoleId) -> Result<(), ApiError> {
+    pub fn add_role_to_account(
+        &self,
+        account_id: AccountId,
+        role_id: RoleId,
+    ) -> Result<(), ApiError> {
         trace!("add_role_to_account");
 
-        let Some(account) = self.find_account_by_id(user_id) else {
-            return Err(ApiError::Other("Некорректный user_id".to_string()))
-        };
-
-        let account_roles = self.get_account_roles(AnyUserId::AccountId(account.id));
+        let account_roles = self.get_account_roles(account_id);
 
         if account_roles.iter().any(|role| role.id == role_id) {
             return Err(ApiError::Other(
@@ -92,8 +131,7 @@ impl PrivateApi {
             ));
         }
 
-        self.database
-            .add_account_role(AnyUserId::AccountId(account.id), role_id);
+        self.database.add_account_role(account_id, role_id);
 
         Ok(())
     }

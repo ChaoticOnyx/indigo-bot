@@ -1,5 +1,5 @@
 use crate::constants::COOKIES_SESSION_KEY;
-use crate::extractors::AuthorizedSession;
+use crate::extractors::AuthenticatedUser;
 use actix_http::Payload;
 use actix_web::{
     cookie::Cookie,
@@ -80,7 +80,7 @@ where
                 return service.call(req).await;
             }
 
-            let session = AuthorizedSession::from_request(request, &mut Payload::None)
+            let session = AuthenticatedUser::from_request(request, &mut Payload::None)
                 .await
                 .ok();
 

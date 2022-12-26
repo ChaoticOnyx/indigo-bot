@@ -1,7 +1,7 @@
 use crate::api::private::PrivateApi;
-use app_shared::chrono::{DateTime, Utc};
 use app_shared::{
     chrono::Duration,
+    chrono::{DateTime, Utc},
     models::{AnyUserId, ApiError, ApiToken, Secret, Session},
     prelude::*,
 };
@@ -103,7 +103,7 @@ impl PrivateApi {
 
         let api_token = ApiToken::new(
             self.create_unique_api_secret(),
-            self.get_account_rights(AnyUserId::AccountId(account.id), None),
+            self.get_account_rights(account.id, None),
             None,
             Some(Duration::days(3)),
             false,

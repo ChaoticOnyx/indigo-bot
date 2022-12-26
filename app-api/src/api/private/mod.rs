@@ -15,6 +15,7 @@ use app_shared::{
 };
 
 use crate::api_config::ApiConfig;
+use crate::discord_api::DiscordApi;
 
 #[derive(Debug)]
 pub struct PrivateApi {
@@ -22,13 +23,11 @@ pub struct PrivateApi {
     pub github: Github,
     pub tokens_storage: TFATokensStorage,
     pub services_storage: ServicesStorage,
+    pub discord_api: DiscordApi,
 }
 
 impl PrivateApi {
-    #[instrument]
     pub fn new() -> Self {
-        info!("creating private api");
-
         // GitHub
         let github = Github::new();
 
@@ -43,14 +42,19 @@ impl PrivateApi {
         let root_token = ApiToken::new(config.root_secret, Rights::full(), None, None, true, None);
         database.create_root_token_if_does_not_exist(root_token);
 
+        // Services storage
         let mut services_storage = ServicesStorage::new();
         services_storage.register();
+
+        // Discord API
+        let discord_api = DiscordApi::new();
 
         Self {
             database,
             github,
             tokens_storage,
             services_storage,
+            discord_api,
         }
     }
 }

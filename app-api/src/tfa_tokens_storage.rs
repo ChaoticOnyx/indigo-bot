@@ -11,7 +11,7 @@ pub struct TFATokensStorage {
 
 impl TFATokensStorage {
     #[instrument(skip(self))]
-    pub fn remove_expired_tokens(&mut self) {
+    fn remove_expired_tokens(&mut self) {
         trace!("remove_expired_tokens");
         self.tokens.retain(|t| !t.is_expired());
     }
@@ -19,6 +19,8 @@ impl TFATokensStorage {
     #[instrument(skip(self))]
     pub fn new_token(&mut self, discord_user_id: DiscordUserId, duration: Duration) -> TFAToken {
         trace!("new_token");
+
+        self.remove_expired_tokens();
 
         let mut secret;
 
@@ -39,8 +41,10 @@ impl TFATokensStorage {
     }
 
     #[instrument(skip(self))]
-    pub fn find_by_secret(&self, secret: Secret) -> Option<&TFAToken> {
+    pub fn find_by_secret(&mut self, secret: Secret) -> Option<&TFAToken> {
         trace!("find_by_secret");
+
+        self.remove_expired_tokens();
 
         self.tokens
             .iter()
@@ -48,8 +52,10 @@ impl TFATokensStorage {
     }
 
     #[instrument(skip(self))]
-    pub fn find_by_discord_user_id(&self, discord_user_id: DiscordUserId) -> Option<&TFAToken> {
+    pub fn find_by_discord_user_id(&mut self, discord_user_id: DiscordUserId) -> Option<&TFAToken> {
         trace!("find_by_user_id");
+
+        self.remove_expired_tokens();
 
         self.tokens
             .iter()

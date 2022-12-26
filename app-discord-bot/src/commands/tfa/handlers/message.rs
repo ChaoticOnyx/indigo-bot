@@ -22,15 +22,17 @@ pub async fn message(ctx: &Context, new_message: &Message) {
         .await
         .unwrap();
 
+    let response_message = match token {
+        Ok(token) => format!(
+            "Ваш 2FA токен: `{}` истекающий <t:{}:R>",
+            token.secret,
+            Timestamp::from(token.expiration).unix_timestamp()
+        ),
+        Err(err) => format!("Произошла ошибка! {err}"),
+    };
+
     new_message
-        .reply_mention(
-            &ctx.http,
-            format!(
-                "Ваш 2FA токен: `{}` истекающий <t:{}:R>",
-                token.secret,
-                Timestamp::from(token.expiration).unix_timestamp()
-            ),
-        )
+        .reply_mention(&ctx.http, response_message)
         .await
         .unwrap();
 }

@@ -1,5 +1,4 @@
 use crate::commands::{self, feedback::COMMAND_NAME};
-use crate::discord_config::DiscordConfig;
 use crate::roles_list;
 use app_shared::{
     prelude::*,
@@ -10,7 +9,7 @@ use app_shared::{
         },
         prelude::*,
     },
-    DiscordSession,
+    DiscordConfig, DiscordSession,
 };
 
 pub struct Handler;

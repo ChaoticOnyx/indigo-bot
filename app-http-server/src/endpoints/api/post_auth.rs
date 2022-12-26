@@ -22,8 +22,15 @@ pub struct Payload {
 pub async fn endpoint(request: HttpRequest, form: Json<Payload>) -> impl Responder {
     trace!("endpoint");
 
-    if request.cookie(COOKIES_SESSION_KEY).is_some() {
-        return ResponseHelpers::new(StatusCode::BAD_REQUEST, "Уже авторизован");
+    match request.cookie(COOKIES_SESSION_KEY) {
+        Some(cookie) => {
+            Api::lock_async(move |api| {
+                api.delete_session(Secret(cookie.value().to_string())).ok();
+            })
+            .await
+            .unwrap();
+        }
+        _ => (),
     };
 
     let Some(user_agent) = request

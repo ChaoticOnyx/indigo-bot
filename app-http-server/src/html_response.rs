@@ -20,12 +20,17 @@ impl HtmlResponse {
             None => Context::new(),
         };
 
-        let html = Templates::lock_async(move |tera| tera.render(template_name, &context).unwrap())
-            .await
-            .unwrap();
+        let html_result: Result<String, tera::Error> =
+            Templates::lock_async(move |tera| tera.render(template_name, &context))
+                .await
+                .unwrap();
 
-        HttpResponseBuilder::new(StatusCode::OK)
-            .content_type(ContentType::html())
-            .body(html)
+        match html_result {
+            Ok(html) => HttpResponseBuilder::new(StatusCode::OK)
+                .content_type(ContentType::html())
+                .body(html),
+            Err(err) => HttpResponseBuilder::new(StatusCode::INTERNAL_SERVER_ERROR)
+                .body(format!("{err:#?}")),
+        }
     }
 }

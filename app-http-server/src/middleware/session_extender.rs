@@ -1,5 +1,5 @@
 use crate::cookies::SessionCookie;
-use crate::extractors::AuthorizedSession;
+use crate::extractors::AuthenticatedUser;
 use actix_http::Payload;
 use actix_web::{
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
@@ -63,15 +63,14 @@ where
 
         async move {
             let (request, _) = req.parts();
-            let Some(session) = AuthorizedSession::from_request(request, &mut Payload::None)
+            let Some(user) = AuthenticatedUser::from_request(request, &mut Payload::None)
                 .await
-                .map(|session| session.0)
                 .ok() else {
                 
                 return service.call(req).await;
             };
 
-            if !session.is_expired() && session.expiration - Utc::now() > options.extend_before {
+            if !user.session.is_expired() && user.session.expiration - Utc::now() > options.extend_before {
                 return service.call(req).await;
             }
 
@@ -94,7 +93,7 @@ where
             let mut response = service.call(req).await?;
             
             let Ok(new_session) = Api::lock_async(|api| {
-                api.extend_session(session.secret, user_agent, ip)
+                api.extend_session(user.session.secret, user_agent, ip)
             }).await.unwrap() else {
                 return Ok(response);
             };

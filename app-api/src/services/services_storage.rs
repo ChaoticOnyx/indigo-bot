@@ -18,10 +18,7 @@ pub struct ServicesStorage {
 }
 
 impl ServicesStorage {
-    #[instrument]
     pub fn new() -> Self {
-        trace!("new");
-
         Self {
             services: BTreeMap::new(),
             rt: app_shared::tokio::runtime::Builder::new_current_thread()

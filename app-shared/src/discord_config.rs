@@ -1,5 +1,5 @@
 use app_macros::config;
-use app_shared::serenity::model::id::GuildId;
+use serenity::model::id::GuildId;
 
 #[config]
 #[derive(Debug)]

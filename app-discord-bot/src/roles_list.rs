@@ -1,10 +1,10 @@
-use crate::discord_config::DiscordConfig;
 use app_macros::config;
 use app_shared::{
     futures_util::StreamExt,
     prelude::*,
     serenity::model::prelude::{ChannelId, GuildId, Member, MessageId, Ready, RoleId, User},
     serenity::prelude::{Context, Mentionable},
+    DiscordConfig,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};

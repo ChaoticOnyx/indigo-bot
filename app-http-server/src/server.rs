@@ -20,10 +20,7 @@ pub struct Server {
 }
 
 impl Server {
-    #[instrument]
     pub fn new() -> Self {
-        trace!("new");
-
         Self {
             rt: app_shared::tokio::runtime::Builder::new_current_thread()
                 .enable_all()

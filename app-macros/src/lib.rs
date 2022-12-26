@@ -62,6 +62,7 @@ pub fn config(args: TokenStream, item: TokenStream) -> TokenStream {
 
     let struct_ident = item_struct.ident.clone();
     let struct_name = struct_ident.to_string();
+    let shared_crate = normalize_crate("app-shared");
 
     // Add derives
     {
@@ -77,7 +78,7 @@ pub fn config(args: TokenStream, item: TokenStream) -> TokenStream {
     let new_field: FieldsNamed = parse_quote! {
         {
             #[serde(rename(serialize = "type", deserialize = "type"))]
-            __type: app_shared::config::ConfigType
+            __type: #shared_crate::config::ConfigType
         }
     };
 
@@ -89,26 +90,26 @@ pub fn config(args: TokenStream, item: TokenStream) -> TokenStream {
 
     // Add impl
     let fn_impl = quote! {
-        #[app_shared::prelude::async_trait]
-        impl app_shared::config::Config for #struct_ident {
+        #[#shared_crate::prelude::async_trait]
+        impl #shared_crate::config::Config for #struct_ident {
             fn get() -> Option<Self> {
-                use app_shared::prelude::GlobalStateLock;
+                use #shared_crate::prelude::GlobalStateLock;
 
-                app_shared::ConfigLoader::lock(|cfg| {
-                    cfg.find_config::<Self>(app_shared::config::ConfigType(String::from(#struct_name)))
+                #shared_crate::ConfigLoader::lock(|cfg| {
+                    cfg.find_config::<Self>(#shared_crate::config::ConfigType(String::from(#struct_name)))
                 })
             }
 
             fn save(self) -> Self {
-                use app_shared::prelude::GlobalStateLock;
+                use #shared_crate::prelude::GlobalStateLock;
 
-                app_shared::ConfigLoader::lock(|cfg| {
+                #shared_crate::ConfigLoader::lock(|cfg| {
                     cfg.save_config(self)
                 })
             }
 
-            fn __type(&self) -> app_shared::config::ConfigType {
-                app_shared::config::ConfigType(String::from(#struct_name))
+            fn __type(&self) -> #shared_crate::config::ConfigType {
+                #shared_crate::config::ConfigType(String::from(#struct_name))
             }
         }
     };

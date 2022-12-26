@@ -1,3 +1,3 @@
-mod authorized_session;
+mod authenticated_session;
 
-pub use authorized_session::AuthorizedSession;
+pub use authenticated_session::AuthenticatedUser;

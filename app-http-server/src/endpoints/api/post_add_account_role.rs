@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::ResponseHelpers;
 use app_shared::{
-    models::{AccountId, AnyUserId, RoleId, Secret},
+    models::{AccountId, RoleId, Secret},
     prelude::*,
 };
 
@@ -27,11 +27,9 @@ pub async fn endpoint(
     let secret = Secret(secret.token().to_string());
     let Body { role_id } = body.0;
 
-    let response = Api::lock_async(move |api| {
-        api.add_role_to_account(secret, AnyUserId::AccountId(account_id), role_id)
-    })
-    .await
-    .unwrap();
+    let response = Api::lock_async(move |api| api.add_role_to_account(secret, account_id, role_id))
+        .await
+        .unwrap();
 
     ResponseHelpers::from_api_result(response)
 }

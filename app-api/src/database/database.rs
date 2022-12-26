@@ -1,8 +1,9 @@
 use crate::database::db_config::DbConfig;
 use crate::database::tables::{
-    AccountTable, BugMessageTable, FeatureMessageTable, RoleTable, SessionTable, TokenTable,
-    WebhookTable,
+    AccountIntegrationsTable, AccountTable, BugMessageTable, FeatureMessageTable, RoleTable,
+    SessionTable, TokenTable, WebhookTable,
 };
+use app_shared::models::{AccountId, AccountIntegrations};
 use app_shared::{
     chrono::DateTime,
     chrono::Utc,
@@ -61,6 +62,7 @@ impl Database {
             WebhookTable::create(pool).await.unwrap();
             RoleTable::create(pool).await.unwrap();
             SessionTable::create(pool).await.unwrap();
+            AccountIntegrationsTable::create(pool).await.unwrap();
         })
     }
 
@@ -145,30 +147,70 @@ impl Database {
     }
 
     #[instrument(skip(self))]
-    pub fn find_account(&self, user_id: AnyUserId) -> Option<Account> {
-        trace!("find_account");
+    pub fn find_account_integrations_by_user_id(
+        &self,
+        user_id: AnyUserId,
+    ) -> Option<AccountIntegrations> {
+        trace!("find_account_integrations_by_user_id");
 
         self.rt.block_on(async {
-            AccountTable::find_by_user_id(&self.pool, user_id)
+            AccountIntegrationsTable::find_by_id(&self.pool, user_id)
                 .await
                 .unwrap()
         })
     }
 
     #[instrument(skip(self))]
+    pub fn find_account(&self, user_id: AnyUserId) -> Option<Account> {
+        trace!("find_account");
+
+        let integrations = self.find_account_integrations_by_user_id(user_id)?;
+
+        self.rt.block_on(async {
+            AccountTable::find_by_id(&self.pool, integrations.account_id)
+                .await
+                .unwrap()
+        })
+    }
+
+    #[instrument(skip(self))]
+    pub fn is_username_free(&self, username: String) -> bool {
+        trace!("is_username_free");
+
+        self.rt.block_on(async {
+            AccountTable::find_by_username(&self.pool, username)
+                .await
+                .unwrap()
+                .is_none()
+        })
+    }
+
+    #[instrument(skip(self))]
     pub fn add_account(
         &self,
-        discord_user_id: DiscordUserId,
+        username: String,
+        avatar_url: String,
         created_at: DateTime<Utc>,
         roles: &[Role],
-    ) {
+        discord_user_id: DiscordUserId,
+    ) -> AccountId {
         trace!("add_account");
 
         self.rt.block_on(async {
-            AccountTable::insert(&self.pool, discord_user_id, created_at, roles)
-                .await
-                .unwrap();
-        });
+            let account_id =
+                AccountTable::insert(&self.pool, username, avatar_url, created_at, roles)
+                    .await
+                    .unwrap();
+
+            AccountIntegrationsTable::insert(
+                &self.pool,
+                AccountIntegrations::new(account_id, discord_user_id, None, None),
+            )
+            .await
+            .unwrap();
+
+            account_id
+        })
     }
 
     #[instrument(skip(self))]
@@ -176,7 +218,7 @@ impl Database {
         trace!("connect_account");
 
         self.rt.block_on(async {
-            AccountTable::update_user_id(&self.pool, user_id, new_user_id)
+            AccountIntegrationsTable::set_integration(&self.pool, user_id, new_user_id)
                 .await
                 .unwrap();
         });
@@ -242,22 +284,22 @@ impl Database {
     }
 
     #[instrument(skip(self))]
-    pub fn add_account_role(&self, user_id: AnyUserId, role_id: RoleId) {
+    pub fn add_account_role(&self, account_id: AccountId, role_id: RoleId) {
         trace!("add_account_role");
 
         self.rt.block_on(async {
-            AccountTable::add_role(&self.pool, user_id, role_id)
+            AccountTable::add_role(&self.pool, account_id, role_id)
                 .await
                 .unwrap();
         });
     }
 
     #[instrument(skip(self))]
-    pub fn get_account_roles(&self, user_id: AnyUserId) -> Vec<Role> {
+    pub fn get_account_roles(&self, account_id: AccountId) -> Vec<Role> {
         trace!("get_user_roles");
 
         self.rt.block_on(async {
-            let user = AccountTable::find_by_user_id(&self.pool, user_id)
+            let user = AccountTable::find_by_id(&self.pool, account_id)
                 .await
                 .unwrap()
                 .unwrap();

@@ -1,8 +1,8 @@
-use crate::discord_config::DiscordConfig;
 use app_shared::{
     prelude::*,
     serenity::{prelude::GatewayIntents, Client},
     tokio::runtime::Runtime,
+    DiscordConfig,
 };
 
 use super::handler::Handler;
@@ -13,10 +13,7 @@ pub struct BotClient {
 }
 
 impl BotClient {
-    #[instrument]
     pub fn new() -> Self {
-        trace!("new");
-
         Self {
             rt: app_shared::tokio::runtime::Builder::new_current_thread()
                 .enable_all()
