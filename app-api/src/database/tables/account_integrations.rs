@@ -95,10 +95,11 @@ create table if not exists account_integrations
             AnyUserId::DiscordId(_) => "discord_user_id = $2",
             AnyUserId::ByondCkey(_) => "byond_ckey = $2",
             AnyUserId::SS14Guid(_) => "ss14_guid = $2",
-            AnyUserId::AccountId(_) => "id = $2",
+            AnyUserId::AccountId(_) => "account_id = $2",
         };
 
-        let query_string = format!("UPDATE account SET {set_part} WHERE {where_part};");
+        let query_string =
+            format!("UPDATE account_integrations SET {set_part} WHERE {where_part};");
         let query = sqlx::query(&query_string);
 
         // Bind $1
