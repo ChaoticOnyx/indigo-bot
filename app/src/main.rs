@@ -38,7 +38,16 @@ fn setup_logging() {
             )
             .init();
 
-        tokio::spawn(task);
+        std::thread::spawn(move || {
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap();
+
+            rt.block_on(async {
+                tokio::spawn(task).await.unwrap();
+            })
+        });
     } else {
         tracing_subscriber::registry()
             .with(
