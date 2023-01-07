@@ -37,6 +37,35 @@ impl Api {
     }
 
     #[instrument]
+    pub fn connect_ss14_account_by_2fa(
+        &mut self,
+        api_secret: Secret,
+        tfa_secret: Secret,
+        user_id: SS14UserId,
+    ) -> Result<(), ApiError> {
+        trace!("connect_ss14_account_by_2fa");
+
+        let token: ApiToken = validate_api_secret!(api_secret);
+
+        if !token
+            .rights
+            .user
+            .contains(UserRights::ADD_CONNECTED_ACCOUNTS)
+        {
+            return Err(ApiError::Forbidden("Недостаточно доступа".to_string()));
+        }
+
+        let account = self
+            .private_api
+            .find_account_by_tfa_token_secret(tfa_secret)?;
+
+        self.private_api
+            .connect_ss14_account(AnyUserId::AccountId(account.id), user_id)?;
+
+        Ok(())
+    }
+
+    #[instrument]
     pub fn add_role_to_account(
         &self,
         api_secret: Secret,

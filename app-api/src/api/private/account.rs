@@ -93,6 +93,30 @@ impl PrivateApi {
         Ok(())
     }
 
+    #[instrument]
+    pub fn connect_ss14_account(
+        &self,
+        user_id: AnyUserId,
+        ss14_user_id: SS14UserId,
+    ) -> Result<(), ApiError> {
+        trace!("connect_ss14_account");
+
+        if ss14_user_id.0.trim().is_empty() {
+            return Err(ApiError::Other("Пустой ss14_user_id".to_string()));
+        }
+
+        let integrations = self.find_integrations_by_account_id(user_id.clone())?;
+
+        if integrations.ss14_guid.is_some() {
+            return Err(ApiError::Other("Аккаунт SS14 уже подключен".to_string()));
+        }
+
+        self.database
+            .connect_account(user_id, AnyUserId::SS14Guid(ss14_user_id));
+
+        Ok(())
+    }
+
     /// Возвращает права аккаунта.
     #[instrument]
     pub fn get_account_rights(&self, account_id: AccountId, roles: Option<Vec<Role>>) -> Rights {

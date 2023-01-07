@@ -85,8 +85,6 @@ impl ServicesStorage {
             .rt
             .block_on(async { service.handle(configuration, payload, api).await });
 
-        debug!("{result:#?}");
-
         result
     }
 }

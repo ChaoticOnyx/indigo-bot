@@ -7,6 +7,7 @@ mod get_identity;
 mod post_add_account_role;
 mod post_auth;
 mod post_connect_byond;
+mod post_connect_ss14;
 mod post_create_api_token;
 mod post_create_webhook;
 mod post_webhook;
@@ -17,6 +18,7 @@ pub fn scope() -> Scope {
         .service(get_identity::endpoint)
         // POST
         .service(post_connect_byond::endpoint)
+        .service(post_connect_ss14::endpoint)
         .service(post_create_api_token::endpoint)
         .service(post_webhook::endpoint)
         .service(post_create_webhook::endpoint)
