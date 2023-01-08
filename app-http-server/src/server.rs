@@ -74,6 +74,7 @@ impl Server {
                     .service(endpoints::www::scope())
                     .default_service(web::route().to(endpoints::www::not_found::endpoint))
             })
+            .shutdown_timeout(3)
             .bind(config.address)
             .unwrap()
             .run()
