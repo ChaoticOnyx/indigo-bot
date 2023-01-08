@@ -88,5 +88,7 @@ pub async fn handle_feature_report(ctx: &Context, cmd: &ApplicationCommandIntera
         ..feature_message.into()
     };
 
-    Api::lock(|api| api.private_api.new_feature_vote(feature_vote));
+    Api::lock_async(move |api| api.private_api.new_feature_vote(feature_vote))
+        .await
+        .unwrap();
 }

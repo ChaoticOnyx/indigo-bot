@@ -24,5 +24,5 @@ pub async fn message_delete(
         return;
     }
 
-    forget_feature_message(ctx, channel_id, deleted_message_id);
+    forget_feature_message(ctx, channel_id, deleted_message_id).await;
 }
