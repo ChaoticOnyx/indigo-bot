@@ -202,6 +202,12 @@ impl PrivateApi {
     ) -> Result<(), ApiError> {
         trace!("change_avatar_url");
 
+        if new_avatar_url.chars().count() > 200 {
+            return Err(ApiError::Other(
+                "Ссылка не должна быть длинее 200 символов!".to_string(),
+            ));
+        }
+
         if new_avatar_url.trim().is_empty() {
             new_avatar_url = String::from("/public/images/avatar.png");
         }
