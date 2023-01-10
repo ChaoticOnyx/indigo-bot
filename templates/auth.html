@@ -2,7 +2,7 @@
 {% block title %}Хаб - Вход{% endblock title %}
 
 {% block body %}
-<div class="content gap-5 flex flex-col items-center justify-center">
+<div class="flex flex-col items-center justify-center h-full gap-5">
     <h2 class="text-2xl font-bold">Аутентификация</h2>
     <form action="/api/auth?redirect=/" class="tokenForm gap-4 flex flex-col items-center justify-center" id="authForm"
           method="post">
@@ -67,34 +67,32 @@
         }
 
         tfa_secret = tfa_secret.join('')
-            const response = await fetch('/api/auth', {
-                method: 'POST',
-                mode: 'same-origin',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    tfa_secret
-                }),
-            })
+        const response = await fetch('/api/auth', {
+            method: 'POST',
+            mode: 'same-origin',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                tfa_secret
+            }),
+        })
 
-            if (!response.ok) {
-                const reason = await response.json()
-                const errorText = document.querySelector("#errorMessage")
-                
-                errorText.innerText = `Ошибка при попытке авторизоваться! ${reason}`
-                errorText.hidden = false
-                
-                return;
-            }
+        if (!response.ok) {
+            const reason = await response.json()
+            const errorText = document.querySelector("#errorMessage")
+            
+            errorText.innerText = `Ошибка при попытке авторизоваться! ${reason}`
+            errorText.hidden = false
+            
+            return;
+        }
 
-            let url = new URLSearchParams(location.search)
-            let newLocation = url.get('redirect_to')
+        let url = new URLSearchParams(location.search)
+        let newLocation = url.get('redirect_to')
 
-            if (newLocation !== null) {
-                location.href = newLocation
-            }
+        location.href = newLocation === null ? '/' : newLocation
     }
 
     document.querySelectorAll(".secret input").forEach(el => {
