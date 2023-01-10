@@ -25,15 +25,11 @@ a:visited {
 
 html,
 body {
-  height: 100vh;
-  margin: 0;
-  padding: 0;
-
-  @apply text-white/90;
+  @apply m-0 p-0 text-white/90 bg-neutral-900 h-full overflow-hidden;
 }
 
 body {
-  display: flex;
+  @apply flex flex-col;
 }
 
 input {
@@ -50,13 +46,6 @@ hr {
 
 .notice {
   @apply text-white/50 text-sm italic max-w-prose;
-}
-
-.content {
-  width: 100%;
-  height: 100%;
-
-  @apply bg-neutral-900;
 }
 
 .input__container {
@@ -118,4 +107,20 @@ ul.menu a {
 
 code {
   @apply bg-black/30 rounded-sm p-0.5 px-1;
+}
+
+.navbar {
+  @apply flex gap-2 w-full bg-neutral-800 bordered p-2;
+}
+
+.navbar a {
+  @apply text-white/50;
+}
+
+.navbar a.selected {
+  @apply text-white/90 font-bold;
+}
+
+.navbar a:hover {
+  @apply text-white/90;
 }

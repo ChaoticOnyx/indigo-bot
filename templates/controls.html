@@ -1,3 +1,6 @@
+{% import "helpers.html" as helpers %}
+
+
 {% macro roleBadge(role) %}
     <div class="role-badge"><span class="role-circle" style="background-color: {{role.color}};"></span><span>{{ role.name }}</span></div>
 {% endmacro roleBadge %}
@@ -16,3 +19,10 @@
 {% macro userAvatar(src, id="") %}
     {{ controls::image(src=src, alt="Аватар пользователя", altImage="/public/images/avatar.png", style="width: 8rem;", class="rounded-lg", id=id) }}
 {% endmacro userAvatar %}
+
+{% macro navbar(selected) %}
+	<nav class="navbar">
+		<a {{ helpers::class(condition=selected == "Index", value="selected") }} href="/">Главная</a>
+		<a {{ helpers::class(condition=selected == "Account", value="selected") }} href="/account">Аккаунт</a>
+	</nav>
+{% endmacro navbar %}

@@ -4,38 +4,40 @@
 {% extends "base.html" %}
 {% block title %}Аккаунт{% endblock title %}
 
+{% block navbar %}
+	{{ controls::navbar(selected="Account") }}
+{% endblock navbar %}
+
 {% block body %}
 
 {% set main_role = user.account.roles | main_role %}
 
-<div class="content gap-5 flex flex-col items-center justify-center">
-	<div class="w-1/2 min-w-fit max-w-prose flex flex-row rounded-md bordered">
-		<div id="leftPanel" class="gap-2 flex flex-col items-center justify-center border-r">
-			<div class="flex flex-col gap-1 items-center justify-center border-b p-2">
-				<div>
-					<span class="font-bold" style="color: {{ main_role.color }};">{{ user.account.username }}</span>
-				</div>
-
-				{{ controls::userAvatar(src=user.account.avatar_url, id="userAvatar") }}
-
-				<div class="flex flex-col items-center justify-center">
-					<div class="flex gap-0.5 justify-center flex-wrap">
-						{% for role in user.account.roles %}
-						{{ controls::roleBadge(role=role) }}
-						{% endfor %}
-					</div>
-					<span class="text-sm text-center">Дата регистрации: <span class="font-bold text-white">{{
-							user.account.created_at | date(format="%d.%m.%Y") }}</span></span>
-				</div>
+<div class="flex flex-row p-4">
+	<div id="leftPanel" class="gap-2 ml-auto flex flex-col items-center">
+		<div class="flex flex-col gap-1 items-center justify-center border-b p-2">
+			<div>
+				<span class="font-bold" style="color: {{ main_role.color }};">{{ user.account.username }}</span>
 			</div>
 
-			<div id="accountMenu" class="w-full p-2">
-				{% block menu %}{% endblock menu %}
+			{{ controls::userAvatar(src=user.account.avatar_url, id="userAvatar") }}
+
+			<div class="flex flex-col gap-2 items-center justify-center">
+				<div class="flex gap-0.5 justify-center flex-wrap">
+					{% for role in user.account.roles %}
+					{{ controls::roleBadge(role=role) }}
+					{% endfor %}
+				</div>
+				<span class="text-sm text-center">Дата регистрации: <span class="font-bold text-white">{{
+						user.account.created_at | date(format="%d.%m.%Y") }}</span></span>
 			</div>
 		</div>
-		<div id="rightPanel" class="flex flex-col w-full p-4">
-			{% block rightPanel %}{% endblock rightPanel %}
+
+		<div id="accountMenu" class="w-full p-2">
+			{% block menu %}{% endblock menu %}
 		</div>
+	</div>
+	<div id="rightPanel" class="flex flex-col p-4 mr-auto min-w-[60ch]">
+		{% block rightPanel %}{% endblock rightPanel %}
 	</div>
 </div>
 {% endblock body %}

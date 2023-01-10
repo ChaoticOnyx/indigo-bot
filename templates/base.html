@@ -16,8 +16,11 @@
 </head>
 
 <body>
+	{% block navbar %}{% endblock navbar %}
+	<div class="h-full w-full overflow-y-auto">
 	{% block body %}
 	{% endblock body %}
+	</div>
 
 	<script src="{{ "main.js" | asset_path }}"></script>
 </body>

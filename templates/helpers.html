@@ -1,0 +1,5 @@
+{% macro class(condition, value) %}
+    {% if condition %}
+        class="{{ value }}"
+    {% endif %}
+{% endmacro class %}
