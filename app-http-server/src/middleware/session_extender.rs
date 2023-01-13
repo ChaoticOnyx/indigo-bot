@@ -86,7 +86,7 @@ where
 
             let ip = request
                 .connection_info()
-                .peer_addr()
+                .realip_remote_addr()
                 .map(|ip| ip.to_string())
                 .unwrap_or_else(String::new);
 
