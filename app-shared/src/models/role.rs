@@ -1,4 +1,6 @@
-﻿use crate::models::Rights;
+﻿use std::hash::Hash;
+
+use crate::models::Rights;
 use hex_color::HexColor;
 use serde::{Deserialize, Serialize};
 
@@ -31,5 +33,19 @@ impl Default for Role {
             color: HexColor::from(u32::MAX),
             rights: Rights::none(),
         }
+    }
+}
+
+impl PartialEq for Role {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for Role {}
+
+impl Hash for Role {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
     }
 }

@@ -30,8 +30,8 @@ struct RolesListConfig {
 }
 
 #[instrument(skip(ctx))]
-pub async fn ready(ctx: &Context, ready: &Ready) {
-    info!("ready");
+pub async fn ready(ctx: &Context, _ready: &Ready) {
+    trace!("ready");
 
     let mut config = RolesListConfig::get().unwrap();
     let bot_cfg = DiscordConfig::get().unwrap();

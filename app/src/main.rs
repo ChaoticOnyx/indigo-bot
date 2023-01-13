@@ -63,7 +63,7 @@ fn setup_logging() {
 fn main() {
     // Settings
     let settings = Settings::load();
-    Settings::set_state(settings.clone());
+    Settings::set_state(settings);
 
     setup_logging();
 
@@ -82,12 +82,12 @@ fn main() {
 
     // Discord
     let discord_thread = std::thread::spawn(|| {
-        let client = BotClient::new();
+        let client = BotClient::default();
         client.run();
     });
 
     let server_thread = std::thread::spawn(|| {
-        let server = Server::new();
+        let server = Server::default();
         server.run();
     });
 

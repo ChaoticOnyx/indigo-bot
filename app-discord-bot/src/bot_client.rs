@@ -13,15 +13,6 @@ pub struct BotClient {
 }
 
 impl BotClient {
-    pub fn new() -> Self {
-        Self {
-            rt: app_shared::tokio::runtime::Builder::new_current_thread()
-                .enable_all()
-                .build()
-                .unwrap(),
-        }
-    }
-
     #[instrument]
     pub fn run(&self) {
         trace!("run");
@@ -36,5 +27,16 @@ impl BotClient {
 
             client.start().await.unwrap();
         });
+    }
+}
+
+impl Default for BotClient {
+    fn default() -> Self {
+        Self {
+            rt: app_shared::tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap(),
+        }
     }
 }

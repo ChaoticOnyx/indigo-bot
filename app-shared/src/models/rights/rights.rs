@@ -3,10 +3,13 @@ use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::ops::BitOr;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq)]
 pub struct Rights {
+    #[serde(default)]
     pub user: UserRights,
+    #[serde(default)]
     pub token: TokenRights,
+    #[serde(default)]
     pub service: ScopedServiceRights,
 }
 

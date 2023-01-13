@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::ops::BitOr;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq)]
 pub enum RightsScope<T, R>
 where
     T: Sized + Ord,

@@ -15,3 +15,9 @@ bitflags! {
         const SERVICE_TOKEN_DELETE = (1 << 3);
     }
 }
+
+impl Default for TokenRights {
+    fn default() -> Self {
+        Self::empty()
+    }
+}

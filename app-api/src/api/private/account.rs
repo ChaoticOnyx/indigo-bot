@@ -30,6 +30,14 @@ impl PrivateApi {
             .add_account(new_username, avatar_url, Utc::now(), &[], discord_user_id))
     }
 
+    /// Возаращет все аккаунты.
+    #[instrument]
+    pub fn get_accounts(&self) -> Vec<Account> {
+        trace!("get_accounts");
+
+        self.database.get_accounts()
+    }
+
     /// Находит аккаунт по принадлежащему ему TFA токену.
     #[instrument]
     pub fn find_account_by_tfa_token_secret(
@@ -40,7 +48,7 @@ impl PrivateApi {
 
         let token = self
             .find_tfa_token_by_secret(secret)
-            .ok_or(ApiError::Other("Некорректный TFA токен".to_string()))?;
+            .ok_or_else(|| ApiError::Other("Некорректный TFA токен".to_string()))?;
 
         self.find_account_by_id(AnyUserId::DiscordId(token.discord_user_id))
     }
@@ -52,7 +60,7 @@ impl PrivateApi {
 
         self.database
             .find_account(user_id)
-            .ok_or(ApiError::Other("Неверный user_id".to_string()))
+            .ok_or_else(|| ApiError::Other("Неверный user_id".to_string()))
     }
 
     /// Возвращает интеграции аккаунтов.
@@ -65,7 +73,15 @@ impl PrivateApi {
 
         self.database
             .find_account_integrations_by_user_id(user_id)
-            .ok_or(ApiError::Other("Аккаунт не существует".to_string()))
+            .ok_or_else(|| ApiError::Other("Аккаунт не существует".to_string()))
+    }
+
+    /// Возвращает все аккаунты с указанной ролью.
+    #[instrument]
+    pub fn find_accounts_with_role(&self, role_id: RoleId) -> Vec<Account> {
+        trace!("find_accounts_with_role");
+
+        self.database.find_accounts_with_role(role_id)
     }
 
     /// Создаёт связь между BYOND аккаунтом и внутренним аккаунтом.
@@ -124,7 +140,7 @@ impl PrivateApi {
 
         let account_roles = match roles {
             Some(roles) => roles,
-            None => self.get_account_roles(account_id.clone()),
+            None => self.get_account_roles(account_id),
         };
 
         Role::sum_roles_rights(account_roles)
@@ -156,6 +172,27 @@ impl PrivateApi {
         }
 
         self.database.add_account_role(account_id, role_id);
+
+        Ok(())
+    }
+
+    #[instrument]
+    pub fn remove_role_from_account(
+        &self,
+        account_id: AccountId,
+        role_id: RoleId,
+    ) -> Result<(), ApiError> {
+        trace!("remove_role_from_account");
+
+        let account_roles = self.get_account_roles(account_id);
+
+        if !account_roles.iter().any(|role| role.id == role_id) {
+            return Err(ApiError::Other(
+                "Пользователь не имеет этой роли".to_string(),
+            ));
+        }
+
+        self.database.remove_account_role(account_id, role_id);
 
         Ok(())
     }

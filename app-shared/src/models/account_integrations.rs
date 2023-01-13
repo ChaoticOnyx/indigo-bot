@@ -2,7 +2,7 @@ use crate::models::AccountId;
 use crate::prelude::{ByondUserId, DiscordUserId, SS14UserId};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AccountIntegrations {
     pub account_id: AccountId,
     pub discord_user_id: DiscordUserId,

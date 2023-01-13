@@ -1,4 +1,6 @@
-﻿use crate::models::{AccountIntegrations, Role};
+﻿use std::hash::Hash;
+
+use crate::models::{AccountIntegrations, Role};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -14,4 +16,18 @@ pub struct Account {
     pub created_at: DateTime<Utc>,
     pub roles: Vec<Role>,
     pub integrations: AccountIntegrations,
+}
+
+impl PartialEq for Account {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for Account {}
+
+impl Hash for Account {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
 }

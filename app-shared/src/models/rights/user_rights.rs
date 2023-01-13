@@ -15,3 +15,9 @@ bitflags! {
         const REMOVE_ROLES = (1 << 2);
     }
 }
+
+impl Default for UserRights {
+    fn default() -> Self {
+        Self::empty()
+    }
+}

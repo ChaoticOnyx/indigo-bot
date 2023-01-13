@@ -25,7 +25,7 @@ impl ApiToken {
             secret,
             rights,
             expiration: duration.map(|duration| Utc::now() + duration),
-            created_at: custom_creation_time.unwrap_or_else(|| Utc::now()),
+            created_at: custom_creation_time.unwrap_or_else(Utc::now),
             creator,
             is_service,
         }

@@ -168,6 +168,35 @@ impl Database {
     }
 
     #[instrument(skip(self))]
+    pub fn find_accounts_with_role(&self, role_id: RoleId) -> Vec<Account> {
+        trace!("find_accounts_with_role");
+
+        self.rt
+            .block_on(async {
+                AccountTable::find_many_by_role(&self.pool, role_id)
+                    .await
+                    .unwrap()
+            })
+            .into_iter()
+            .map(|account| {
+                let integrations = self
+                    .find_account_integrations_by_user_id(AnyUserId::AccountId(account.id))
+                    .unwrap();
+                let roles = self.get_account_roles(integrations.account_id);
+
+                Account {
+                    id: account.id,
+                    integrations,
+                    roles,
+                    username: account.username,
+                    avatar_url: account.avatar_url,
+                    created_at: account.created_at,
+                }
+            })
+            .collect()
+    }
+
+    #[instrument(skip(self))]
     pub fn find_account(&self, user_id: AnyUserId) -> Option<Account> {
         trace!("find_account");
 
@@ -188,6 +217,31 @@ impl Database {
                 avatar_url: table.avatar_url,
                 created_at: table.created_at,
             })
+    }
+
+    #[instrument(skip(self))]
+    pub fn get_accounts(&self) -> Vec<Account> {
+        trace!("get_accounts");
+
+        self.rt
+            .block_on(async { AccountTable::all(&self.pool).await.unwrap() })
+            .into_iter()
+            .map(|account| {
+                let integrations = self
+                    .find_account_integrations_by_user_id(AnyUserId::AccountId(account.id))
+                    .unwrap();
+                let roles = self.get_account_roles(integrations.account_id);
+
+                Account {
+                    id: account.id,
+                    integrations,
+                    roles,
+                    username: account.username,
+                    avatar_url: account.avatar_url,
+                    created_at: account.created_at,
+                }
+            })
+            .collect()
     }
 
     #[instrument(skip(self))]
@@ -333,6 +387,17 @@ impl Database {
 
         self.rt.block_on(async {
             AccountTable::add_role(&self.pool, account_id, role_id)
+                .await
+                .unwrap();
+        });
+    }
+
+    #[instrument(skip(self))]
+    pub fn remove_account_role(&self, account_id: AccountId, role_id: RoleId) {
+        trace!("remove_account_role");
+
+        self.rt.block_on(async {
+            AccountTable::remove_role(&self.pool, account_id, role_id)
                 .await
                 .unwrap();
         });

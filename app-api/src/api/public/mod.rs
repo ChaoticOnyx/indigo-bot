@@ -15,7 +15,7 @@ pub struct Api {
 impl Api {
     pub fn new() -> Self {
         Self {
-            private_api: PrivateApi::new(),
+            private_api: PrivateApi::default(),
         }
     }
 }

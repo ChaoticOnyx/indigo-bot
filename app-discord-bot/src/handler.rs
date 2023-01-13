@@ -1,5 +1,7 @@
-use crate::commands::{self, feedback::COMMAND_NAME};
-use crate::roles_list;
+use crate::{
+    commands::{self, feedback::COMMAND_NAME},
+    roles_bind, roles_list,
+};
 use app_shared::{
     prelude::*,
     serenity::{
@@ -33,6 +35,7 @@ impl EventHandler for Handler {
         }
 
         roles_list::guild_member_update(&ctx, &old_if_available, &new).await;
+        roles_bind::guild_member_update(&ctx, &old_if_available, &new).await;
     }
 
     #[instrument(skip(self, ctx))]
@@ -129,6 +132,7 @@ impl EventHandler for Handler {
 
         commands::feedback::handlers::ready(&ctx, &ready).await;
         roles_list::ready(&ctx, &ready).await;
+        roles_bind::ready(&ctx, &ready).await;
     }
 
     #[instrument(skip(self, ctx))]

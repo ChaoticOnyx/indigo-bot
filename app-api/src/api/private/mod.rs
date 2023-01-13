@@ -26,8 +26,8 @@ pub struct PrivateApi {
     pub discord_api: DiscordApi,
 }
 
-impl PrivateApi {
-    pub fn new() -> Self {
+impl Default for PrivateApi {
+    fn default() -> Self {
         // GitHub
         let github = Github::new();
 

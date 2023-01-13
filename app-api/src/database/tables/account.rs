@@ -1,4 +1,4 @@
-﻿use super::prelude::*;
+use super::prelude::*;
 use app_shared::{
     chrono::{DateTime, Utc},
     models::{AccountId, Role, RoleId},
@@ -68,6 +68,16 @@ RETURNING id
     }
 
     #[instrument]
+    pub async fn all(pool: &Pool<Postgres>) -> Result<Vec<AccountTable>, Error> {
+        trace!("all");
+
+        sqlx::query("SELECT * FROM account")
+            .map(Self::map)
+            .fetch_all(pool)
+            .await
+    }
+
+    #[instrument]
     pub async fn find_by_id(
         pool: &Pool<Postgres>,
         account_id: AccountId,
@@ -78,6 +88,20 @@ RETURNING id
             .bind(account_id.0)
             .map(Self::map)
             .fetch_optional(pool)
+            .await
+    }
+
+    #[instrument]
+    pub async fn find_many_by_role(
+        pool: &Pool<Postgres>,
+        role_id: RoleId,
+    ) -> Result<Vec<AccountTable>, Error> {
+        trace!("find_many_by_role");
+
+        sqlx::query("SELECT * FROM account WHERE $1 = ANY(roles)")
+            .bind(role_id.0)
+            .map(Self::map)
+            .fetch_all(pool)
             .await
     }
 
@@ -108,6 +132,19 @@ RETURNING id
             .await
     }
 
+    #[instrument]
+    pub async fn remove_role(
+        pool: &Pool<Postgres>,
+        account_id: AccountId,
+        role_id: RoleId,
+    ) -> Result<PgQueryResult, Error> {
+        sqlx::query("UPDATE account SET roles = array_remove(roles, $1) WHERE id = $2")
+            .bind(role_id.0)
+            .bind(account_id.0)
+            .execute(pool)
+            .await
+    }
+
     pub async fn update_username(
         pool: &Pool<Postgres>,
         account_id: AccountId,
@@ -119,8 +156,12 @@ RETURNING id
             .execute(pool)
             .await
     }
-    
-    pub async fn update_avatar_url(pool: &Pool<Postgres>, account_id: AccountId, new_avatar_url: String) -> Result<PgQueryResult, Error> {
+
+    pub async fn update_avatar_url(
+        pool: &Pool<Postgres>,
+        account_id: AccountId,
+        new_avatar_url: String,
+    ) -> Result<PgQueryResult, Error> {
         sqlx::query("UPDATE account SET avatar_url = $1 WHERE id = $2")
             .bind(new_avatar_url)
             .bind(account_id.0)

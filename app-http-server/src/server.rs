@@ -22,15 +22,6 @@ pub struct Server {
 }
 
 impl Server {
-    pub fn new() -> Self {
-        Self {
-            rt: app_shared::tokio::runtime::Builder::new_current_thread()
-                .enable_all()
-                .build()
-                .unwrap(),
-        }
-    }
-
     #[instrument]
     pub fn run(&self) {
         info!("run");
@@ -123,5 +114,16 @@ impl Server {
                 }
             }
         });
+    }
+}
+
+impl Default for Server {
+    fn default() -> Self {
+        Self {
+            rt: app_shared::tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap(),
+        }
     }
 }
