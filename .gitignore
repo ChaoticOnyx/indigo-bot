@@ -2,4 +2,5 @@
 /.idea
 settings.toml
 configs/*
+!configs/example/*
 /public
