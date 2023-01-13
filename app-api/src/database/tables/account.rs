@@ -56,12 +56,7 @@ RETURNING id
         .bind(username)
         .bind(avatar_url)
         .bind(created_at.to_string())
-        .bind(
-            roles
-                .iter()
-                .map(|role| role.id.0 as i64)
-                .collect::<Vec<i64>>(),
-        )
+        .bind(roles.iter().map(|role| role.id.0).collect::<Vec<i64>>())
         .map(|row| AccountId(row.get::<i64, _>("id")))
         .fetch_one(pool)
         .await

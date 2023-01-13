@@ -6,16 +6,8 @@ mod webhook;
 use crate::api::PrivateApi;
 use app_macros::global;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 #[global(set, lock)]
 pub struct Api {
     pub private_api: PrivateApi,
-}
-
-impl Api {
-    pub fn new() -> Self {
-        Self {
-            private_api: PrivateApi::default(),
-        }
-    }
 }

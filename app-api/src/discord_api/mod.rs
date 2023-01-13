@@ -8,7 +8,14 @@ pub struct DiscordApi {
 }
 
 impl DiscordApi {
-    pub fn new() -> Self {
+    pub fn get_discord_user(&self, user_id: DiscordUserId) -> Option<User> {
+        self.rt
+            .block_on(async move { self.http.get_user(user_id.0).await.ok() })
+    }
+}
+
+impl Default for DiscordApi {
+    fn default() -> Self {
         let discord_config: DiscordConfig = DiscordConfig::get().unwrap();
 
         let http = app_shared::serenity::http::HttpBuilder::new(discord_config.token).build();
@@ -18,10 +25,5 @@ impl DiscordApi {
             .unwrap();
 
         Self { http, rt }
-    }
-
-    pub fn get_discord_user(&self, user_id: DiscordUserId) -> Option<User> {
-        self.rt
-            .block_on(async move { self.http.get_user(user_id.0).await.ok() })
     }
 }

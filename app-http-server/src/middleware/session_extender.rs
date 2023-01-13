@@ -88,7 +88,7 @@ where
                 .connection_info()
                 .peer_addr()
                 .map(|ip| ip.to_string())
-                .unwrap_or_else(|| String::new());
+                .unwrap_or_else(String::new);
 
             let mut response = service.call(req).await?;
             
@@ -100,7 +100,7 @@ where
 
             response
                 .response_mut()
-                .add_cookie(&SessionCookie::new(new_session))
+                .add_cookie(&SessionCookie::from_session(new_session))
                 .unwrap();
 
             Ok(response)

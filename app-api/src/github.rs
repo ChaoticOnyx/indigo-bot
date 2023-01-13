@@ -21,20 +21,6 @@ pub struct GithubConfig {
 }
 
 impl Github {
-    pub fn new() -> Self {
-        let rt = app_shared::tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .unwrap();
-        let config = GithubConfig::get().unwrap();
-        let client = Octocrab::builder()
-            .personal_token(config.token)
-            .build()
-            .unwrap();
-
-        Self { client, rt }
-    }
-
     #[instrument(skip(self))]
     pub fn create_feature_issue(&self, title: String, body: String) -> i64 {
         trace!("create_feature_issue");
@@ -83,5 +69,21 @@ impl Github {
 
             issue.number
         })
+    }
+}
+
+impl Default for Github {
+    fn default() -> Self {
+        let rt = app_shared::tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        let config = GithubConfig::get().unwrap();
+        let client = Octocrab::builder()
+            .personal_token(config.token)
+            .build()
+            .unwrap();
+
+        Self { client, rt }
     }
 }

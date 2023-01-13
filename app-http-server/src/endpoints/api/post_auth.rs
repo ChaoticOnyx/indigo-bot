@@ -22,15 +22,12 @@ pub struct Payload {
 pub async fn endpoint(request: HttpRequest, form: Json<Payload>) -> impl Responder {
     trace!("endpoint");
 
-    match request.cookie(COOKIES_SESSION_KEY) {
-        Some(cookie) => {
-            Api::lock_async(move |api| {
-                api.delete_session(Secret(cookie.value().to_string())).ok();
-            })
-            .await
-            .unwrap();
-        }
-        _ => (),
+    if let Some(cookie) = request.cookie(COOKIES_SESSION_KEY) {
+        Api::lock_async(move |api| {
+            api.delete_session(Secret(cookie.value().to_string())).ok();
+        })
+        .await
+        .unwrap();
     };
 
     let Some(user_agent) = request
@@ -47,7 +44,7 @@ pub async fn endpoint(request: HttpRequest, form: Json<Payload>) -> impl Respond
         .connection_info()
         .realip_remote_addr()
         .map(|ip| ip.to_string())
-        .unwrap_or_else(|| String::new());
+        .unwrap_or_else(String::new);
 
     let tfa = form.0.tfa_secret;
     let session: Result<Session, ApiError> =
@@ -58,7 +55,7 @@ pub async fn endpoint(request: HttpRequest, form: Json<Payload>) -> impl Respond
     match session {
         Err(err) => ResponseHelpers::from_api_error(err),
         Ok(session) => HttpResponseBuilder::new(StatusCode::OK)
-            .cookie(SessionCookie::new(session))
+            .cookie(SessionCookie::from_session(session))
             .finish(),
     }
 }

@@ -29,7 +29,7 @@ pub struct PrivateApi {
 impl Default for PrivateApi {
     fn default() -> Self {
         // GitHub
-        let github = Github::new();
+        let github = Github::default();
 
         // Database
         let database = Database::connect();
@@ -43,11 +43,11 @@ impl Default for PrivateApi {
         database.create_root_token_if_does_not_exist(root_token);
 
         // Services storage
-        let mut services_storage = ServicesStorage::new();
+        let mut services_storage = ServicesStorage::default();
         services_storage.register();
 
         // Discord API
-        let discord_api = DiscordApi::new();
+        let discord_api = DiscordApi::default();
 
         Self {
             database,

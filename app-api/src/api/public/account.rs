@@ -109,7 +109,7 @@ impl Api {
         let session = self
             .private_api
             .find_session_by_secret(session_secret)
-            .ok_or(ApiError::Other("Некорректная сессия".to_string()))?;
+            .ok_or_else(|| ApiError::Other("Некорректная сессия".to_string()))?;
 
         self.private_api
             .find_account_by_id(AnyUserId::AccountId(session.account_id))

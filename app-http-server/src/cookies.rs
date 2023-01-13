@@ -6,7 +6,7 @@ use app_shared::models::Session;
 pub struct SessionCookie;
 
 impl SessionCookie {
-    pub fn new(session: Session) -> Cookie<'static> {
+    pub fn from_session(session: Session) -> Cookie<'static> {
         let mut session_cookie = Cookie::new(COOKIES_SESSION_KEY, session.secret.0);
         let expiration =
             OffsetDateTime::from_unix_timestamp(session.expiration.timestamp()).unwrap();

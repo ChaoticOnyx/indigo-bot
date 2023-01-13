@@ -8,7 +8,7 @@ impl PrivateApi {
     pub fn create_unique_webhook_secret(&self) -> Secret {
         trace!("create_unique_webhook_secret");
 
-        let new_secret = loop {
+        loop {
             let secret = Secret::new_random_webhook_secret();
 
             if self
@@ -18,8 +18,6 @@ impl PrivateApi {
             {
                 break secret;
             }
-        };
-
-        new_secret
+        }
     }
 }

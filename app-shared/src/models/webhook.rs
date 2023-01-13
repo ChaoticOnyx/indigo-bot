@@ -23,7 +23,7 @@ impl Webhook {
             name,
             secret,
             service_id,
-            created_at: custom_creation_time.unwrap_or_else(|| Utc::now()),
+            created_at: custom_creation_time.unwrap_or_else(Utc::now),
             configuration,
         }
     }

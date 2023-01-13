@@ -15,6 +15,7 @@ pub struct Session {
 }
 
 impl Session {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         secret: Secret,
         api_secret: Secret,
@@ -30,7 +31,7 @@ impl Session {
             api_secret,
             csrf_token,
             account_id,
-            created_at: custom_creation_date.unwrap_or_else(|| Utc::now()),
+            created_at: custom_creation_date.unwrap_or_else(Utc::now),
             expiration: Utc::now() + duration,
             user_agent,
             ip,

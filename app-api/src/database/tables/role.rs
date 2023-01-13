@@ -46,7 +46,7 @@ create table if not exists role
         trace!("find_by_id");
 
         sqlx::query("SELECT * FROM role WHERE id = $1")
-            .bind(id.0 as i64)
+            .bind(id.0)
             .map(Self::map)
             .fetch_optional(pool)
             .await

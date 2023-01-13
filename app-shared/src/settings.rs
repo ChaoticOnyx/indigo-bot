@@ -26,7 +26,7 @@ impl Settings {
 
         let config_content = toml::to_string_pretty(&self).unwrap();
 
-        std::fs::write(SETTINGS_PATH, &config_content).unwrap();
+        std::fs::write(SETTINGS_PATH, config_content).unwrap();
     }
 }
 

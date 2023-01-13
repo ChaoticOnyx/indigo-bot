@@ -66,8 +66,7 @@ create table if not exists account_integrations
                 sqlx::query("SELECT * FROM account_integrations WHERE ss14_guid = $1").bind(guid.0)
             }
             AnyUserId::AccountId(id) => {
-                sqlx::query("SELECT * FROM account_integrations WHERE account_id = $1")
-                    .bind(id.0 as i64)
+                sqlx::query("SELECT * FROM account_integrations WHERE account_id = $1").bind(id.0)
             }
         };
 
@@ -115,7 +114,7 @@ create table if not exists account_integrations
             AnyUserId::DiscordId(discord_user_id) => query.bind(discord_user_id.0 as i64),
             AnyUserId::ByondCkey(ckey) => query.bind(ckey.0),
             AnyUserId::SS14Guid(guid) => query.bind(guid.0),
-            AnyUserId::AccountId(id) => query.bind(id.0 as i64),
+            AnyUserId::AccountId(id) => query.bind(id.0),
         };
 
         query.execute(pool).await

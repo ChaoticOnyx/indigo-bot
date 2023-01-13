@@ -108,7 +108,7 @@ impl Api {
         let webhook = self
             .private_api
             .database
-            .find_webhook_by_secret(webhook_secret.clone());
+            .find_webhook_by_secret(webhook_secret);
 
         let Some(webhook) = webhook else {
             return Err(ServiceError::Any("Некорректный вебхук".to_string()))

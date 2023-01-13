@@ -7,7 +7,7 @@ impl PrivateApi {
     pub fn create_unique_api_secret(&self) -> Secret {
         trace!("create_unique_api_secret");
 
-        let new_secret = loop {
+        loop {
             let secret = Secret::new_random_api_secret();
 
             if self
@@ -17,8 +17,6 @@ impl PrivateApi {
             {
                 break secret;
             }
-        };
-
-        new_secret
+        }
     }
 }

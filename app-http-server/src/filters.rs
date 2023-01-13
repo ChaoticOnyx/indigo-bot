@@ -17,15 +17,14 @@ pub fn main_role_filter(value: &Value, _: &HashMap<String, Value>) -> tera::Resu
         .sorted_by(|a, b| Ord::cmp(&b.id, &a.id))
         .collect();
 
-    serde_json::to_value(roles.get(0).cloned().unwrap_or_default())
-        .map_err(|err| tera::Error::json(err))
+    serde_json::to_value(roles.get(0).cloned().unwrap_or_default()).map_err(tera::Error::json)
 }
 
 pub fn rights_to_bits_filter(value: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
     let value = value.clone();
     let rights: Rights = serde_json::from_value(value)?;
 
-    serde_json::to_value(rights.bits()).map_err(|err| tera::Error::json(err))
+    serde_json::to_value(rights.bits()).map_err(tera::Error::json)
 }
 
 pub fn asset_path_filter(value: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {

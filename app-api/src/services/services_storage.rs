@@ -6,10 +6,8 @@ use app_shared::{
     tokio::runtime::Runtime,
 };
 
-use crate::services::RoundEndService;
-use crate::Api;
-
 use super::{ChatToDiscordService, EchoService, Service};
+use crate::{services::RoundEndService, Api};
 
 #[derive(Debug)]
 pub struct ServicesStorage {
@@ -18,33 +16,21 @@ pub struct ServicesStorage {
 }
 
 impl ServicesStorage {
-    pub fn new() -> Self {
-        Self {
-            services: BTreeMap::new(),
-            rt: app_shared::tokio::runtime::Builder::new_current_thread()
-                .enable_all()
-                .build()
-                .unwrap(),
-        }
-    }
-
     #[instrument(skip(self))]
     pub fn register(&mut self) {
         trace!("register");
 
-        self.services.insert(
-            ServiceId("echo".to_string()),
-            Box::new(EchoService::default()),
-        );
+        self.services
+            .insert(ServiceId("echo".to_string()), Box::<EchoService>::default());
 
         self.services.insert(
             ServiceId("chat_to_discord".to_string()),
-            Box::new(ChatToDiscordService::default()),
+            Box::<ChatToDiscordService>::default(),
         );
 
         self.services.insert(
             ServiceId("round_end".to_string()),
-            Box::new(RoundEndService::default()),
+            Box::<RoundEndService>::default(),
         );
     }
 
@@ -81,10 +67,20 @@ impl ServicesStorage {
         trace!("handle");
 
         let service = self.services.get(service_id).unwrap();
-        let result = self
-            .rt
-            .block_on(async { service.handle(configuration, payload, api).await });
 
-        result
+        self.rt
+            .block_on(async { service.handle(configuration, payload, api).await })
+    }
+}
+
+impl Default for ServicesStorage {
+    fn default() -> Self {
+        Self {
+            services: BTreeMap::new(),
+            rt: app_shared::tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap(),
+        }
     }
 }

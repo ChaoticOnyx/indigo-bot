@@ -29,10 +29,7 @@ impl ScopedServiceRights {
     }
 
     pub fn can_delete_webhooks_at_all(&self) -> bool {
-        match &self {
-            RightsScope::None => false,
-            _ => true,
-        }
+        !matches!(self, RightsScope::None)
     }
 
     pub fn all() -> Self {

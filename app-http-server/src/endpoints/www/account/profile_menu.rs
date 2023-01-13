@@ -117,7 +117,7 @@ pub async fn endpoint(
     let mut ctx = context(&user, form.as_ref());
 
     if form.is_some() && request.method() == Method::POST {
-        let csrf_token = form.unwrap().csrf_token.clone();
+        let csrf_token = form.unwrap().csrf_token;
 
         if !Api::lock_async(move |api| api.private_api.is_csrf_secret_valid(csrf_token))
             .await

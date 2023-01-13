@@ -23,7 +23,7 @@ impl PrivateApi {
             let discord_user = self
                 .discord_api
                 .get_discord_user(discord_user_id)
-                .ok_or(ApiError::Other("Пользователя не существует".to_string()))?;
+                .ok_or_else(|| ApiError::Other("Пользователя не существует".to_string()))?;
 
             self.create_account(
                 discord_user.name.clone(),

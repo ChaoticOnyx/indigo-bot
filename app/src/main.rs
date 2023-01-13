@@ -68,7 +68,7 @@ fn main() {
     setup_logging();
 
     // User agent parser
-    UserAgentParser::set_state(UserAgentParser::new());
+    UserAgentParser::set_state(UserAgentParser::default());
 
     // Config Loader
     ConfigLoader::set_state(ConfigLoader::new("./configs"));
@@ -77,7 +77,7 @@ fn main() {
     DiscordSession::set_state(DiscordSession { user: None });
 
     // Api
-    let api = Api::new();
+    let api = Api::default();
     Api::set_state(api);
 
     // Discord

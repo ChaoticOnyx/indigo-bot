@@ -61,7 +61,8 @@ impl PrivateApi {
         trace!("create_unique_session_secret");
 
         self.cleanup_sessions();
-        let new_secret = loop {
+
+        loop {
             let secret = Secret::new_random_session_secret();
 
             if self
@@ -71,9 +72,7 @@ impl PrivateApi {
             {
                 break secret;
             }
-        };
-
-        new_secret
+        }
     }
 
     /// Создаёт уникальный CSRF секрет.
@@ -82,7 +81,8 @@ impl PrivateApi {
         trace!("create_unique_csrf_secret");
 
         self.cleanup_sessions();
-        let new_secret = loop {
+
+        loop {
             let secret = Secret::new_random_csrf_secret();
 
             if self
@@ -92,9 +92,7 @@ impl PrivateApi {
             {
                 break secret;
             }
-        };
-
-        new_secret
+        }
     }
 
     /// Возвращает сессию по её секрету.

@@ -47,7 +47,60 @@ pub struct UserAgent {
 }
 
 impl UserAgentParser {
-    pub fn new() -> Self {
+    #[instrument]
+    pub fn parse(&self, user_agent: &str) -> UserAgent {
+        trace!("parse");
+
+        let mut os = None;
+
+        for os_regex in &self.os_regexs {
+            if os_regex.regex.is_match(user_agent) {
+                let mut display = os_regex.display.clone();
+                let captures = os_regex.regex.captures(user_agent).unwrap();
+
+                let mut idx = 1;
+                for capture in captures.iter().skip(1) {
+                    let Some(capture) = capture else {
+                        continue;
+                    };
+
+                    display = display.replace(&format!("${idx}"), capture.as_str());
+                    idx += 1;
+                }
+
+                os = Some(display);
+                break;
+            }
+        }
+
+        let mut browser = None;
+
+        for browser_regex in &self.browser_regexs {
+            if browser_regex.regex.is_match(user_agent) {
+                let mut display = browser_regex.display.clone();
+                let captures = browser_regex.regex.captures(user_agent).unwrap();
+
+                let mut idx = 1;
+                for capture in captures.iter().skip(1) {
+                    let Some(capture) = capture else {
+                        continue;
+                    };
+
+                    display = display.replace(&format!("${idx}"), capture.as_str());
+                    idx += 1;
+                }
+
+                browser = Some(display);
+                break;
+            }
+        }
+
+        UserAgent { os, browser }
+    }
+}
+
+impl Default for UserAgentParser {
+    fn default() -> Self {
         let os_regexs = vec![
             OsUserAgentRegex::new(r"(Windows 10)", "Windows"),
             OsUserAgentRegex::new(r"(Windows (?:NT 5\.2|NT 5\.1))", "Windows XP"),
@@ -171,56 +224,5 @@ impl UserAgentParser {
             os_regexs,
             browser_regexs,
         }
-    }
-
-    #[instrument]
-    pub fn parse(&self, user_agent: &str) -> UserAgent {
-        trace!("parse");
-
-        let mut os = None;
-
-        for os_regex in &self.os_regexs {
-            if os_regex.regex.is_match(user_agent) {
-                let mut display = os_regex.display.clone();
-                let captures = os_regex.regex.captures(user_agent).unwrap();
-
-                let mut idx = 1;
-                for capture in captures.iter().skip(1) {
-                    let Some(capture) = capture else {
-                        continue;
-                    };
-
-                    display = display.replace(&format!("${idx}"), capture.as_str());
-                    idx += 1;
-                }
-
-                os = Some(display);
-                break;
-            }
-        }
-
-        let mut browser = None;
-
-        for browser_regex in &self.browser_regexs {
-            if browser_regex.regex.is_match(user_agent) {
-                let mut display = browser_regex.display.clone();
-                let captures = browser_regex.regex.captures(user_agent).unwrap();
-
-                let mut idx = 1;
-                for capture in captures.iter().skip(1) {
-                    let Some(capture) = capture else {
-                        continue;
-                    };
-
-                    display = display.replace(&format!("${idx}"), capture.as_str());
-                    idx += 1;
-                }
-
-                browser = Some(display);
-                break;
-            }
-        }
-
-        UserAgent { os, browser }
     }
 }
