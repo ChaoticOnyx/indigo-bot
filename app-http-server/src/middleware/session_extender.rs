@@ -1,5 +1,4 @@
-use crate::cookies::SessionCookie;
-use crate::extractors::AuthenticatedUser;
+use crate::{cookies::SessionCookie, extractors::AuthenticatedUser};
 use actix_http::Payload;
 use actix_web::{
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
@@ -8,12 +7,9 @@ use actix_web::{
 };
 use app_api::Api;
 use app_shared::{
-    chrono::Duration,
-    futures_util::future::LocalBoxFuture,
-    futures_util::future::{ready, Ready},
+    chrono::{Duration, Utc},
+    futures_util::{FutureExt, future::{ready, Ready, LocalBoxFuture}},
     prelude::*,
-    futures_util::FutureExt,
-    chrono::Utc
 };
 use derive_builder::Builder;
 use std::rc::Rc;

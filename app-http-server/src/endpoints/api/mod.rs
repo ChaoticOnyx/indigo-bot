@@ -3,6 +3,7 @@ use actix_web::Scope;
 mod byond;
 mod delete_api_token;
 mod delete_webhook;
+mod donations;
 mod get_identity;
 mod post_add_account_role;
 mod post_auth;
@@ -30,4 +31,6 @@ pub fn scope() -> Scope {
         // BYOND-friendly (retarded) API
         .service(byond::get_connect_byond::endpoint)
         .service(byond::get_webhook::endpoint)
+        // /api/donations
+        .service(donations::scope())
 }

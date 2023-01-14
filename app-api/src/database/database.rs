@@ -1,16 +1,15 @@
-use crate::database::db_config::DbConfig;
-use crate::database::tables::{
-    AccountIntegrationsTable, AccountTable, BugMessageTable, FeatureMessageTable, RoleTable,
-    SessionTable, TokenTable, WebhookTable,
+use crate::database::{
+    db_config::DbConfig,
+    tables::{
+        AccountIntegrationsTable, AccountTable, BugMessageTable, DonationTierTable,
+        FeatureMessageTable, RoleTable, SessionTable, TokenTable, WebhookTable,
+    },
 };
-use app_shared::models::{AccountId, AccountIntegrations};
 use app_shared::{
-    chrono::DateTime,
-    chrono::Utc,
-    models::Role,
+    chrono::{DateTime, Utc},
     models::{
-        Account, AnyUserId, ApiToken, BugReport, FeatureVote, FeatureVoteDescriptor, RoleId,
-        Secret, Session, Webhook,
+        Account, AccountId, AccountIntegrations, AnyUserId, ApiToken, BugReport, DonationTier,
+        FeatureVote, FeatureVoteDescriptor, Role, RoleId, Secret, Session, Webhook,
     },
     prelude::*,
     tokio::runtime::Runtime,
@@ -63,6 +62,7 @@ impl Database {
             RoleTable::create(pool).await.unwrap();
             SessionTable::create(pool).await.unwrap();
             AccountIntegrationsTable::create(pool).await.unwrap();
+            DonationTierTable::create(pool).await.unwrap();
         })
     }
 
@@ -168,6 +168,40 @@ impl Database {
     }
 
     #[instrument(skip(self))]
+    pub fn get_donation_tiers(&self) -> Vec<DonationTier> {
+        trace!("get_donation_tiers");
+
+        self.rt
+            .block_on(async { DonationTierTable::all(&self.pool).await.unwrap() })
+            .into_iter()
+            .map(|tier| DonationTier {
+                id: tier.id,
+                name: tier.name,
+            })
+            .collect()
+    }
+
+    #[instrument(skip(self))]
+    pub fn find_donation_tiers_for_roles(&self, roles: &[Role]) -> Vec<DonationTier> {
+        trace!("find_donation_tier_for_roles");
+
+        let ids: Vec<RoleId> = roles.iter().map(|role| role.id).collect();
+
+        self.rt
+            .block_on(async {
+                DonationTierTable::find_for_roles(&self.pool, &ids)
+                    .await
+                    .unwrap()
+            })
+            .into_iter()
+            .map(|tier| DonationTier {
+                id: tier.id,
+                name: tier.name,
+            })
+            .collect()
+    }
+
+    #[instrument(skip(self))]
     pub fn find_accounts_with_role(&self, role_id: RoleId) -> Vec<Account> {
         trace!("find_accounts_with_role");
 
@@ -183,6 +217,11 @@ impl Database {
                     .find_account_integrations_by_user_id(AnyUserId::AccountId(account.id))
                     .unwrap();
                 let roles = self.get_account_roles(integrations.account_id);
+                let donation_tier = self
+                    .find_donation_tiers_for_roles(&roles)
+                    .into_iter()
+                    .max_by_key(|tier| tier.id)
+                    .take();
 
                 Account {
                     id: account.id,
@@ -191,6 +230,7 @@ impl Database {
                     username: account.username,
                     avatar_url: account.avatar_url,
                     created_at: account.created_at,
+                    donation_tier,
                 }
             })
             .collect()
@@ -202,6 +242,11 @@ impl Database {
 
         let integrations = self.find_account_integrations_by_user_id(user_id)?;
         let roles = self.get_account_roles(integrations.account_id);
+        let donation_tier = self
+            .find_donation_tiers_for_roles(&roles)
+            .into_iter()
+            .max_by_key(|tier| tier.id)
+            .take();
 
         self.rt
             .block_on(async {
@@ -216,6 +261,7 @@ impl Database {
                 username: table.username,
                 avatar_url: table.avatar_url,
                 created_at: table.created_at,
+                donation_tier,
             })
     }
 
@@ -231,6 +277,11 @@ impl Database {
                     .find_account_integrations_by_user_id(AnyUserId::AccountId(account.id))
                     .unwrap();
                 let roles = self.get_account_roles(integrations.account_id);
+                let donation_tier = self
+                    .find_donation_tiers_for_roles(&roles)
+                    .into_iter()
+                    .max_by_key(|tier| tier.id)
+                    .take();
 
                 Account {
                     id: account.id,
@@ -239,6 +290,7 @@ impl Database {
                     username: account.username,
                     avatar_url: account.avatar_url,
                     created_at: account.created_at,
+                    donation_tier,
                 }
             })
             .collect()

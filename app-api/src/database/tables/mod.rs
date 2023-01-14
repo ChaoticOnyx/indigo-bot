@@ -1,6 +1,7 @@
 ﻿mod account;
 mod account_integrations;
 mod bug_message;
+mod donation_tier;
 mod feature_message;
 mod prelude;
 mod role;
@@ -11,6 +12,7 @@ mod webhook;
 pub use account::AccountTable;
 pub use account_integrations::AccountIntegrationsTable;
 pub use bug_message::BugMessageTable;
+pub use donation_tier::DonationTierTable;
 pub use feature_message::FeatureMessageTable;
 pub use role::RoleTable;
 pub use session::SessionTable;

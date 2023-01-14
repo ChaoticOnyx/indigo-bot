@@ -1,6 +1,6 @@
 use crate::Api;
 use app_macros::validate_api_secret;
-use app_shared::models::{Account, AccountId};
+use app_shared::models::{Account, AccountId, DonationTier};
 use app_shared::{
     models::{AnyUserId, ApiError, ApiToken, RoleId, Secret, UserRights},
     prelude::*,
@@ -34,6 +34,20 @@ impl Api {
             .connect_byond_account(AnyUserId::AccountId(account.id), ckey)?;
 
         Ok(())
+    }
+
+    #[instrument]
+    pub fn get_accounts(&self) -> Vec<Account> {
+        trace!("get_accounts");
+
+        self.private_api.database.get_accounts()
+    }
+
+    #[instrument]
+    pub fn get_donation_tiers(&self) -> Vec<DonationTier> {
+        trace!("get_donation_tiers");
+
+        self.private_api.database.get_donation_tiers()
     }
 
     #[instrument]

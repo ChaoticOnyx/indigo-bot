@@ -46,11 +46,7 @@ pub async fn ready(ctx: &Context, _ready: &Ready) {
 
     let bot_cfg = DiscordConfig::get().unwrap();
     let guild_id: GuildId = bot_cfg.guild_id;
-
-    let accounts = Api::lock_async(|api| api.private_api.get_accounts())
-        .await
-        .unwrap();
-
+    let accounts = Api::lock_async(|api| api.get_accounts()).await.unwrap();
     let inverted = config.clone().inverted();
 
     for account in &accounts {

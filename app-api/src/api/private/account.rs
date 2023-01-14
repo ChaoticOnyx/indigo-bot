@@ -7,6 +7,7 @@ use app_shared::{
 };
 
 impl PrivateApi {
+    /// Создаёт новый аккаунт.
     pub fn create_account(
         &self,
         username: String,
@@ -28,14 +29,6 @@ impl PrivateApi {
         Ok(self
             .database
             .add_account(new_username, avatar_url, Utc::now(), &[], discord_user_id))
-    }
-
-    /// Возаращет все аккаунты.
-    #[instrument]
-    pub fn get_accounts(&self) -> Vec<Account> {
-        trace!("get_accounts");
-
-        self.database.get_accounts()
     }
 
     /// Находит аккаунт по принадлежащему ему TFA токену.

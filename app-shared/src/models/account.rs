@@ -4,6 +4,8 @@ use crate::models::{AccountIntegrations, Role};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
+use super::DonationTier;
+
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, PartialEq)]
 #[serde(transparent)]
 pub struct AccountId(pub i64);
@@ -16,6 +18,7 @@ pub struct Account {
     pub created_at: DateTime<Utc>,
     pub roles: Vec<Role>,
     pub integrations: AccountIntegrations,
+    pub donation_tier: Option<DonationTier>,
 }
 
 impl PartialEq for Account {
