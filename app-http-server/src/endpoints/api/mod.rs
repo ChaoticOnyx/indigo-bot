@@ -1,5 +1,6 @@
 use actix_web::Scope;
 
+mod account;
 mod byond;
 mod delete_api_token;
 mod delete_webhook;
@@ -33,4 +34,6 @@ pub fn scope() -> Scope {
         .service(byond::get_webhook::endpoint)
         // /api/donations
         .service(donations::scope())
+        // /api/account
+        .service(account::scope())
 }
