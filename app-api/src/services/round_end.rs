@@ -16,7 +16,7 @@ pub struct RoundEndService {
 impl RoundEndService {
     pub fn format_message(payload: &Payload) -> String {
         format!(
-            "Раунд **#{}** закончился\n**Режим:** {}\n**Игроков:** {}\n**Продолжительность:**{}",
+            "Раунд **{}** закончился\n**Режим:** {}\n**Игроков:** {}\n**Продолжительность:** {}",
             payload.round_id, payload.game_mode, payload.players, payload.round_duration
         )
     }
