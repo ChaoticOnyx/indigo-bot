@@ -11,13 +11,12 @@ use crate::prelude::*;
 pub struct ConfigLoader {
     configs: BTreeMap<ConfigType, serde_yaml::Value>,
     cache: BTreeMap<ConfigType, Box<dyn Any + Sync + Send>>,
-    files: BTreeMap<ConfigType, String>,
 }
 
 impl ConfigLoader {
     #[instrument]
     pub fn new(path: &str) -> Self {
-        info!("new");
+        trace!("new");
 
         let read_dir = fs::read_dir(path).unwrap();
         let mut configs = BTreeMap::new();
@@ -72,14 +71,10 @@ impl ConfigLoader {
 
         let cache = BTreeMap::new();
 
-        Self {
-            configs,
-            cache,
-            files,
-        }
+        Self { configs, cache }
     }
 
-    #[instrument]
+    #[instrument(skip(self))]
     fn get_from_cache<T>(&self, config_type: &ConfigType) -> Option<T>
     where
         T: Config,
@@ -101,7 +96,7 @@ impl ConfigLoader {
         }
     }
 
-    #[instrument]
+    #[instrument(skip(self))]
     pub fn find_config<T>(&mut self, config_type: ConfigType) -> Option<T>
     where
         T: Config,
@@ -129,20 +124,5 @@ impl ConfigLoader {
                 Some(*value)
             }
         }
-    }
-
-    pub fn save_config<T>(&mut self, config: T) -> T
-    where
-        T: Config + Sync + Send + 'static,
-    {
-        let config_type = config.__type();
-        let path = self.files.get(&config_type).unwrap();
-
-        *self.configs.get_mut(&config_type).unwrap() = serde_yaml::to_value(&config).unwrap();
-        *self.cache.get_mut(&config_type).unwrap() = Box::new(config.clone());
-
-        fs::write(path, serde_yaml::to_string(&config).unwrap()).unwrap();
-
-        config
     }
 }

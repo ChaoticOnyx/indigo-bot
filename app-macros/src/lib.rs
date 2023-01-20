@@ -100,14 +100,6 @@ pub fn config(args: TokenStream, item: TokenStream) -> TokenStream {
                 })
             }
 
-            fn save(self) -> Self {
-                use #shared_crate::prelude::GlobalStateLock;
-
-                #shared_crate::ConfigLoader::lock(|cfg| {
-                    cfg.save_config(self)
-                })
-            }
-
             fn __type(&self) -> #shared_crate::config::ConfigType {
                 #shared_crate::config::ConfigType(String::from(#struct_name))
             }

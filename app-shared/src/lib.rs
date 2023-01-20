@@ -4,6 +4,7 @@ mod discord_config;
 mod discord_session;
 pub mod global_state;
 pub mod models;
+mod persistent_storage;
 pub mod prelude;
 pub mod settings;
 mod user_agent_parser;
@@ -11,6 +12,7 @@ mod user_agent_parser;
 pub use config_loader::ConfigLoader;
 pub use discord_config::DiscordConfig;
 pub use discord_session::DiscordSession;
+pub use persistent_storage::PersistentStorage;
 pub use settings::Settings;
 pub use user_agent_parser::UserAgentParser;
 

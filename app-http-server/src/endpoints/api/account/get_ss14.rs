@@ -1,4 +1,3 @@
-use actix_http::StatusCode;
 use actix_web::{get, web::Query, Responder};
 
 use app_api::Api;

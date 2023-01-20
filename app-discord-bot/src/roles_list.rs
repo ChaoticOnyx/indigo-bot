@@ -4,7 +4,7 @@ use app_shared::{
     prelude::*,
     serenity::model::prelude::{ChannelId, GuildId, Member, MessageId, Ready, RoleId, User},
     serenity::prelude::{Context, Mentionable},
-    DiscordConfig,
+    DiscordConfig, PersistentStorage,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
@@ -33,7 +33,11 @@ struct RolesListConfig {
 pub async fn ready(ctx: &Context, _ready: &Ready) {
     trace!("ready");
 
-    let mut config = RolesListConfig::get().unwrap();
+    let mut config = PersistentStorage::lock_async(|storage| storage.load("roles_list"))
+        .await
+        .unwrap()
+        .unwrap_or_else(|| RolesListConfig::get().unwrap());
+
     let bot_cfg = DiscordConfig::get().unwrap();
     let guild_id: GuildId = bot_cfg.guild_id;
     let mut cached: BTreeMap<RoleId, Vec<User>> = BTreeMap::new();
@@ -51,7 +55,11 @@ pub async fn ready(ctx: &Context, _ready: &Ready) {
         }
     }
 
-    RolesListConfig::save(config);
+    PersistentStorage::lock_async(|storage| {
+        storage.save("roles_list", config);
+    })
+    .await
+    .unwrap();
 }
 
 #[instrument(skip(ctx))]
@@ -67,7 +75,11 @@ pub async fn guild_member_update(ctx: &Context, old_if_available: &Option<Member
 
     roles_to_update.append(&mut new.roles.iter().cloned().collect());
 
-    let mut config = RolesListConfig::get().unwrap();
+    let mut config = PersistentStorage::lock_async(|storage| storage.load("roles_list"))
+        .await
+        .unwrap()
+        .unwrap_or_else(|| RolesListConfig::get().unwrap());
+
     let bot_cfg = DiscordConfig::get().unwrap();
     let guild_id: GuildId = bot_cfg.guild_id;
     let mut cached: BTreeMap<RoleId, Vec<User>> = BTreeMap::new();
@@ -89,7 +101,11 @@ pub async fn guild_member_update(ctx: &Context, old_if_available: &Option<Member
         }
     }
 
-    RolesListConfig::save(config);
+    PersistentStorage::lock_async(|storage| {
+        storage.save("roles_list", config);
+    })
+    .await
+    .unwrap();
 }
 
 #[instrument(skip(ctx))]

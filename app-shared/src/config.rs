@@ -29,6 +29,5 @@ impl DerefMut for ConfigType {
 
 pub trait Config: Clone + Serialize + DeserializeOwned + Sync + Send + 'static {
     fn get() -> Option<Self>;
-    fn save(self) -> Self;
     fn __type(&self) -> ConfigType;
 }

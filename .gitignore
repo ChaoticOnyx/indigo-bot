@@ -4,3 +4,4 @@ settings.toml
 configs/*
 !configs/example/*
 /public
+.cache.json

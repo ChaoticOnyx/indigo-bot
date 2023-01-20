@@ -7,7 +7,9 @@ use app_http_server::Server;
 use tracing_loki::url::Url;
 use tracing_subscriber::{prelude::*, Layer};
 
-use app_shared::{prelude::*, tokio, ConfigLoader, DiscordSession, Settings, UserAgentParser};
+use app_shared::{
+    prelude::*, tokio, ConfigLoader, DiscordSession, PersistentStorage, Settings, UserAgentParser,
+};
 
 fn setup_logging() {
     use tracing_subscriber::filter::LevelFilter;
@@ -64,6 +66,9 @@ fn main() {
     // Settings
     let settings = Settings::load();
     Settings::set_state(settings);
+
+    // Persistent storage
+    PersistentStorage::set_state(PersistentStorage::from_file().unwrap_or_default());
 
     setup_logging();
 
