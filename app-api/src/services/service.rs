@@ -5,20 +5,13 @@ use app_shared::{
     prelude::*,
 };
 
-use crate::Api;
-
 #[async_trait]
 pub trait Service: Debug + Send + Sync {
     async fn handle(
         &self,
         configuration: &WebhookConfiguration,
         payload: &WebhookPayload,
-        api: &Api,
     ) -> Result<WebhookResponse, ServiceError>;
 
-    async fn configure(
-        &self,
-        configuration: &WebhookConfiguration,
-        api: &Api,
-    ) -> Result<(), ServiceError>;
+    async fn configure(&self, configuration: &WebhookConfiguration) -> Result<(), ServiceError>;
 }

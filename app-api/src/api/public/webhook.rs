@@ -40,7 +40,7 @@ impl Api {
         match self
             .private_api
             .services_storage
-            .configure_webhook(self, &target, &configuration)
+            .configure_webhook(&target, &configuration)
         {
             Ok(_) => (),
             Err(err) => return Err(ApiError::Other(format!("Некорректная конфигурация: {err}"))),
@@ -115,7 +115,6 @@ impl Api {
         };
 
         self.private_api.services_storage.handle(
-            self,
             &webhook.service_id,
             &webhook.configuration,
             &payload,

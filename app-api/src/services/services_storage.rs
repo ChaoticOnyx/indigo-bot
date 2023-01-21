@@ -7,7 +7,7 @@ use app_shared::{
 };
 
 use super::{ChatToDiscordService, EchoService, Service};
-use crate::{services::RoundEndService, Api};
+use crate::services::RoundEndService;
 
 #[derive(Debug)]
 pub struct ServicesStorage {
@@ -44,7 +44,6 @@ impl ServicesStorage {
     #[instrument(skip(self))]
     pub fn configure_webhook(
         &self,
-        api: &Api,
         service_id: &ServiceId,
         configuration: &WebhookConfiguration,
     ) -> Result<(), ServiceError> {
@@ -53,13 +52,12 @@ impl ServicesStorage {
         let service = self.services.get(service_id).unwrap();
 
         self.rt
-            .block_on(async { service.configure(configuration, api).await })
+            .block_on(async { service.configure(configuration).await })
     }
 
     #[instrument(skip(self))]
     pub fn handle(
         &self,
-        api: &Api,
         service_id: &ServiceId,
         configuration: &WebhookConfiguration,
         payload: &WebhookPayload,
@@ -69,7 +67,7 @@ impl ServicesStorage {
         let service = self.services.get(service_id).unwrap();
 
         self.rt
-            .block_on(async { service.handle(configuration, payload, api).await })
+            .block_on(async { service.handle(configuration, payload).await })
     }
 }
 
