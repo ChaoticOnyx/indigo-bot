@@ -1,9 +1,7 @@
-﻿use std::str::FromStr;
-
-use super::prelude::*;
+﻿use super::prelude::*;
 use crate::models::{FeatureVote, FeatureVoteDescriptor};
 
-use chrono::DateTime;
+use chrono::{DateTime, Utc};
 use serenity::model::id::{ChannelId, MessageId};
 
 pub struct FeatureMessageTable;
@@ -20,11 +18,11 @@ create table if not exists feature_message
     id            bigserial not null
         constraint feature_message_pk
             primary key,
-    channel_id    bigint not null,
-    message_id    bigint not null,
-    user_id       bigint not null,
-    is_vote_ended boolean not null,
-    created_at    text    not null
+    channel_id    bigint      not null,
+    message_id    bigint      not null,
+    user_id       bigint      not null,
+    is_vote_ended boolean     not null,
+    created_at    timestamptz not null
 );
 ",
         )
@@ -57,7 +55,7 @@ VALUES (DEFAULT, $1, $2, $3, $4, $5);
         .bind(message_id.0 as i64)
         .bind(author_id.0 as i64)
         .bind(is_vote_ended)
-        .bind(created_at.to_string())
+        .bind(created_at)
         .execute(pool)
         .await
     }
@@ -98,7 +96,7 @@ VALUES (DEFAULT, $1, $2, $3, $4, $5);
     fn map(row: PgRow) -> FeatureVote {
         FeatureVote {
             author_id: DiscordUserId(row.get::<i64, _>("user_id") as u64),
-            created_at: DateTime::from_str(row.get("created_at")).unwrap(),
+            created_at: row.get::<DateTime<Utc>, _>("created_at"),
             descriptor: FeatureVoteDescriptor(
                 MessageId(row.get::<i64, _>("message_id") as u64),
                 ChannelId(row.get::<i64, _>("channel_id") as u64),

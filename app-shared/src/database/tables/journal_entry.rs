@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use chrono::{DateTime, Utc};
 use serde_json;
 
@@ -22,7 +20,7 @@ create table if not exists journal_entry
         constraint journal_entry_pk
             primary key,
     object   jsonb not null,
-	datetime text not null,
+	datetime timestamptz not null,
 	subject  jsonb,
 	action jsonb not null
 );
@@ -44,7 +42,7 @@ create table if not exists journal_entry
 
         sqlx::query("INSERT INTO journal_entry (id, object, datetime, subject, action) VALUES(DEFAULT, $1, $2, $3, $4) RETURNING *")
             .bind(serde_json::to_value(&object).unwrap())
-            .bind(datetime.to_string())
+            .bind(datetime)
             .bind(subject.and_then(|value| serde_json::to_value(value).ok()))
             .bind(serde_json::to_value(&action).unwrap())
             .map(Self::map)
@@ -56,7 +54,7 @@ create table if not exists journal_entry
         JournalEntry {
             id: JournalEntryId(row.get::<i64, _>("id")),
             object: serde_json::from_value(row.get::<serde_json::Value, _>("object")).unwrap(),
-            datetime: DateTime::from_str(&row.get::<String, _>("datetime")).unwrap(),
+            datetime: row.get::<DateTime<Utc>, _>("datetime"),
             subject: row
                 .get::<Option<serde_json::Value>, _>("subject")
                 .map(|value| serde_json::from_value(value).unwrap()),

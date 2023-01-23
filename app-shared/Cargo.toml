@@ -30,4 +30,8 @@ serde_yaml = "0.9.14"
 itertools = "0.10.5"
 parking_lot = "0.12.1"
 regex = "1.7.0"
-sqlx = { version = "0.6.2", features = ["runtime-tokio-rustls", "postgres"] }
+sqlx = { version = "0.6.2", features = [
+	"runtime-tokio-rustls",
+	"postgres",
+	"chrono",
+] }

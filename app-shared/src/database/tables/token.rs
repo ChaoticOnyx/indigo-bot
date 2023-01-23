@@ -1,6 +1,4 @@
-﻿use std::str::FromStr;
-
-use chrono::Utc;
+﻿use chrono::Utc;
 
 use super::prelude::*;
 use crate::{
@@ -23,11 +21,11 @@ create table if not exists token
     secret     text      not null
         constraint token_pk
                     primary key,
-    expiration text      null,
-    rights     jsonb     not null,
-    created_at text      not null,
-    creator    bigint    null,
-    is_service bool      not null
+    expiration timestamptz null,
+    rights     jsonb       not null,
+    created_at timestamptz not null,
+    creator    bigint      null,
+    is_service bool        not null
 );
             ",
         )
@@ -43,9 +41,9 @@ create table if not exists token
             "INSERT INTO token (secret, expiration, rights, created_at, creator, is_service) VALUES ($1, $2, $3, $4, $5, $6)",
         )
             .bind(token.secret.0)
-            .bind(token.expiration.map(|date| date.to_string()))
+            .bind(token.expiration)
             .bind(serde_json::to_value(&token.rights).unwrap())
-            .bind(token.created_at.to_string())
+            .bind(token.created_at)
             .bind(token.creator.map(|account_id| account_id.0))
             .bind(token.is_service)
             .execute(pool)
@@ -100,11 +98,9 @@ create table if not exists token
     fn map(row: PgRow) -> ApiToken {
         ApiToken {
             secret: Secret(row.get::<String, _>("secret")),
-            expiration: row
-                .get::<Option<String>, _>("expiration")
-                .map(|date| DateTime::from_str(&date).unwrap()),
+            expiration: row.get::<Option<DateTime<Utc>>, _>("expiration"),
             rights: serde_json::from_value(row.get::<serde_json::Value, _>("rights")).unwrap(),
-            created_at: DateTime::from_str(&row.get::<String, _>("created_at")).unwrap(),
+            created_at: row.get::<DateTime<Utc>, _>("created_at"),
             creator: row.get::<Option<i64>, _>("creator").map(AccountId),
             is_service: row.get::<bool, _>("is_service"),
         }

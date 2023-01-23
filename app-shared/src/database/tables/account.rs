@@ -1,7 +1,6 @@
 use super::prelude::*;
 use crate::models::{AccountId, Role, RoleId};
 use chrono::{DateTime, Utc};
-use std::str::FromStr;
 
 pub struct AccountTable {
     pub id: AccountId,
@@ -23,10 +22,10 @@ create table if not exists account
     id         bigserial not null
         constraint account_pk
             primary key,
-    username   text not null,
-    avatar_url text not null,
-    created_at text not null,
-    roles      bigint[] not null
+    username   text        not null,
+    avatar_url text        not null,
+    created_at timestamptz not null,
+    roles      bigint[]    not null
 );
 ",
         )
@@ -53,7 +52,7 @@ RETURNING id
         )
         .bind(username)
         .bind(avatar_url)
-        .bind(created_at.to_string())
+        .bind(created_at)
         .bind(roles.iter().map(|role| role.id.0).collect::<Vec<i64>>())
         .map(|row| AccountId(row.get::<i64, _>("id")))
         .fetch_one(pool)
@@ -168,7 +167,7 @@ RETURNING id
             id: AccountId(row.get::<i64, _>("id")),
             username: row.get::<String, _>("username"),
             avatar_url: row.get::<String, _>("avatar_url"),
-            created_at: DateTime::from_str(&row.get::<String, _>("created_at")).unwrap(),
+            created_at: row.get::<DateTime<Utc>, _>("created_at"),
             roles: row
                 .get::<Vec<i64>, _>("roles")
                 .into_iter()

@@ -1,8 +1,7 @@
 ﻿use super::prelude::*;
 use crate::models::{Secret, ServiceId, Webhook, WebhookConfiguration};
-use chrono::DateTime;
+use chrono::{DateTime, Utc};
 use serde_json;
-use std::str::FromStr;
 
 pub struct WebhookTable;
 
@@ -18,10 +17,10 @@ create table if not exists webhook
     id            bigserial not null
         constraint webhook_pk
             primary key,
-    name          text      not null,
-    secret        text      not null,
-    service_id    text      not null,
-    created_at    text      not null,
+    name          text        not null,
+    secret        text        not null,
+    service_id    text        not null,
+    created_at    timestamptz not null,
     configuration jsonb
 );
             ",
@@ -40,7 +39,7 @@ create table if not exists webhook
             .bind(webhook.name)
             .bind(webhook.secret.0)
             .bind(webhook.service_id.0)
-            .bind(webhook.created_at.to_string())
+            .bind(webhook.created_at)
             .bind(webhook.configuration.0)
             .execute(pool)
             .await
@@ -79,7 +78,7 @@ create table if not exists webhook
             name: row.get::<String, _>("name"),
             secret: Secret(row.get::<String, _>("secret")),
             service_id: ServiceId(row.get::<String, _>("service_id")),
-            created_at: DateTime::from_str(&row.get::<String, _>("created_at")).unwrap(),
+            created_at: row.get::<DateTime<Utc>, _>("created_at"),
             configuration: WebhookConfiguration(row.get::<serde_json::Value, _>("configuration")),
         }
     }

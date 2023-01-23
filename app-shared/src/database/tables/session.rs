@@ -1,7 +1,6 @@
 use super::prelude::*;
 use crate::models::{AccountId, Secret, Session};
-use chrono::DateTime;
-use std::str::FromStr;
+use chrono::{DateTime, Utc};
 
 pub struct SessionTable;
 
@@ -17,13 +16,13 @@ create table if not exists session
     secret      text      not null
         constraint session_pk
                     primary key,
-    api_secret  text   not null,
-	csrf_secret text not null,
-    account_id  bigint not null,
-    created_at  text   not null,
-    expiration  text   not null,
-    user_agent  text   not null,
-    ip          text   not null
+    api_secret  text        not null,
+	csrf_secret text        not null,
+    account_id  bigint      not null,
+    created_at  timestamptz not null,
+    expiration  timestamptz not null,
+    user_agent  text        not null,
+    ip          text        not null
 );
 ",
         )
@@ -42,8 +41,8 @@ create table if not exists session
             .bind(session.api_secret.0)
             .bind(session.csrf_token.0)
             .bind(session.account_id.0)
-            .bind(session.created_at.to_string())
-            .bind(session.expiration.to_string())
+            .bind(session.created_at)
+            .bind(session.expiration)
             .bind(session.user_agent)
             .bind(session.ip)
             .execute(pool)
@@ -121,8 +120,8 @@ create table if not exists session
             api_secret: Secret(row.get::<String, _>("api_secret")),
             csrf_token: Secret(row.get::<String, _>("csrf_secret")),
             account_id: AccountId(row.get::<i64, _>("account_id")),
-            created_at: DateTime::from_str(&row.get::<String, _>("created_at")).unwrap(),
-            expiration: DateTime::from_str(&row.get::<String, _>("expiration")).unwrap(),
+            created_at: row.get::<DateTime<Utc>, _>("created_at"),
+            expiration: row.get::<DateTime<Utc>, _>("expiration"),
             user_agent: row.get::<String, _>("user_agent"),
             ip: row.get::<String, _>("ip"),
         }
