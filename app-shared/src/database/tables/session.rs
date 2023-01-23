@@ -1,6 +1,6 @@
 use super::prelude::*;
-use app_shared::chrono::DateTime;
-use app_shared::models::{AccountId, Secret, Session};
+use crate::models::{AccountId, Secret, Session};
+use chrono::DateTime;
 use std::str::FromStr;
 
 pub struct SessionTable;

@@ -13,6 +13,8 @@ bitflags! {
         const ADD_ROLES = (1 << 2);
         /// Может удалять роли пользователям с меньшими правами.
         const REMOVE_ROLES = (1 << 2);
+        /// Может создавать аккаунты.
+        const CREATE_ACCOUNTS = (1 << 3);
     }
 }
 

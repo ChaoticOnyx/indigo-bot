@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 use app_shared::{
     chrono::{DateTime, Utc},
-    models::{Rights, Secret},
+    models::{ApiCaller, Rights, Secret},
     prelude::*,
 };
 
@@ -33,7 +33,7 @@ pub async fn endpoint(body: web::Json<Body>, secret: BearerAuth) -> impl Respond
     let result = Api::lock_async(move |api| {
         let duration = expiration.map(|expiration| expiration - Utc::now());
 
-        api.create_api_token(secret, rights, duration, is_service)
+        api.create_api_token(ApiCaller::Token(secret), rights, duration, is_service)
     })
     .await
     .unwrap();

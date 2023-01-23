@@ -50,7 +50,7 @@ async fn handle(context: &mut RenderContext) -> Option<HttpResponse> {
 
     let RenderContext { user, .. } = context.clone();
     let mut sessions: Vec<Session> =
-        Api::lock_async(move |api| api.private_api.get_account_sessions(user.account.id))
+        Api::lock_async(move |api| api.get_account_sessions(user.account.id))
             .await
             .unwrap();
 
@@ -85,7 +85,7 @@ async fn context(user: &AuthenticatedUser, form: Option<&SessionsForm>) -> Rende
     let mut sessions_info = Vec::new();
     let user = user.clone();
     let sessions: Vec<Session> =
-        Api::lock_async(move |api| api.private_api.get_account_sessions(user.account.id))
+        Api::lock_async(move |api| api.get_account_sessions(user.account.id))
             .await
             .unwrap();
 
@@ -142,7 +142,7 @@ pub async fn endpoint(
     if form.is_some() && request.method() == Method::POST {
         let csrf_token = form.unwrap().csrf_token;
 
-        if !Api::lock_async(move |api| api.private_api.is_csrf_secret_valid(csrf_token))
+        if !Api::lock_async(move |api| api.is_csrf_secret_valid(csrf_token))
             .await
             .unwrap()
         {

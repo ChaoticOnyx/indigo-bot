@@ -35,7 +35,7 @@ async fn handle(context: &mut RenderContext) {
     let errors = &mut context.errors;
 
     let csrf_secret = form.csrf_token.clone();
-    if !Api::lock_async(move |api| api.private_api.is_csrf_secret_valid(csrf_secret))
+    if !Api::lock_async(move |api| api.is_csrf_secret_valid(csrf_secret))
         .await
         .unwrap()
     {
@@ -48,8 +48,7 @@ async fn handle(context: &mut RenderContext) {
     let new_username = form.username.clone();
     if user.account.username != new_username {
         if let Err(err) = Api::lock_async(move |api| {
-            api.private_api
-                .change_username(AnyUserId::AccountId(user.account.id), new_username)
+            api.change_username(AnyUserId::AccountId(user.account.id), new_username)
         })
         .await
         .unwrap()
@@ -64,8 +63,7 @@ async fn handle(context: &mut RenderContext) {
     let new_avatar_url = form.avatar_url.clone();
     if user.account.avatar_url != form.avatar_url {
         if let Err(err) = Api::lock_async(move |api| {
-            api.private_api
-                .change_avatar_url(AnyUserId::AccountId(user.account.id), new_avatar_url)
+            api.change_avatar_url(AnyUserId::AccountId(user.account.id), new_avatar_url)
         })
         .await
         .unwrap()
@@ -119,7 +117,7 @@ pub async fn endpoint(
     if form.is_some() && request.method() == Method::POST {
         let csrf_token = form.unwrap().csrf_token;
 
-        if !Api::lock_async(move |api| api.private_api.is_csrf_secret_valid(csrf_token))
+        if !Api::lock_async(move |api| api.is_csrf_secret_valid(csrf_token))
             .await
             .unwrap()
         {

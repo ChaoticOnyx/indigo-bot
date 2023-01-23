@@ -73,10 +73,10 @@ pub async fn handle_bug_report(ctx: &Context, cmd: &ApplicationCommandInteractio
     );
 
     let issue_id = Api::lock_async(move |api| {
-        let issue_id = api.private_api.create_bug_issue(bug_title, body);
+        let issue_id = api.create_bug_issue(bug_title, body);
 
         let bugreport = BugReport::new(author_id, issue_id);
-        api.private_api.add_bug_report(bugreport);
+        api.add_bug_report(bugreport);
         issue_id
     })
     .await

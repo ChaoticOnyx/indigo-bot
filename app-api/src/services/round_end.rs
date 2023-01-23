@@ -1,5 +1,4 @@
 ﻿use crate::services::Service;
-use crate::Api;
 use app_shared::{
     models::{ServiceError, WebhookConfiguration, WebhookPayload, WebhookResponse},
     prelude::*,

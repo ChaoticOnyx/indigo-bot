@@ -1,7 +1,7 @@
 use app_api::Api;
 use app_macros::config;
 use app_shared::{
-    models::{Account, AnyUserId, RoleId},
+    models::{Account, AnyUserId, ApiCaller, RoleId},
     prelude::*,
     serenity::{
         model::{id::RoleId as DiscordRoleId, prelude::*},
@@ -66,7 +66,7 @@ pub async fn guild_member_update(ctx: &Context, old_if_available: &Option<Member
 
     let discord_user_id = new.user.id;
     let Ok(account) = Api::lock_async(move |api| {
-        api.private_api
+        api
             .find_account_by_id(AnyUserId::DiscordId(discord_user_id))
     })
     .await
@@ -104,8 +104,7 @@ async fn update_account_roles(
 
             let account_id = account.id;
             Api::lock_async(move |api| {
-                api.private_api
-                    .add_role_to_account(account_id, role_id)
+                api.add_role_to_account(ApiCaller::System, account_id, role_id)
                     .unwrap();
             })
             .await
@@ -128,8 +127,7 @@ async fn update_account_roles(
         let account_id = account.id;
         let role_id = account_role.id;
         Api::lock_async(move |api| {
-            api.private_api
-                .remove_role_from_account(account_id, role_id)
+            api.remove_role_from_account(ApiCaller::System, account_id, role_id)
                 .unwrap();
         })
         .await

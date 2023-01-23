@@ -1,31 +1,33 @@
-use crate::api::private::PrivateApi;
-use app_shared::models::ApiError;
+use crate::Api;
 use app_shared::{
     chrono::Duration,
-    models::{AnyUserId, Secret, TFAToken},
+    models::{AnyUserId, ApiCaller, ApiError, Secret, TFAToken},
     prelude::*,
+    Database,
 };
 
-impl PrivateApi {
+impl Api {
     /// Возвращает существующий или создаёт новый TFA токен для аккаунта.
     #[instrument]
     pub fn get_or_create_tfa_for_account(
         &mut self,
+        caller: ApiCaller,
         discord_user_id: DiscordUserId,
     ) -> Result<TFAToken, ApiError> {
         trace!("get_or_create_tfa_for_account");
 
-        if self
-            .database
-            .find_account(AnyUserId::DiscordId(discord_user_id))
-            .is_none()
-        {
+        if Database::lock(|database| {
+            database
+                .find_account(AnyUserId::DiscordId(discord_user_id))
+                .is_none()
+        }) {
             let discord_user = self
                 .discord_api
                 .get_discord_user(discord_user_id)
                 .ok_or_else(|| ApiError::Other("Пользователя не существует".to_string()))?;
 
             self.create_account(
+                caller,
                 discord_user.name.clone(),
                 discord_user
                     .avatar_url()

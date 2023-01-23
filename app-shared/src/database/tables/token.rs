@@ -1,11 +1,11 @@
 ﻿use std::str::FromStr;
 
+use chrono::Utc;
+
 use super::prelude::*;
-use app_shared::chrono::Utc;
-use app_shared::models::{AccountId, Rights};
-use app_shared::{
+use crate::{
     chrono::DateTime,
-    models::{ApiToken, Secret},
+    models::{AccountId, ApiToken, Rights, Secret},
     serde_json,
 };
 

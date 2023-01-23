@@ -1,17 +1,18 @@
-use crate::api::private::PrivateApi;
+use crate::Api;
 use app_shared::{
     chrono::Duration,
     chrono::{DateTime, Utc},
     models::{AccountId, AnyUserId, ApiError, ApiToken, Secret, Session},
     prelude::*,
+    Database,
 };
 
-impl PrivateApi {
+impl Api {
     #[instrument]
     fn cleanup_sessions(&self) {
         trace!("cleanup_sessions");
 
-        self.database.delete_expired_sessions();
+        Database::lock(|database| database.delete_expired_sessions());
     }
 
     /// Продлевает сессию и создаёт новые секреты.
@@ -25,7 +26,8 @@ impl PrivateApi {
         trace!("extend_session");
 
         self.cleanup_sessions();
-        let Some(session) = self.database.find_session_by_secret(session_secret.clone()) else {
+
+        let Some(session) = Database::lock(|database| database.find_session_by_secret(session_secret.clone())) else {
             return Err(ApiError::Other("Некорректная сессия".to_string()))
         };
 
@@ -45,12 +47,13 @@ impl PrivateApi {
         trace!("delete_session");
 
         self.cleanup_sessions();
-        let Some(session) = self.database.find_session_by_secret(session_secret) else {
+
+        let Some(session) = Database::lock(|database| database.find_session_by_secret(session_secret)) else {
             return Err(ApiError::Other("Некорректная сессия".to_string()))
         };
 
-        self.database.delete_session_by_secret(session.secret);
-        self.database.delete_api_token_by_secret(session.api_secret);
+        Database::lock(|database| database.delete_session_by_secret(session.secret));
+        Database::lock(|database| database.delete_api_token_by_secret(session.api_secret));
 
         Ok(())
     }
@@ -65,10 +68,7 @@ impl PrivateApi {
         loop {
             let secret = Secret::new_random_session_secret();
 
-            if self
-                .database
-                .find_session_by_secret(secret.clone())
-                .is_none()
+            if Database::lock(|database| database.find_session_by_secret(secret.clone()).is_none())
             {
                 break secret;
             }
@@ -85,11 +85,11 @@ impl PrivateApi {
         loop {
             let secret = Secret::new_random_csrf_secret();
 
-            if self
-                .database
-                .find_session_by_csrf_secret(secret.clone())
-                .is_none()
-            {
+            if Database::lock(|database| {
+                database
+                    .find_session_by_csrf_secret(secret.clone())
+                    .is_none()
+            }) {
                 break secret;
             }
         }
@@ -101,7 +101,7 @@ impl PrivateApi {
         trace!("find_session_by_secret");
 
         self.cleanup_sessions();
-        self.database.find_session_by_secret(session_secret)
+        Database::lock(|database| database.find_session_by_secret(session_secret))
     }
 
     /// Создаёт сессию для указанного аккаунта.
@@ -116,7 +116,7 @@ impl PrivateApi {
         trace!("create_session_for_account");
 
         self.cleanup_sessions();
-        let Some(account) = self.database.find_account(user_id) else {
+        let Some(account) = Database::lock(|database| database.find_account(user_id)) else {
             return Err(ApiError::Internal("Некорректный user_id".to_string()))
         };
 
@@ -129,7 +129,7 @@ impl PrivateApi {
             custom_creation_date,
         );
 
-        self.database.add_api_token(api_token.clone());
+        Database::lock(|database| database.add_api_token(api_token.clone()));
 
         let session = Session::new(
             self.create_unique_session_secret(),
@@ -142,7 +142,7 @@ impl PrivateApi {
             ip,
         );
 
-        self.database.add_session(session.clone());
+        Database::lock(|database| database.add_session(session.clone()));
 
         Ok(session)
     }
@@ -151,15 +151,35 @@ impl PrivateApi {
     pub fn is_csrf_secret_valid(&self, csrf_secret: Secret) -> bool {
         trace!("is_csrf_secret_valid");
 
-        self.database
-            .find_session_by_csrf_secret(csrf_secret)
-            .is_some()
+        Database::lock(|database| database.find_session_by_csrf_secret(csrf_secret).is_some())
     }
 
     #[instrument]
     pub fn get_account_sessions(&self, account_id: AccountId) -> Vec<Session> {
         trace!("get_sessions_for_account");
 
-        self.database.get_account_sessions(account_id)
+        Database::lock(|database| database.get_account_sessions(account_id))
+    }
+
+    /// Создаёт сессию в обмен на TFA.
+    #[instrument]
+    pub fn create_session_by_tfa(
+        &mut self,
+        tfa_secret: Secret,
+        user_agent: String,
+        ip: String,
+    ) -> Result<Session, ApiError> {
+        trace!("create_session_by_tfa");
+
+        let account = self.find_account_by_tfa_token_secret(tfa_secret)?;
+
+        let session = self.create_session_for_account(
+            AnyUserId::AccountId(account.id),
+            None,
+            user_agent,
+            ip,
+        )?;
+
+        Ok(session)
     }
 }

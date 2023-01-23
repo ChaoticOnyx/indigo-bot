@@ -1,5 +1,6 @@
 use app_api::Api;
 use app_shared::{
+    models::ApiCaller,
     prelude::*,
     serenity::{
         model::{prelude::Message, Timestamp},
@@ -18,9 +19,10 @@ pub async fn message(ctx: &Context, new_message: &Message) {
     }
 
     let user = new_message.author.clone();
-    let token = Api::lock_async(move |api| api.private_api.get_or_create_tfa_for_account(user.id))
-        .await
-        .unwrap();
+    let token =
+        Api::lock_async(move |api| api.get_or_create_tfa_for_account(ApiCaller::System, user.id))
+            .await
+            .unwrap();
 
     let response_message = match token {
         Ok(token) => format!(

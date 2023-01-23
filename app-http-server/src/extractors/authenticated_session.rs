@@ -1,7 +1,6 @@
-use actix_http::Payload;
 use crate::constants::COOKIES_SESSION_KEY;
+use actix_http::Payload;
 use actix_web::{error::ErrorUnauthorized, Error, FromRequest, HttpRequest};
-use serde::{Deserialize, Serialize};
 use app_api::Api;
 use app_shared::{
     futures_util::future::LocalBoxFuture,
@@ -9,11 +8,12 @@ use app_shared::{
     models::{Account, Secret, Session},
     prelude::*,
 };
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuthenticatedUser {
     pub session: Session,
-    pub account: Account
+    pub account: Account,
 }
 
 impl FromRequest for AuthenticatedUser {
@@ -32,9 +32,9 @@ impl FromRequest for AuthenticatedUser {
 
             let user: Option<AuthenticatedUser> =
                 Api::lock_async(|api| {
-                    let session = api.private_api.find_session_by_secret(session_secret.clone())?;
+                    let session = api.find_session_by_secret(session_secret.clone())?;
                     let account = api.find_account_by_session(session_secret).ok()?;
-                    
+
                     Some(AuthenticatedUser {
                         session,
                         account

@@ -1,14 +1,15 @@
 use std::collections::HashMap;
 use std::str::FromStr;
 
-use app_api::Api;
+use app_api::{Api, Journal};
 use app_discord_bot::BotClient;
 use app_http_server::Server;
 use tracing_loki::url::Url;
 use tracing_subscriber::{prelude::*, Layer};
 
 use app_shared::{
-    prelude::*, tokio, ConfigLoader, DiscordSession, PersistentStorage, Settings, UserAgentParser,
+    prelude::*, tokio, ConfigLoader, Database, DiscordSession, PersistentStorage, Settings,
+    UserAgentParser,
 };
 
 fn setup_logging() {
@@ -72,25 +73,34 @@ fn main() {
 
     setup_logging();
 
-    // User agent parser
-    UserAgentParser::set_state(UserAgentParser::default());
-
     // Config Loader
     ConfigLoader::set_state(ConfigLoader::new("./configs"));
+
+    // Database
+    let database = Database::connect();
+    database.migrate();
+    Database::set_state(database);
+
+    // Journal
+    let journal = Journal::default();
+    Journal::set_state(journal);
+
+    // User agent parser
+    UserAgentParser::set_state(UserAgentParser::default());
 
     // Session
     DiscordSession::set_state(DiscordSession { user: None });
 
     // Api
-    let api = Api::default();
-    Api::set_state(api);
+    Api::set_state(Api::default());
 
-    // Discord
+    // Discord thread
     let discord_thread = std::thread::spawn(|| {
         let client = BotClient::default();
         client.run();
     });
 
+    // HTTP server thread
     let server_thread = std::thread::spawn(|| {
         let server = Server::default();
         server.run();

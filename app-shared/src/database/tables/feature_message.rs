@@ -1,11 +1,10 @@
 ﻿use std::str::FromStr;
 
 use super::prelude::*;
-use app_shared::{
-    chrono::DateTime,
-    models::{FeatureVote, FeatureVoteDescriptor},
-    serenity::model::id::{ChannelId, MessageId},
-};
+use crate::models::{FeatureVote, FeatureVoteDescriptor};
+
+use chrono::DateTime;
+use serenity::model::id::{ChannelId, MessageId};
 
 pub struct FeatureMessageTable;
 

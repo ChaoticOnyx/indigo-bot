@@ -2,6 +2,8 @@
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 
+use super::ApiCaller;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ApiToken {
     pub secret: Secret,
@@ -37,5 +39,13 @@ impl ApiToken {
         };
 
         Utc::now() > expiration
+    }
+
+    pub fn to_caller(self) -> ApiCaller {
+        if self.creator.is_some() {
+            ApiCaller::Token(self.secret)
+        } else {
+            ApiCaller::System
+        }
     }
 }

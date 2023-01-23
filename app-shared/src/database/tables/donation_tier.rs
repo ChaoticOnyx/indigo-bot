@@ -1,4 +1,4 @@
-use app_shared::models::{DonationTierId, RoleId};
+use crate::models::{DonationTierId, RoleId};
 
 use super::prelude::*;
 

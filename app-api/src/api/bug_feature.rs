@@ -1,16 +1,17 @@
-use crate::api::private::PrivateApi;
+use crate::Api;
 use app_shared::{
     models::{BugReport, FeatureVote, FeatureVoteDescriptor},
     prelude::*,
+    Database,
 };
 
-impl PrivateApi {
+impl Api {
     /// Сохраняет запись об голосовании.
     #[instrument]
     pub fn new_feature_vote(&self, vote: FeatureVote) {
         trace!("new_feature_vote api");
 
-        self.database.add_feature_vote(vote);
+        Database::lock(|database| database.add_feature_vote(vote));
     }
 
     /// Отмечает голосование оконченным.
@@ -18,7 +19,7 @@ impl PrivateApi {
     pub fn end_feature_vote(&self, descriptor: FeatureVoteDescriptor) {
         trace!("end_feature_vote api");
 
-        self.database.end_feature_vote(descriptor);
+        Database::lock(|database| database.end_feature_vote(descriptor));
     }
 
     /// Проверяет, является ли голосование оконченным.
@@ -26,7 +27,7 @@ impl PrivateApi {
     pub fn is_vote_ended(&self, descriptor: FeatureVoteDescriptor) -> bool {
         trace!("is_vote_ended api");
 
-        self.database.is_vote_ended(descriptor)
+        Database::lock(|database| database.is_vote_ended(descriptor))
     }
 
     /// Возвращает информацию о голосовании.
@@ -34,7 +35,7 @@ impl PrivateApi {
     pub fn get_feature_vote(&self, descriptor: FeatureVoteDescriptor) -> Option<FeatureVote> {
         trace!("get_feature_vote api");
 
-        self.database.get_feature_vote(descriptor)
+        Database::lock(|database| database.get_feature_vote(descriptor))
     }
 
     /// Сохраняет запись об баг репорте.
@@ -42,7 +43,7 @@ impl PrivateApi {
     pub fn add_bug_report(&self, bug_report: BugReport) {
         trace!("add_bug_report");
 
-        self.database.add_bug_report(bug_report);
+        Database::lock(|database| database.add_bug_report(bug_report));
     }
 
     /// Создаёт иссуй с предложением улучшения на Github.

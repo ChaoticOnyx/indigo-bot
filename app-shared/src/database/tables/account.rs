@@ -1,8 +1,6 @@
 use super::prelude::*;
-use app_shared::{
-    chrono::{DateTime, Utc},
-    models::{AccountId, Role, RoleId},
-};
+use crate::models::{AccountId, Role, RoleId};
+use chrono::{DateTime, Utc};
 use std::str::FromStr;
 
 pub struct AccountTable {

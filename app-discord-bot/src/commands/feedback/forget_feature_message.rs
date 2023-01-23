@@ -12,10 +12,7 @@ use app_shared::{
 pub async fn forget_feature_message(_ctx: &Context, channel_id: ChannelId, message_id: MessageId) {
     trace!("forget_message_delete");
 
-    Api::lock_async(move |api| {
-        api.private_api
-            .end_feature_vote(FeatureVoteDescriptor(message_id, channel_id))
-    })
-    .await
-    .unwrap();
+    Api::lock_async(move |api| api.end_feature_vote(FeatureVoteDescriptor(message_id, channel_id)))
+        .await
+        .unwrap();
 }

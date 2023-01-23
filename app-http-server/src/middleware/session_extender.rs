@@ -8,7 +8,10 @@ use actix_web::{
 use app_api::Api;
 use app_shared::{
     chrono::{Duration, Utc},
-    futures_util::{FutureExt, future::{ready, Ready, LocalBoxFuture}},
+    futures_util::{
+        future::{ready, LocalBoxFuture, Ready},
+        FutureExt,
+    },
     prelude::*,
 };
 use derive_builder::Builder;
@@ -62,11 +65,13 @@ where
             let Some(user) = AuthenticatedUser::from_request(request, &mut Payload::None)
                 .await
                 .ok() else {
-                
+
                 return service.call(req).await;
             };
 
-            if !user.session.is_expired() && user.session.expiration - Utc::now() > options.extend_before {
+            if !user.session.is_expired()
+                && user.session.expiration - Utc::now() > options.extend_before
+            {
                 return service.call(req).await;
             }
 
@@ -87,7 +92,7 @@ where
                 .unwrap_or_else(String::new);
 
             let mut response = service.call(req).await?;
-            
+
             let Ok(new_session) = Api::lock_async(|api| {
                 api.extend_session(user.session.secret, user_agent, ip)
             }).await.unwrap() else {

@@ -1,5 +1,5 @@
 use super::prelude::*;
-use app_shared::models::{AccountId, AnyUserId};
+use crate::models::{AccountId, AnyUserId};
 
 #[derive(Debug, Clone)]
 pub struct AccountIntegrationsTable {

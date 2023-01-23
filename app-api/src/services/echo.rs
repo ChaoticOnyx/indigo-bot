@@ -5,7 +5,7 @@
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{Api, Service};
+use crate::Service;
 
 #[derive(Debug, Default)]
 pub struct EchoService;

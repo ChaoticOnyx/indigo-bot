@@ -17,12 +17,9 @@ pub async fn endpoint(payload: Query<Payload>) -> impl Responder {
     trace!("endpoint");
 
     let user_id = payload.0.user_id;
-    let account = Api::lock_async(move |api| {
-        api.private_api
-            .find_account_by_id(AnyUserId::SS14Guid(user_id))
-    })
-    .await
-    .unwrap();
+    let account = Api::lock_async(move |api| api.find_account_by_id(AnyUserId::SS14Guid(user_id)))
+        .await
+        .unwrap();
 
     ResponseHelpers::from_api_result(account)
 }

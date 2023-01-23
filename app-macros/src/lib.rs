@@ -34,17 +34,20 @@ impl Parse for ValidateApiSecret {
 #[proc_macro]
 pub fn validate_api_secret(item: TokenStream) -> TokenStream {
     let ValidateApiSecret { varname } = syn::parse_macro_input!(item as ValidateApiSecret);
+    let shared_crate = normalize_crate("app-shared");
 
     let expanded = quote! {
         {
-            let token = self.private_api.database.find_api_token_by_secret(#varname);
+            use #shared_crate::Database;
+
+            let token = Database::lock(|database| database.find_api_token_by_secret(#varname));
 
             let Some(token) = token else {
-                return Err(ApiError::Unauthorized("invalid api secret".to_string()))
+                return Err(ApiError::Unauthorized("Некорректный токен".to_string()))
             };
 
             if token.is_expired() {
-                return Err(ApiError::Unauthorized("invalid api secret".to_string()));
+                return Err(ApiError::Unauthorized("Некорректный токен".to_string()));
             };
 
             token

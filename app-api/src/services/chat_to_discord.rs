@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use std::str::FromStr;
 use std::sync::Mutex;
 
-use crate::{services::Service, Api};
+use crate::services::Service;
 use app_shared::{
     chrono::{DateTime, Duration, Utc},
     models::{ServiceError, WebhookConfiguration, WebhookPayload, WebhookResponse},

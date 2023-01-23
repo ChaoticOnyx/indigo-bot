@@ -1,9 +1,8 @@
 ﻿use super::prelude::*;
-use app_shared::{
-    hex_color::HexColor,
-    models::{Role, RoleId},
-    serde_json,
-};
+use crate::models::{Role, RoleId};
+
+use hex_color::HexColor;
+use serde_json;
 
 pub struct RoleTable;
 

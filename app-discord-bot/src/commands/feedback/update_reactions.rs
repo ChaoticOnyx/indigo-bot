@@ -23,7 +23,7 @@ pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
     }
 
     let descriptor = FeatureVoteDescriptor(reaction.message_id, reaction.channel_id);
-    let is_vote_ended = Api::lock_async(move |api| api.private_api.is_vote_ended(descriptor))
+    let is_vote_ended = Api::lock_async(move |api| api.is_vote_ended(descriptor))
         .await
         .unwrap();
 
@@ -77,12 +77,12 @@ pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
 
     if votes_up.saturating_sub(votes_down) >= config.min_feature_up_votes {
         Api::lock_async(move |api| {
-            api.private_api.end_feature_vote(descriptor);
+            api.end_feature_vote(descriptor);
         })
         .await
         .unwrap();
 
-        let feature_vote = Api::lock(|api| api.private_api.get_feature_vote(descriptor)).unwrap();
+        let feature_vote = Api::lock(|api| api.get_feature_vote(descriptor)).unwrap();
 
         let author = feature_vote.author_id.to_user(&ctx.http).await.ok();
 
@@ -93,7 +93,7 @@ pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
         }
 
         Api::lock_async(move |api| {
-            api.private_api.end_feature_vote(descriptor);
+            api.end_feature_vote(descriptor);
         })
         .await
         .unwrap();

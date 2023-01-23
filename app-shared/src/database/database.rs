@@ -1,22 +1,26 @@
-use crate::database::{
-    db_config::DbConfig,
-    tables::{
-        AccountIntegrationsTable, AccountTable, BugMessageTable, DonationTierTable,
-        FeatureMessageTable, RoleTable, SessionTable, TokenTable, WebhookTable,
+use crate::{
+    database::{
+        db_config::DbConfig,
+        tables::{
+            AccountIntegrationsTable, AccountTable, BugMessageTable, DonationTierTable,
+            FeatureMessageTable, JournalEntryTable, RoleTable, SessionTable, TokenTable,
+            WebhookTable,
+        },
     },
-};
-use app_shared::{
-    chrono::{DateTime, Utc},
     models::{
-        Account, AccountId, AccountIntegrations, AnyUserId, ApiToken, BugReport, DonationTier,
-        FeatureVote, FeatureVoteDescriptor, Role, RoleId, Secret, Session, Webhook,
+        Account, AccountId, AccountIntegrations, ActionType, Actor, AnyUserId, ApiToken, BugReport,
+        DonationTier, FeatureVote, FeatureVoteDescriptor, JournalEntry, Role, RoleId, Secret,
+        Session, Webhook,
     },
     prelude::*,
-    tokio::runtime::Runtime,
 };
+use app_macros::global;
+use chrono::{DateTime, Utc};
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
+use tokio::runtime::Runtime;
 
 #[derive(Debug)]
+#[global(lock, set)]
 pub struct Database {
     pool: Pool<Postgres>,
     rt: Runtime,
@@ -27,7 +31,7 @@ impl Database {
     pub fn connect() -> Self {
         info!("setting up database");
 
-        let rt = app_shared::tokio::runtime::Builder::new_current_thread()
+        let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
             .unwrap();
@@ -63,6 +67,7 @@ impl Database {
             SessionTable::create(pool).await.unwrap();
             AccountIntegrationsTable::create(pool).await.unwrap();
             DonationTierTable::create(pool).await.unwrap();
+            JournalEntryTable::create(pool).await.unwrap();
         })
     }
 
@@ -551,5 +556,34 @@ impl Database {
                 .await
                 .unwrap();
         })
+    }
+
+    #[instrument(skip(self))]
+    pub fn add_journal_entry(
+        &self,
+        object: Actor,
+        datetime: DateTime<Utc>,
+        subject: Option<Actor>,
+        action: ActionType,
+    ) -> JournalEntry {
+        trace!("create_journal_entry");
+
+        self.rt.block_on(async {
+            JournalEntryTable::insert(&self.pool, object, datetime, subject, action)
+                .await
+                .unwrap()
+        })
+    }
+}
+
+impl Clone for Database {
+    fn clone(&self) -> Self {
+        Self {
+            pool: self.pool.clone(),
+            rt: tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap(),
+        }
     }
 }

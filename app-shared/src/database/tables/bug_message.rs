@@ -1,5 +1,5 @@
 ﻿use super::prelude::*;
-use app_shared::models::BugReport;
+use crate::models::BugReport;
 
 pub struct BugMessageTable;
 

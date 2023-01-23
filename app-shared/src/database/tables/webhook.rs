@@ -1,9 +1,7 @@
 ﻿use super::prelude::*;
-use app_shared::{
-    chrono::DateTime,
-    models::{Secret, ServiceId, Webhook, WebhookConfiguration},
-    serde_json,
-};
+use crate::models::{Secret, ServiceId, Webhook, WebhookConfiguration};
+use chrono::DateTime;
+use serde_json;
 use std::str::FromStr;
 
 pub struct WebhookTable;

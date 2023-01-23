@@ -54,6 +54,7 @@ pub trait GlobalStateLock: GlobalState {
             let var = Self::get_static();
             let lock = var.lock();
             let mut state = lock.borrow_mut();
+
             f(state.as_mut().unwrap())
         })
     }

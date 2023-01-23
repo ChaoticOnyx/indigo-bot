@@ -5,7 +5,7 @@ use app_api::Api;
 use serde::Deserialize;
 
 use app_shared::{
-    models::{Secret, ServiceId, WebhookConfiguration},
+    models::{ApiCaller, Secret, ServiceId, WebhookConfiguration},
     prelude::*,
 };
 
@@ -20,7 +20,7 @@ pub struct Body {
 
 #[instrument]
 #[post("/webhook")]
-pub async fn endpoint(body: Json<Body>, api_secret: BearerAuth) -> impl Responder {
+pub async fn endpoint(body: Json<Body>, secret: BearerAuth) -> impl Responder {
     trace!("endpoint");
 
     let Body {
@@ -28,11 +28,11 @@ pub async fn endpoint(body: Json<Body>, api_secret: BearerAuth) -> impl Responde
         name,
         configuration,
     } = body.0;
-    let api_secret = Secret(api_secret.token().to_string());
+    let secret = Secret(secret.token().to_string());
 
     let result = Api::lock_async(|api| {
         api.create_webhook(
-            api_secret,
+            ApiCaller::Token(secret),
             service_id,
             name,
             configuration.unwrap_or_default(),

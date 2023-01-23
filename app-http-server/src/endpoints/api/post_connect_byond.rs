@@ -3,7 +3,10 @@ use actix_web_httpauth::extractors::bearer::BearerAuth;
 use app_api::Api;
 use serde::Deserialize;
 
-use app_shared::{models::Secret, prelude::*};
+use app_shared::{
+    models::{ApiCaller, Secret},
+    prelude::*,
+};
 
 use crate::ResponseHelpers;
 
@@ -21,9 +24,11 @@ pub async fn endpoint(query: web::Json<Body>, secret: BearerAuth) -> impl Respon
     let Body { ckey, tfa_secret } = query.0;
     let secret = Secret(secret.token().to_string());
 
-    let result = Api::lock_async(|api| api.connect_byond_account_by_2fa(secret, tfa_secret, ckey))
-        .await
-        .unwrap();
+    let result = Api::lock_async(|api| {
+        api.connect_byond_account_by_2fa(ApiCaller::Token(secret), tfa_secret, ckey)
+    })
+    .await
+    .unwrap();
 
     ResponseHelpers::from_api_result(result)
 }
