@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use super::{ByondCkey, RoleId, SS14Guid};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", content = "data")]
 pub enum ActionType {
     AccountCreated,
     ByondConnected { ckey: ByondCkey },

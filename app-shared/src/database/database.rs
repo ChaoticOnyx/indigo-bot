@@ -9,8 +9,8 @@ use crate::{
     },
     models::{
         Account, AccountId, AccountIntegrations, ActionType, Actor, AnyUserId, ApiToken, BugReport,
-        DonationTier, FeatureVote, FeatureVoteDescriptor, JournalEntry, Role, RoleId, Secret,
-        Session, Webhook,
+        DonationTier, FeatureVote, FeatureVoteDescriptor, JournalEntry, JournalEntryCursor, Role,
+        RoleId, Secret, Session, Webhook,
     },
     prelude::*,
 };
@@ -573,6 +573,52 @@ impl Database {
                 .await
                 .unwrap()
         })
+    }
+
+    #[instrument]
+    pub fn get_journal_entries(&self, current: JournalEntryCursor) -> Option<JournalEntryCursor> {
+        trace!("get_journal_entries");
+
+        let JournalEntryCursor {
+            offset,
+            subject,
+            max_count,
+            ..
+        } = current;
+
+        let entries = self.rt.block_on(async {
+            JournalEntryTable::find_cursor_entries(&self.pool, offset, max_count, subject.clone())
+                .await
+                .unwrap()
+        });
+
+        if entries.is_empty() {
+            return None;
+        }
+
+        let total = self.rt.block_on(async {
+            JournalEntryTable::count_total_entries(&self.pool, subject.clone())
+                .await
+                .unwrap()
+        });
+
+        let next = JournalEntryCursor {
+            offset: current.offset,
+            subject,
+            max_count,
+            entries,
+            total,
+        };
+
+        Some(next)
+    }
+
+    #[instrument]
+    pub fn get_roles(&self) -> Vec<Role> {
+        trace!("get_roles");
+
+        self.rt
+            .block_on(async { RoleTable::get_all(&self.pool).await.unwrap() })
     }
 }
 

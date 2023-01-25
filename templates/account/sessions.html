@@ -7,57 +7,65 @@
 
 {% block rightPanel %}
 <form autocomplete="off" method="post" class="flex flex-col h-full">
-    {{ forms::csrf() }}
+	{{ forms::csrf() }}
 
-    <h2 class="text-xl font-bold">Активные сессии</h2>
-    <hr>
-    <div class="flex flex-col bordered rounded w-full">
-        {% for session in sessions %}
-        {% if loop.last and loop.last != loop.first %}
-        <hr class="m-0 w-full">
-        {% endif %}
-        <div class="p-2 w-full flex items-center">
-            <div class="w-full">
-                <div class="w-full">
-                    {% if session.os is starting_with("Window") %}
-                    <i class="fa-brands fa-windows"></i>
-                    {% elif session.os is starting_with("Mac OS") %}
-                    <i class="fa-brands fa-apple"></i>
-                    {% elif session.os is starting_with("iOS") %}
-                    <i class="fa-brands fa-apple"></i>
-                    {% elif session.os is starting_with("Linux") %}
-                    <i class="fa-brands fa-linux"></i>
-                    {% elif session.os is starting_with("Android") %}
-                    <i class="fa-brands fa-android"></i>
-                    {% endif %}
-                    <span>{{ session.os }}</span>
+	<h2 class="text-xl font-bold">Активные сессии</h2>
+	<hr>
+	<div class="flex flex-col bordered rounded w-full">
+		{% for session in sessions %}
+		{% if loop.last and loop.last != loop.first %}
+		<hr class="m-0 w-full">
+		{% endif %}
+		<div class="p-2 w-full flex items-center">
+			<div class="w-full">
+				<div class="w-full">
+					{% if session.os is starting_with("Window") %}
+					<i class="fa-brands fa-windows"></i>
+					{% elif session.os is starting_with("Mac OS") %}
+					<i class="fa-brands fa-apple"></i>
+					{% elif session.os is starting_with("iOS") %}
+					<i class="fa-brands fa-apple"></i>
+					{% elif session.os is starting_with("Linux") %}
+					<i class="fa-brands fa-linux"></i>
+					{% elif session.os is starting_with("Android") %}
+					<i class="fa-brands fa-android"></i>
+					{% endif %}
+					<span>{{ session.os }}</span>
 
-                    <span class="text-white/50">·</span>
+					<hr class="vertical" />
 
-                    {% if session.browser is starting_with("Edge") %}
-                    <i class="fa-brands fa-edge"></i>
-                    {% elif session.browser is starting_with("Firefox") %}
-                    <i class="fa-brands fa-firefox-browser"></i>
-                    {% elif session.browser is starting_with("Opera") %}
-                    <i class="fa-brands fa-opera"></i>
-                    {% elif session.browser is starting_with("Chrom") %}
-                    <i class="fa-brands fa-chrome"></i>
-                    {% elif session.browser is starting_with("Yandex") %}
-                    <i class="fa-brands fa-yandex"></i>
-                    {% endif %}
-                    <span>{{ session.browser }}</span>
-                </div>
+					{% if session.browser is starting_with("Edge") %}
+					<i class="fa-brands fa-edge"></i>
+					{% elif session.browser is starting_with("Firefox") %}
+					<i class="fa-brands fa-firefox-browser"></i>
+					{% elif session.browser is starting_with("Opera") %}
+					<i class="fa-brands fa-opera"></i>
+					{% elif session.browser is starting_with("Chrom") %}
+					<i class="fa-brands fa-chrome"></i>
+					{% elif session.browser is starting_with("Yandex") %}
+					<i class="fa-brands fa-yandex"></i>
+					{% endif %}
+					<span>{{ session.browser }}</span>
+				</div>
 
-                <div class="text-white/50 text-xs">{{ session.ip }}</div>
+				<div class="text-white/50 text-xs">{{ session.ip }}</div>
 
-                <div class="text-white/50 text-xs">Создана: {{ session.created_at | date(format="%d.%m.%Y %H:%M") }}</div>
-                <div class="text-white/50 text-xs">Истекает: {{ session.expiration | date(format="%d.%m.%Y %H:%M") }}</div>
-            </div>
-        </div>
-        {% endfor %}
+				<div class="text-white/50 text-xs">Создана:
+					<relative-time datetime="{{ session.created_at }}" prefix="">
+						{{ session.created_at | date(format="%d.%m.%Y %H:%M") }}
+					</relative-time>
+				</div>
+				<div class="text-white/50 text-xs">Истекает:
+					<relative-time datetime="{{ session.expiration }}" prefix="">
+						{{ session.expiration | date(format="%d.%m.%Y %H:%M") }}
+					</relative-time>
+				</div>
+			</div>
+		</div>
+		{% endfor %}
 
-    </div>
+	</div>
 
-    <button type="submit" name="action" value="all" class="button--bad mt-auto ml-auto">Завершить все</button>
+	<button type="submit" name="action" value="all" class="button--bad mt-auto ml-auto">Завершить все</button>
 </form>
 {% endblock rightPanel %}

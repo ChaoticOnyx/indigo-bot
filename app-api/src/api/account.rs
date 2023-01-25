@@ -477,6 +477,8 @@ impl Api {
     /// Находит аккаунт по секрету сессии.
     #[instrument]
     pub fn find_account_by_session(&self, session_secret: Secret) -> Result<Account, ApiError> {
+        trace!("find_account_by_session");
+
         let session = self
             .find_session_by_secret(session_secret)
             .ok_or_else(|| ApiError::Other("Некорректная сессия".to_string()))?;

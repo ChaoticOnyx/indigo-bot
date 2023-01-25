@@ -1,0 +1,73 @@
+{% import "account.html" as account %}
+{% extends "account.html" %}
+
+{% block menu %}
+{{ account::menu(selected="Journal") }}
+{% endblock menu %}
+
+{% block rightPanel %}
+<h2 class="text-xl font-bold">Журнал</h2>
+<hr>
+
+<div class="flex flex-col h-full justify-start">
+	<div class="flex flex-col bordered rounded w-full">
+		{% for entry in cursor.entries %}
+		{% set atype = entry.action.type %}
+		<div class="flex flex-col p-2 w-full bordered">
+			<div class=" items-center text-sm">
+				<span class="font-bold">
+					{% if entry.object.type == "System" %}
+					Система
+					{% endif%}
+				</span>
+				-
+				<span>
+					{% if atype == "AccountCreated" %}
+					Создан аккаунт
+					{% elif atype == "ByondConnected" %}
+					Подключен BYOND
+					{% elif atype == "SS14Connected" %}
+					Подключен SS14
+					{% elif atype == "RoleAdded" %}
+					Добавлена роль
+					{% elif atype == "RoleRemoved" %}
+					Убрана роль
+					{% endif %}
+				</span>
+			</div>
+
+			<span class="notice">
+				{% if atype == "ByondConnected" %}
+				Ckey: {{ entry.action.data.ckey }}
+				{% elif atype == "SS14Connected" %}
+				Guid: {{ entry.action.data.ss14_guid }}
+				{% elif atype == "RoleAdded" or atype == "RoleRemoved" %}
+				Роль: {{ roles[entry.action.data.role_id].name }}
+				{% endif %}
+				<div>
+					<relative-time datetime="{{ entry.datetime }}" prefix="">
+						{{ entry.datetime | date(format="%d.%m.%Y %H:%M") }}
+					</relative-time>
+				</div>
+			</span>
+		</div>
+		{% endfor %}
+	</div>
+
+	<div class="buttons-group m-auto mt-2 mb-0">
+		{% set prev = cursor.offset - cursor.max_count %}
+		{% set next = cursor.offset + cursor.max_count %}
+
+		{% if prev < 0 %}
+			{% set prev = 0%}
+		{% endif %}
+
+		{% if next > cursor.total %}
+			{% set next = cursor.total %}
+		{% endif %}
+
+		<a class="text-sm" {% if cursor.offset == 0 %}disabled{% else %}href="?offset={{ prev }}" {% endif %}>Новее</a>
+		<a class="text-sm" {% if next == cursor.total %}disabled{% else %}href="?offset={{ next }}"{% endif %}>Старее</a>
+	</div>
+</div>
+{% endblock rightPanel %}

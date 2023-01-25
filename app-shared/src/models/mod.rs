@@ -34,7 +34,7 @@ pub use byond_ckey::ByondCkey;
 pub use donation_tier::{DonationTier, DonationTierId};
 pub use feature_vote::{FeatureVote, FeatureVoteDescriptor};
 pub use game_server::{AnyGameServer, ByondServer, GameServerId, SS14Server};
-pub use journal_entry::{JournalEntry, JournalEntryId};
+pub use journal_entry::{JournalEntry, JournalEntryCursor, JournalEntryId};
 pub use rights::{Rights, RightsScope, ScopedServiceRights, TokenRights, UserRights};
 pub use role::{Role, RoleId};
 pub use secret::Secret;

@@ -1,5 +1,7 @@
 mod account;
 mod bug_feature;
+mod journal;
+mod roles;
 mod session;
 mod tfa;
 mod token;

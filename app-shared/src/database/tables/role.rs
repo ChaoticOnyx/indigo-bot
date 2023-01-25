@@ -62,6 +62,16 @@ create table if not exists role
             .await
     }
 
+    #[instrument]
+    pub async fn get_all(pool: &Pool<Postgres>) -> Result<Vec<Role>, Error> {
+        trace!("get_all");
+
+        sqlx::query("SELECT * FROM role")
+            .map(Self::map)
+            .fetch_all(pool)
+            .await
+    }
+
     #[instrument(skip(row))]
     fn map(row: PgRow) -> Role {
         Role {

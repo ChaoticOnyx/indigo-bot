@@ -41,7 +41,11 @@ input[type="text"] {
 }
 
 hr {
-  @apply my-3;
+  @apply border-t-2 my-3;
+}
+
+hr.vertical {
+  @apply inline ml-1 mr-2 border-l-2 border-l-white/10 h-full;
 }
 
 .notice {
@@ -64,34 +68,56 @@ hr {
   @apply border border-white/10;
 }
 
+.button--transparent {
+  @apply transition-colors bg-transparent hover:bg-white/5 bordered text-white font-bold py-1 px-4 rounded;
+}
+
+.button--transparent.selected {
+  @apply bg-white/10;
+}
+
+.button--transparent[disabled] {
+  @apply text-white/20 hover:bg-transparent cursor-not-allowed;
+}
+
 .button--primary {
   @apply transition-colors bg-blue-500/75 hover:bg-blue-500 bordered text-white font-bold py-1 px-4 rounded;
+}
+
+.button--primary.selected {
+  @apply bg-blue-500;
 }
 
 .button--good {
   @apply transition-colors bg-green-500/75 hover:bg-green-500 bordered text-white font-bold py-1 px-4 rounded;
 }
 
+.button--good.selected {
+  @apply bg-green-500/75;
+}
+
 .button--bad {
   @apply transition-colors bg-red-500/75 hover:bg-red-500 bordered text-white font-bold py-1 px-4 rounded;
+}
+
+.button--bad.selected {
+  @apply bg-red-500/75;
 }
 
 .input--singleSymbol {
   @apply rounded bordered w-[3ch] h-[3ch] text-2xl font-mono text-center;
 }
 
-ul.menu li {
-  cursor: pointer;
-  @apply pl-2 text-white/50 my-1 py-0.5 rounded-sm hover:bg-white/5 transition-colors;
+.menu > a {
+  @apply block pl-2 text-white/50 my-1 py-0.5 rounded-sm hover:bg-white/5 transition-colors cursor-pointer;
 }
 
-ul.menu li.selected {
+.menu > .selected {
   @apply text-white/90 bg-white/5 border-l-2 border-l-blue-500;
 }
 
-ul.menu a {
+.menu > a {
   text-decoration: none;
-  color: inherit;
 }
 
 .role-circle {
@@ -102,7 +128,7 @@ ul.menu a {
 }
 
 .role-badge {
-  @apply rounded-md bg-white/5 bordered text-sm px-2 flex items-center justify-between gap-1;
+  @apply rounded-sm bg-white/5 bordered text-sm px-2 flex items-center justify-between gap-1;
 }
 
 code {
@@ -123,4 +149,24 @@ code {
 
 .navbar a:hover {
   @apply text-white/90;
+}
+
+.buttons-group {
+  @apply flex;
+}
+
+.buttons-group > a {
+  @apply button--transparent;
+}
+
+.buttons-group > a {
+  @apply rounded-none;
+}
+
+.buttons-group :first-child {
+  @apply rounded-none rounded-tl-md rounded-bl-md;
+}
+
+.buttons-group :last-child {
+  @apply rounded-none rounded-tr-md rounded-br-md;
 }

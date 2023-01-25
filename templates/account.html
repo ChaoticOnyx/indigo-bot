@@ -5,7 +5,7 @@
 {% block title %}Аккаунт{% endblock title %}
 
 {% block navbar %}
-	{{ controls::navbar(selected="Account") }}
+{{ controls::navbar(selected="Account") }}
 {% endblock navbar %}
 
 {% block body %}
@@ -14,7 +14,7 @@
 
 <div class="flex flex-row p-4">
 	<div id="leftPanel" class="gap-2 ml-auto flex flex-col items-center">
-		<div class="flex flex-col gap-1 items-center justify-center border-b p-2">
+		<div class="flex flex-col gap-1 items-center justify-center p-2">
 			<div>
 				<span class="font-bold" style="color: {{ main_role.color }};">{{ user.account.username }}</span>
 			</div>
@@ -27,10 +27,16 @@
 					{{ controls::roleBadge(role=role) }}
 					{% endfor %}
 				</div>
-				<span class="text-sm text-center">Дата регистрации: <span class="font-bold text-white">{{
-						user.account.created_at | date(format="%d.%m.%Y") }}</span></span>
+				<span class="text-sm text-center">
+					Присоединился:
+					<relative-time class="font-bold text-white" datetime="{{ user.account.created_at }}" prefix="">
+						{{ user.account.created_at | date(format="%d.%m.%Y") }}
+					</relative-time>
+				</span>
 			</div>
 		</div>
+
+		<hr class="m-0 w-full" />
 
 		<div id="accountMenu" class="w-full p-2">
 			{% block menu %}{% endblock menu %}
@@ -43,29 +49,29 @@
 {% endblock body %}
 
 {% macro menu(selected) %}
-	<ul class="menu">
-		<li class="{% if selected == "Profile" %} selected {% endif %}">
-		<a href="profile"><i class="fa-solid fa-user"></i> Профиль</a>
-		</li>
-		<li class="{% if selected == "Notifications" %} selected {% endif %}">
-		<a href="notifications"><i class="fa-solid fa-envelope"></i> Уведомления</a>
-		</li>
-		<li class="{% if selected == "Integrations" %} selected {% endif %}">
-		<a href="integrations"><i class="fa-solid fa-cubes-stacked"></i> Интеграции</a>
-		</li>
-		<li class="{% if selected == "Sessions" %} selected {% endif %}">
-		<a href="sessions"><i class="fa-solid fa-pager"></i> Сессии</a>
-		</li>
-	</uL>
-	
-	<hr />
-	
-	<ul class="menu">
-		<li class="{% if selected == "Tokens" %} selected {% endif %}">
-		<a href="tokens"><i class="fa-solid fa-key"></i> Токены</a>
-		</li>
-		<li class="{% if selected == "Journal" %} selected {% endif %}">
-		<a href="journal"><i class="fa-solid fa-scroll"></i> Журнал</a>
-		</li>
-	</ul>
+<ul class="menu">
+	<a href="profile" class="{% if selected == "Profile" %} selected {% endif %}">
+		<i class="fa-solid fa-user"></i> Профиль
+	</a>
+	<a href="notifications" class="{% if selected == "Notifications" %} selected {% endif %}">
+		<i class="fa-solid fa-envelope"></i> Уведомления
+	</a>
+	<a href="integrations" class="{% if selected == "Integrations" %} selected {% endif %}">
+		<i class="fa-solid fa-cubes-stacked"></i> Интеграции
+	</a>
+	<a href="sessions" class="{% if selected == "Sessions" %} selected {% endif %}">
+		<i class="fa-solid fa-pager"></i> Сессии
+	</a>
+</uL>
+
+<hr />
+
+<ul class="menu">
+	<a href="tokens" class="{% if selected == "Tokens" %} selected {% endif %}">
+		<i class="fa-solid fa-key"></i> Токены
+	</a>
+	<a href="journal" class="{% if selected == "Journal" %} selected {% endif %}">
+		<i class="fa-solid fa-scroll"></i> Журнал
+	</a>
+</ul>
 {% endmacro menu %}

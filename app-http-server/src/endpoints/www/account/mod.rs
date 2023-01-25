@@ -2,6 +2,7 @@ use actix_http::{header, StatusCode};
 use actix_web::{web, HttpResponseBuilder, Responder, Scope};
 
 mod integrations_menu;
+mod journal;
 mod profile_menu;
 mod sessions_menu;
 
@@ -16,5 +17,6 @@ pub fn endpoint() -> Scope {
         .service(profile_menu::endpoint)
         .service(sessions_menu::endpoint)
         .service(integrations_menu::endpoint)
+        .service(journal::endpoint)
         .default_service(web::to(redirect))
 }
