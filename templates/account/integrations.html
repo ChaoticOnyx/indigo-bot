@@ -7,54 +7,50 @@
 
 {% block rightPanel %}
 <h2 class="text-xl font-bold">Интеграции</h2>
-<hr>
-<div class="flex flex-col gap-2 h-full justify-start">
-    <div class="bordered rounded w-full">
-        <div class="p-2 bg-neutral-800/50 flex items-center gap-2">
-            <img alt="Логотип Discord" height="32px" width="32px" src="/public/images/discord.svg" />
-            <div class="flex flex-col">
-                <div>Discord</div>
-                <span class="text-white/50 text-xs">{{ user.account.integrations.discord_user_id | default(value="Не привязан") }}</span>
-            </div>
-        </div>
-        
-        <hr class="m-0 w-full">
-        
-        <div class="p-2 flex">
-            <span class="notice">Ваш аккаунт автоматически привязывается при первом входе.</span>
-        </div>
-    </div>
 
-    <div class="bordered rounded w-full">
-        <div class="p-2 bg-neutral-800/50 flex items-center gap-2">
-            <img alt="Логотип Space Station 14" height="32px" width="32px" src="/public/images/ss14.svg" />
-            <div class="flex flex-col">
-                <div>Space Station 14</div>
-                <span class="text-white/50 text-xs">{{ user.account.integrations.ss14_guid | default(value="Не привязан") }}</span>
-            </div>
-        </div>
+<div class="divider"></div>
 
-        <hr class="m-0 w-full">
+<div class="flex mt-3 flex-col gap-2 h-full justify-start">
+	{{ self::block(
+		product="Discord",
+		integration_id=user.account.integrations.discord_user_id,
+		notice="Ваш аккаунт автоматически привязывается при первом входе.",
+		image_url="/public/images/discord.svg",
+		image_alt="Логотип Discord")
+	}}
 
-        <div class="p-2 flex">
-            <span class="notice">Привязать аккаунт можно в настройках игры, зайдя на один из наших серверов.</span>
-        </div>
-    </div>
+	{{ self::block(
+		product="Space Station 14",
+		integration_id=user.account.integrations.ss14_guid,
+		notice="Привязать аккаунт можно в настройках игры, зайдя на один из наших серверов.",
+		image_url="/public/images/ss14.svg",
+		image_alt="Логотип Space Station 14")
+	}}
 
-    <div class="bordered rounded w-full">
-        <div class="p-2 bg-neutral-800/50 flex items-center gap-2">
-            <img alt="Логотип BYOND" height="32px" width="32px" src="/public/images/byond.png" />
-            <div class="flex flex-col">
-                <div>BYOND</div>
-                <span class="text-white/50 text-xs">{{ user.account.integrations.byond_ckey | default(value="Не привязан") }}</span>
-            </div>
-        </div>
-        
-        <hr class="m-0 w-full">
-
-        <div class="p-2 flex">
-            <span class="notice">Привязать аккаунт можно зайдя на один из наших серверов и использовав верб <code>OOC -> Connect Account</code>.</span>
-        </div>
-    </div>
+	{{ self::block(
+		product="BYOND",
+		integration_id=user.account.integrations.byond_ckey,
+		notice="Привязать аккаунт можно зайдя на один из наших серверов и использовав верб <code>OOC -> Connect Account</code>.",
+		image_url="/public/images/byond.png",
+		image_alt="Логотип BYOND")
+	}}
 </div>
 {% endblock rightPanel %}
+
+{% macro block(product, integration_id, notice, image_url, image_alt) %}
+<div class="bordered border-[1px] rounded-md w-full">
+	<div class="p-2 rounded-md bg-neutral flex items-center gap-2">
+		<img alt="{{ image_alt }} height="32px" width="32px" src="{{ image_url }}" />
+		<div class="flex flex-col">
+			<div>{{ product }}</div>
+			<span class="text-tip">{{ integration_id | default(value="Не привязан") }}</span>
+		</div>
+	</div>
+	
+	<hr class="m-0 w-full">
+	
+	<div class="p-2 flex">
+		<span class="text-tip">{{ notice | safe }}</span>
+	</div>
+</div>
+{% endmacro block %}

@@ -2,7 +2,10 @@
 
 
 {% macro roleBadge(role) %}
-    <div class="role-badge"><span class="role-circle" style="background-color: {{role.color}};"></span><span>{{ role.name }}</span></div>
+	<div class="badge border-white/10 rounded-md">
+		<span class="badge badge-xs mr-1" style="background-color: {{role.color}};"></span>
+		<span>{{ role.name }}</span>
+	</div>
 {% endmacro roleBadge %}
 
 {% macro image(src, alt, altImage="", style="", class="", id="") %}
@@ -17,12 +20,18 @@
 {% endmacro image %}
 
 {% macro userAvatar(src, id="") %}
-    {{ controls::image(src=src, alt="Аватар пользователя", altImage="/public/images/avatar.png", style="width: 8rem;", class="rounded-lg", id=id) }}
+	<div class="avatar">
+		<div class="rounded-lg">
+			{{ controls::image(src=src, alt="Аватар пользователя", altImage="/public/images/avatar.png", style="width: 8rem;", id=id) }}
+		</div>
+	</div>
 {% endmacro userAvatar %}
 
 {% macro navbar(selected) %}
-	<nav class="navbar">
-		<a {{ helpers::class(condition=selected == "Index", value="selected") }} href="/">Главная</a>
-		<a {{ helpers::class(condition=selected == "Account", value="selected") }} href="/account">Аккаунт</a>
-	</nav>
+	<div class="navbar">
+		<ul class="menu menu-horizontal gap-2">
+			<li><a role="button" {{ helpers::class(condition=selected == "Index", value="btn-active") }} href="/">Главная</a></li>
+			<li><a role="button" {{ helpers::class(condition=selected == "Account", value="btn-active") }} href="/account">Аккаунт</a></li>
+		</ul>
+	</div>
 {% endmacro navbar %}

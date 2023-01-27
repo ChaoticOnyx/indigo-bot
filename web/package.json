@@ -13,6 +13,7 @@
     "vite": "^4.0.0"
   },
   "dependencies": {
-    "@github/relative-time-element": "^4.1.5"
+    "@github/relative-time-element": "^4.1.5",
+    "daisyui": "^2.49.0"
   }
 }

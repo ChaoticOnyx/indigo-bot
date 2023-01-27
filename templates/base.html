@@ -5,7 +5,6 @@
 	{% block head %}
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">	
-	<link rel="stylesheet" href="/public/css/normalize.css">
 	<link rel="stylesheet" href="/public/css/latofonts.css">
 	<link href="/public/fontawesome/css/fontawesome.css" rel="stylesheet">
 	<link href="/public/fontawesome/css/solid.css" rel="stylesheet">
@@ -17,10 +16,9 @@
 
 <body>
 	{% block navbar %}{% endblock navbar %}
-	<div class="h-full w-full overflow-y-auto">
+
 	{% block body %}
 	{% endblock body %}
-	</div>
 
 	<script src="{{ "main.js" | asset_path }}"></script>
 </body>

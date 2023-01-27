@@ -7,14 +7,15 @@
 
 {% block rightPanel %}
 <h2 class="text-xl font-bold">Журнал</h2>
-<hr>
 
-<div class="flex flex-col h-full justify-start">
-	<div class="flex flex-col bordered rounded w-full">
+<div class="divider"></div>
+
+<div class="flex mt-3 flex-col h-full justify-start">
+	<div class="flex flex-col rounded-md border-[1px] w-full">
 		{% for entry in cursor.entries %}
 		{% set atype = entry.action.type %}
-		<div class="flex flex-col p-2 w-full bordered">
-			<div class=" items-center text-sm">
+		<div class="flex flex-col p-2 w-full {% if loop.first != true %}border-t-[1px]{% endif %}">
+			<div class="items-center text-sm">
 				<span class="font-bold">
 					{% if entry.object.type == "System" %}
 					Система
@@ -36,7 +37,7 @@
 				</span>
 			</div>
 
-			<span class="notice">
+			<span class="text-tip">
 				{% if atype == "ByondConnected" %}
 				Ckey: {{ entry.action.data.ckey }}
 				{% elif atype == "SS14Connected" %}
@@ -66,8 +67,10 @@
 			{% set next = cursor.total %}
 		{% endif %}
 
-		<a class="text-sm" {% if cursor.offset == 0 %}disabled{% else %}href="?offset={{ prev }}" {% endif %}>Новее</a>
-		<a class="text-sm" {% if next == cursor.total %}disabled{% else %}href="?offset={{ next }}"{% endif %}>Старее</a>
+		<div class="btn-group">
+			<a role="button" class="btn btn-sm btn-ghost border-[1px] border-white/10" {% if cursor.offset==0 %}disabled{% else %}href="?offset={{ prev }}"{% endif %}>Новее</a>
+			<a role="button" class="btn btn-sm btn-ghost border-[1px] border-white/10" {% if next==cursor.total %}disabled{% else %}href="?offset={{ next }}"{% endif %}>Старее</a>
+		</div>
 	</div>
 </div>
 {% endblock rightPanel %}

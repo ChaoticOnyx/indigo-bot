@@ -1,6 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 h1,
 h2,
@@ -15,158 +15,63 @@ h4 {
   @apply border-white/10;
 }
 
-a {
-  color: hsl(206, 100%, 60%);
-}
-
-a:visited {
-  color: hsl(303, 100%, 60%);
-}
-
 html,
 body {
-  @apply m-0 p-0 text-white/90 bg-neutral-900 h-full overflow-hidden;
+  @apply m-0 p-0 h-full;
 }
 
 body {
   @apply flex flex-col;
 }
 
-input {
-  @apply text-white/90;
+.btn {
+  @apply font-bold rounded-sm h-9 min-h-fit;
 }
 
-input[type="text"] {
-  @apply appearance-none bordered focus:bg-neutral-800 bg-[#101010] rounded-md py-0.5 px-3 transition-colors;
+.btn-error:hover {
+  @apply bg-[#ef4444];
 }
 
-hr {
-  @apply border-t-2 my-3;
-}
-
-hr.vertical {
-  @apply inline ml-1 mr-2 border-l-2 border-l-white/10 h-full;
-}
-
-.notice {
-  @apply text-white/50 text-sm italic max-w-prose;
-}
-
-.input__container {
-  @apply flex flex-col gap-1.5;
-}
-
-.input__caption {
-  @apply font-bold pl-1.5 text-sm;
-}
-
-.input__error {
-  @apply pl-1.5 text-sm text-red-500;
-}
-
-.bordered {
-  @apply border border-white/10;
-}
-
-.button--transparent {
-  @apply transition-colors bg-transparent hover:bg-white/5 bordered text-white font-bold py-1 px-4 rounded;
-}
-
-.button--transparent.selected {
-  @apply bg-white/10;
-}
-
-.button--transparent[disabled] {
-  @apply text-white/20 hover:bg-transparent cursor-not-allowed;
-}
-
-.button--primary {
-  @apply transition-colors bg-blue-500/75 hover:bg-blue-500 bordered text-white font-bold py-1 px-4 rounded;
-}
-
-.button--primary.selected {
-  @apply bg-blue-500;
-}
-
-.button--good {
-  @apply transition-colors bg-green-500/75 hover:bg-green-500 bordered text-white font-bold py-1 px-4 rounded;
-}
-
-.button--good.selected {
-  @apply bg-green-500/75;
-}
-
-.button--bad {
-  @apply transition-colors bg-red-500/75 hover:bg-red-500 bordered text-white font-bold py-1 px-4 rounded;
-}
-
-.button--bad.selected {
-  @apply bg-red-500/75;
-}
-
-.input--singleSymbol {
-  @apply rounded bordered w-[3ch] h-[3ch] text-2xl font-mono text-center;
-}
-
-.menu > a {
-  @apply block pl-2 text-white/50 my-1 py-0.5 rounded-sm hover:bg-white/5 transition-colors cursor-pointer;
-}
-
-.menu > .selected {
-  @apply text-white/90 bg-white/5 border-l-2 border-l-blue-500;
-}
-
-.menu > a {
-  text-decoration: none;
-}
-
-.role-circle {
-  width: 0.6rem;
-  height: 0.6rem;
-
-  @apply rounded-full;
-}
-
-.role-badge {
-  @apply rounded-sm bg-white/5 bordered text-sm px-2 flex items-center justify-between gap-1;
-}
-
-code {
-  @apply bg-black/30 rounded-sm p-0.5 px-1;
+.btn-success:hover {
+  @apply bg-[#22c55e];
 }
 
 .navbar {
-  @apply flex gap-2 w-full bg-neutral-800 bordered p-2;
+  @apply min-h-0 bg-base-200 py-1 border-b-[1px] flex-shrink-0;
 }
 
-.navbar a {
-  @apply text-white/50;
+.menu :where(li) > :where(*:not(ul)) {
+  @apply my-1 py-0.5 px-2 rounded-sm;
 }
 
-.navbar a.selected {
-  @apply text-white/90 font-bold;
+.menu :where(li) > :where(*:not(ul)).btn-active {
+  @apply bg-primary-focus;
 }
 
-.navbar a:hover {
-  @apply text-white/90;
+.text-tip {
+  @apply text-sm text-neutral-content;
 }
 
-.buttons-group {
-  @apply flex;
+input[type="text"] {
+  @apply bg-neutral text-neutral-content;
 }
 
-.buttons-group > a {
-  @apply button--transparent;
+.input-single {
+  @apply p-0 w-[3ch] h-[3ch] text-2xl font-mono text-center;
 }
 
-.buttons-group > a {
-  @apply rounded-none;
+.label-text {
+  @apply font-bold;
 }
 
-.buttons-group :first-child {
-  @apply rounded-none rounded-tl-md rounded-bl-md;
+input[type="text"].input {
+  @apply px-2 min-h-fit h-9;
 }
 
-.buttons-group :last-child {
-  @apply rounded-none rounded-tr-md rounded-br-md;
+.divider {
+  @apply m-0;
+}
+
+code {
+  @apply px-1 py-1 rounded-md bg-base-300 text-base-content;
 }

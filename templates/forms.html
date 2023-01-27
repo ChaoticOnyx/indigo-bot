@@ -1,9 +1,11 @@
 {% macro input(caption, type, placeholder="", initValue="", name="", required=false, maxLength=0, id="") %}
-    <div class="w-full input__container">
-        <div class="input__caption">{{ caption }}</div>
+    <div class="w-full form-control">
+		<label class="label">
+        	<div class="label-text">{{ caption }}</div>
+		</label>
         <input
 			name="{{ name }}"
-			class="w-full"
+			class="input input-bordered w-full"
 			type="{{ type }}"
 			placeholder="{{ placeholder }}"
 			value="{{ initValue }}"
@@ -12,9 +14,11 @@
 			{% if id != "" %} id="{{ id }}" {% endif %}
         >
 		{% if name in errors %}
+			<label class="label">
 			{% for error in errors[name] %}
-				<div class="input__error">{{ error }}</div>
+				<div class="text-error">{{ error }}</div>
 			{% endfor %}
+			</label>
 		{% endif %}
     </div>
 {% endmacro input %}

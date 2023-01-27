@@ -8,21 +8,21 @@
 {{ controls::navbar(selected="Account") }}
 {% endblock navbar %}
 
-{% block body %}
 
+{% block body %}
 {% set main_role = user.account.roles | main_role %}
 
-<div class="flex flex-row p-4">
-	<div id="leftPanel" class="gap-2 ml-auto flex flex-col items-center">
-		<div class="flex flex-col gap-1 items-center justify-center p-2">
+<div class="flex flex-row m-auto rounded-md border-[1px] max-w-fit">
+	<div id="leftPanel" class="flex flex-col items-center rounded-l-md border-r-[1px] bg-base-200">
+		<div class="flex flex-col gap-1 items-center justify-center p-3">
 			<div>
 				<span class="font-bold" style="color: {{ main_role.color }};">{{ user.account.username }}</span>
 			</div>
 
 			{{ controls::userAvatar(src=user.account.avatar_url, id="userAvatar") }}
 
-			<div class="flex flex-col gap-2 items-center justify-center">
-				<div class="flex gap-0.5 justify-center flex-wrap">
+			<div class="flex flex-col gap-2 mt-2 items-center justify-center">
+				<div class="flex gap-0.5 justify-center flex-wrap max-w-[25ch]">
 					{% for role in user.account.roles %}
 					{{ controls::roleBadge(role=role) }}
 					{% endfor %}
@@ -38,11 +38,11 @@
 
 		<hr class="m-0 w-full" />
 
-		<div id="accountMenu" class="w-full p-2">
+		<div class="self-stretch p-3">
 			{% block menu %}{% endblock menu %}
 		</div>
 	</div>
-	<div id="rightPanel" class="flex flex-col p-4 mr-auto min-w-[60ch]">
+	<div id="rightPanel" class="flex flex-col p-4 min-w-[60ch] max-w-prose">
 		{% block rightPanel %}{% endblock rightPanel %}
 	</div>
 </div>
@@ -50,28 +50,40 @@
 
 {% macro menu(selected) %}
 <ul class="menu">
-	<a href="profile" class="{% if selected == "Profile" %} selected {% endif %}">
-		<i class="fa-solid fa-user"></i> Профиль
-	</a>
-	<a href="notifications" class="{% if selected == "Notifications" %} selected {% endif %}">
-		<i class="fa-solid fa-envelope"></i> Уведомления
-	</a>
-	<a href="integrations" class="{% if selected == "Integrations" %} selected {% endif %}">
-		<i class="fa-solid fa-cubes-stacked"></i> Интеграции
-	</a>
-	<a href="sessions" class="{% if selected == "Sessions" %} selected {% endif %}">
-		<i class="fa-solid fa-pager"></i> Сессии
-	</a>
-</uL>
+	<li>
+		<a href="profile" class="{% if selected == "Profile" %} btn-active {% endif %}">
+			<i class="fa-solid fa-user"></i> Профиль
+		</a>
+	</li>
+	<li>
+		<a href="notifications" class="{% if selected == "Notifications" %} btn-active {% endif %}">
+			<i class="fa-solid fa-envelope"></i> Уведомления
+		</a>
+	</li>
+	<li>
+		<a href="integrations" class="{% if selected == "Integrations" %} btn-active {% endif %}">
+			<i class="fa-solid fa-cubes-stacked"></i> Интеграции
+		</a>
+	</li>
+	<li>
+		<a href="sessions" class="{% if selected == "Sessions" %} btn-active {% endif %}">
+			<i class="fa-solid fa-pager"></i> Сессии
+		</a>
+	</li>
+</ul>
 
-<hr />
+<div class="divider"></div>
 
 <ul class="menu">
-	<a href="tokens" class="{% if selected == "Tokens" %} selected {% endif %}">
-		<i class="fa-solid fa-key"></i> Токены
-	</a>
-	<a href="journal" class="{% if selected == "Journal" %} selected {% endif %}">
-		<i class="fa-solid fa-scroll"></i> Журнал
-	</a>
+	<li>
+		<a href="tokens" class="{% if selected == "Tokens" %} btn-active {% endif %}">
+			<i class="fa-solid fa-key"></i> Токены
+		</a>
+	</li>
+	<li>
+		<a href="journal" class="{% if selected == "Journal" %} btn-active {% endif %}">
+			<i class="fa-solid fa-scroll"></i> Журнал
+		</a>
+	</li>
 </ul>
 {% endmacro menu %}
