@@ -25,7 +25,7 @@ body {
 }
 
 .btn {
-  @apply font-bold rounded-sm h-9 min-h-fit;
+  @apply font-bold rounded-sm h-8 min-h-fit;
 }
 
 .btn-error:hover {
@@ -34,6 +34,16 @@ body {
 
 .btn-success:hover {
   @apply bg-[#22c55e];
+}
+
+.btn-group .btn:first-child:not(:last-child),
+.btn-group.btn-group-horizontal .btn:first-child:not(:last-child) {
+  @apply rounded-l-sm;
+}
+
+.btn-group .btn:last-child:not(:first-child),
+.btn-group.btn-group-horizontal .btn:last-child:not(:first-child) {
+  @apply rounded-r-sm;
 }
 
 .navbar {
@@ -65,7 +75,7 @@ input[type="text"] {
 }
 
 input[type="text"].input {
-  @apply px-2 min-h-fit h-9;
+  @apply px-2 min-h-fit h-8 rounded-sm;
 }
 
 .divider {
