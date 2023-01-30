@@ -82,7 +82,10 @@ pub async fn update_reactions(ctx: &Context, reaction: &Reaction) {
         .await
         .unwrap();
 
-        let feature_vote = Api::lock(|api| api.get_feature_vote(descriptor)).unwrap();
+        let feature_vote = Api::lock_async(move |api| api.get_feature_vote(descriptor))
+            .await
+            .unwrap()
+            .unwrap();
 
         let author = feature_vote.author_id.to_user(&ctx.http).await.ok();
 
