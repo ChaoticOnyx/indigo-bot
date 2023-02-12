@@ -9,4 +9,4 @@ app-api = { path = "../app-api" }
 app-macros = { path = "../app-macros" }
 
 tracing = "0.1.37"
-serde = { version = "1.0.147", features = ["derive"] }
+serde = { version = "1.0.152", features = ["derive"] }

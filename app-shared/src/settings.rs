@@ -15,9 +15,8 @@ impl Settings {
     pub fn load() -> Self {
         trace!("load");
 
-        let config_content = std::fs::read(SETTINGS_PATH).unwrap();
-
-        toml::from_slice(&config_content).unwrap()
+        let config_content = std::fs::read_to_string(SETTINGS_PATH).unwrap();
+        toml::from_str(&config_content).unwrap()
     }
 
     #[instrument]
@@ -25,7 +24,6 @@ impl Settings {
         trace!("save");
 
         let config_content = toml::to_string_pretty(&self).unwrap();
-
         std::fs::write(SETTINGS_PATH, config_content).unwrap();
     }
 }

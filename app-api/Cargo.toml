@@ -8,8 +8,8 @@ app-shared = { path = "../app-shared" }
 app-macros = { path = "../app-macros" }
 
 tracing = "0.1.37"
-serde = { version = "1.0.147", features = ["derive"] }
-reqwest = { version = "0.11.13", features = [
+serde = { version = "1.0.152", features = ["derive"] }
+reqwest = { version = "0.11.14", features = [
 	"rustls",
 	"json",
 	"serde_json",

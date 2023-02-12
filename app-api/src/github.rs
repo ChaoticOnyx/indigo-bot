@@ -22,7 +22,7 @@ pub struct GithubConfig {
 
 impl Github {
     #[instrument(skip(self))]
-    pub fn create_feature_issue(&self, title: String, body: String) -> i64 {
+    pub fn create_feature_issue(&self, title: String, body: String) -> u64 {
         trace!("create_feature_issue");
 
         let config = GithubConfig::get().unwrap();
@@ -36,7 +36,7 @@ impl Github {
     }
 
     #[instrument(skip(self))]
-    pub fn create_bug_issue(&self, title: String, body: String) -> i64 {
+    pub fn create_bug_issue(&self, title: String, body: String) -> u64 {
         trace!("create_bug_issue");
 
         let config = GithubConfig::get().unwrap();
@@ -51,7 +51,7 @@ impl Github {
         title: String,
         body: String,
         labels: BTreeSet<String>,
-    ) -> i64 {
+    ) -> u64 {
         trace!("create_issue");
 
         let (owner, repo) = repository.split_once('/').unwrap();

@@ -48,7 +48,7 @@ impl Api {
 
     /// Создаёт иссуй с предложением улучшения на Github.
     #[instrument]
-    pub fn create_feature_issue(&self, title: String, description: String) -> i64 {
+    pub fn create_feature_issue(&self, title: String, description: String) -> u64 {
         trace!("create_feature_issue");
 
         self.github.create_feature_issue(title, description)
@@ -56,7 +56,7 @@ impl Api {
 
     /// Создаёт иссуй с багом на Github.
     #[instrument]
-    pub fn create_bug_issue(&self, title: String, description: String) -> i64 {
+    pub fn create_bug_issue(&self, title: String, description: String) -> u64 {
         trace!("create_bug_issue");
 
         self.github.create_bug_issue(title, description)
